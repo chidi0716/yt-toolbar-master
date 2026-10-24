@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/installer"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/jobs"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/testenv"
@@ -246,4 +248,79 @@ func sortedKeys(m map[string]json.RawMessage) string {
 	}
 	sort.Strings(keys)
 	return strings.Join(keys, ",")
+}
+
+// TestStatusVersionCache 確認 status 記住工具的版本（路徑＋大小＋修改時間），
+// 並在檔案改變、安裝資料夾的狀態檔改變與 updateYtDlp 之後重新檢查。
+// 以移除執行權限（不改變大小與修改時間）讓 ffmpeg 無法執行，觀察是否重新執行。
+func TestStatusVersionCache(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("uses file permissions to make a tool fail")
+	}
+	a, _ := newUpdateApp(t, "0.2.0")
+	ctx := context.Background()
+	ffmpeg := func() Component {
+		t.Helper()
+		v, err := a.Status(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return components(t, v.(*StatusResult))["ffmpeg"]
+	}
+	c := ffmpeg()
+	if c.Version != "7.1-fake" || c.Error != "" {
+		t.Fatalf("first status: %+v", c)
+	}
+	p := c.Path
+	broken := func() {
+		t.Helper()
+		if err := os.Chmod(p, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	fixed := func() { os.Chmod(p, 0o755) }
+
+	broken()
+	if c := ffmpeg(); c.Version != "7.1-fake" || c.Error != "" {
+		t.Fatalf("unchanged file should use the cached version: %+v", c)
+	}
+	later := time.Now().Add(time.Hour)
+	os.Chtimes(p, later, later)
+	if c := ffmpeg(); c.Error != "FFMPEG_NOT_FOUND" {
+		t.Fatalf("modified file should be checked again: %+v", c)
+	}
+	// 失敗不記住。
+	fixed()
+	if c := ffmpeg(); c.Version != "7.1-fake" || c.Error != "" {
+		t.Fatalf("after fixing: %+v", c)
+	}
+
+	// --update 寫入 update-state.json。
+	broken()
+	if _, err := a.SetAutoUpdate(ctx, false); err != nil {
+		t.Fatal(err)
+	}
+	if c := ffmpeg(); c.Error != "FFMPEG_NOT_FOUND" {
+		t.Fatalf("after the update state changed: %+v", c)
+	}
+	fixed()
+	ffmpeg()
+
+	// --install 寫入 install-state.json。
+	broken()
+	os.WriteFile(filepath.Join(a.Layout.InstallDir, installer.StateFileName), []byte(`{"tools":{}}`), 0o644)
+	if c := ffmpeg(); c.Error != "FFMPEG_NOT_FOUND" {
+		t.Fatalf("after the install state changed: %+v", c)
+	}
+	fixed()
+	ffmpeg()
+
+	broken()
+	if _, err := a.UpdateYtDlp(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if c := ffmpeg(); c.Error != "FFMPEG_NOT_FOUND" {
+		t.Fatalf("after updateYtDlp: %+v", c)
+	}
+	fixed()
 }

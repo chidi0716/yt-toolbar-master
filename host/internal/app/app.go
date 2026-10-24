@@ -34,6 +34,7 @@ type App struct {
 	Log Logger
 
 	updateMu sync.Mutex
+	versions versionCache
 
 	// infoSem 限制同時執行的 getInfo 數量。
 	infoOnce sync.Once
@@ -139,12 +140,13 @@ func (a *App) Status(ctx context.Context) (any, error) {
 			c.Error = string(errs.From(err).Code)
 		}
 	}
+	a.versions.sync(l.InstallDir)
 	var wg sync.WaitGroup
 	if ytDlp.Found {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			v, err := t.YtDlpVersion(ctx)
+			v, err := a.versions.version(ctx, t.YtDlp, t.YtDlpVersion)
 			setVersion(&ytDlp, v, err)
 		}()
 	}
@@ -152,7 +154,7 @@ func (a *App) Status(ctx context.Context) (any, error) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			v, err := t.FFmpegVersion(ctx)
+			v, err := a.versions.version(ctx, t.FFmpeg, t.FFmpegVersion)
 			setVersion(&ffmpeg, v, err)
 		}()
 	}
@@ -160,7 +162,7 @@ func (a *App) Status(ctx context.Context) (any, error) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			v, err := t.DenoVersion(ctx)
+			v, err := a.versions.version(ctx, t.Deno, t.DenoVersion)
 			setVersion(&deno, v, err)
 		}()
 	}
@@ -168,7 +170,7 @@ func (a *App) Status(ctx context.Context) (any, error) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			v, err := t.FFprobeVersion(ctx)
+			v, err := a.versions.version(ctx, t.FFprobe, t.FFprobeVersion)
 			setVersion(&ffprobe, v, err)
 		}()
 	}
@@ -358,5 +360,6 @@ func (a *App) UpdateYtDlp(ctx context.Context) (any, error) {
 		return nil, errs.New(errs.Busy, "an update is already running")
 	}
 	defer a.updateMu.Unlock()
+	defer a.versions.clear()
 	return a.tools().Update(ctx)
 }
