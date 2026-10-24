@@ -288,7 +288,7 @@ await section('T21a', async (page, context, dl) => {
     const e = document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-subs-error');
     return { text: e.textContent, retry: !!e.querySelector('button') };
   });
-  check('直接下載失敗時顯示錯誤，說明安裝橋接程式可改善，並可重試（FR-44）', /helper program/.test(err.text) && /yt-dlp/.test(err.text) && err.retry, err.text);
+  check('直接下載失敗時顯示錯誤，說明安裝橋接程式可改善，並可重試（FR-44）', /Install the helper/.test(err.text) && /yt-dlp/.test(err.text) && err.retry, err.text);
   await shot(page, 'T21a-subtitles-direct-failed.png');
   await page.keyboard.press('Escape');
 

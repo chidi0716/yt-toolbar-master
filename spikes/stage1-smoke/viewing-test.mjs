@@ -180,7 +180,7 @@ await section(
 );
 
 const HINT_EN =
-  "Couldn't find YouTube's Appearance option. If you use an extension that changes the theme (for example, an ambient light extension), set its theme to follow YouTube.";
+  "Couldn't find YouTube's Appearance option. If another extension changes YouTube's theme, set it to follow YouTube.";
 const noticeShown = (page) =>
   page.evaluate(
     () => !!document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-btn[data-button="darkMode"]').closest('.ytm-btn-wrap').querySelector('.ytm-tooltip[data-notice]'),
