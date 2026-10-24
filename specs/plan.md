@@ -58,7 +58,7 @@ entrypoints/
   options/                      設定頁
 components/
   toolbar/                      Toolbar、ToolbarButton、Panel、PanelHost
-  controls/                     RangeSlider、TimeInput、Switch、Select、Button、Badge
+  controls/                     RangeSlider、TimeInput、Switch、Select、Button
   panels/                       VideoPanel、Mp3Panel、ThumbnailPanel、SubtitlePanel、
                                 LoopPanel、MorePanel、HelpPanel、HostMissing
 features/
@@ -211,12 +211,12 @@ host/                           橋接程式（Go），見第 4 節
 - **是否需要提醒**：背景腳本以 `browser.management.getSelf()` 取得 `installType`（不需要 `management` 權限）；只有 `development` 才查詢與提醒（Chrome 載入未封裝、Firefox 臨時附加元件）。其他安裝類型一律不查詢。
 - **查詢**：`GET https://api.github.com/repos/chidi0716/yt-toolbar-master/releases/latest`（只回傳正式版本，不含預先發行版本），不帶任何自訂標頭或 cookie（`credentials: 'omit'`）。只取 `tag_name`（去掉開頭的 `v`）、`name`、`html_url`；`html_url` 必須以 `https://github.com/chidi0716/yt-toolbar-master/releases/` 開頭，否則丟棄。GitHub API 允許跨來源讀取，因此不需要新增主機權限。
 - **時機**：內容腳本在影片頁載入完成時送訊息給背景腳本；背景腳本檢查 `local:updateCheck.lastCheckedAt` 超過 24 小時、且沒有選擇「不再提醒」才查詢。失敗只記錄在 console，不重試。
-- **儲存**（`local:`，不同步）：`updateCheck = { lastCheckedAt, latest: {version, title, url} | null }`、`updateReminder = { skippedVersion, disabled, lastCardShownAt: {version, at}, handledVersion }`。
+- **儲存**（`local:`，不同步）：`updateCheck = { lastCheckedAt, latest: {version, title, url} | null }`、`updateReminder = { dismissedVersion, disabled, lastCardShownAt: {version, at} }`（「跳過這個版本」與「前往下載」都寫入 `dismissedVersion`，只往較新的版本前進）。
 - **卡片**：屬於工具列的 Shadow DOM，位置在工具列下方，不疊在播放器上。顯示條件、收合計時、小圓點、隔天再出現依 008 FR-28 至 FR-29b 與 constitution 第 7c 點。
   - 「使用者有操作」：卡片顯示後，在 `document.visibilityState === 'visible'` 且收到 `pointermove`、`keydown` 或 `wheel` 後才開始計時；分頁切到背景時暫停。
   - 不搶焦點（不呼叫 `focus()`），按鈕可用 Tab 到達；淡入動畫遵守 `prefers-reduced-motion`。
   - 延後條件用既有的狀態判斷：全螢幕（`document.fullscreenElement`）、子母畫面、編輯工具列、面板展開、焦點在輸入框。
-- **圖示標記**：`action.setBadgeText({ text: 'NEW' })`；「前往下載」或目前版本 ≥ 最新版本時清除。
+- **圖示標記**：`action.setBadgeText({ text: 'NEW' })`；「前往下載」「跳過這個版本」「不再提醒」或目前版本 ≥ 最新版本時清除。
 - **設定頁「關於」區**：目前版本、最新版本、最近查詢時間、「前往下載」、「重新開啟新版本提醒」（只在選擇過「不再提醒」時顯示）。
 - 「前往下載」以 `window.open(url, '_blank', 'noopener')` 開啟，只會是通過檢查的 `html_url`。
 - 翻譯字串加入 `utils/i18n` 的兩種語言。
