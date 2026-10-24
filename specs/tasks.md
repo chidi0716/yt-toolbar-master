@@ -172,12 +172,20 @@ T11 可以和階段 1、2 同時進行。
 - **T52 專案改名**：repo 已改名為 `chidi0716/yt-toolbar-master`，擴充功能顯示名稱改為「YT Toolbar Master」（兩種語言相同）。
   - 所有 `chidi0716/youtube-extension` 網址改為新名稱：新版本提醒、安裝指令、元件清單允許的網址、Firefox `update_url`、發佈腳本、引導與移除腳本、README、docs、測試；Go module 路徑改為 `github.com/chidi0716/yt-toolbar-master/host`。
   - 發佈檔名中的 `youtube-extension-` 前綴改為 `yt-toolbar-master-`。
-  - **不改**（使用者看不到，且改了會讓已安裝的版本失聯）：Chrome 金鑰與擴充功能 ID、Firefox `gecko.id`、原生訊息名稱 `com.chidi0716.youtube_extension`、安裝資料夾 `youtube-extension-host`、記錄檔位置。在 plan 3.3 註明這些識別碼保留舊名的原因。
+  - **內部識別碼也一併改名**（尚未發佈任何版本，現在改沒有相容問題）：
+    - Firefox `gecko.id`：`yt-toolbar-master@chidi0716`
+    - 原生訊息名稱：`com.chidi0716.yt_toolbar_master`（註冊檔、登錄機碼、`allowed_origins`／`allowed_extensions`）
+    - 小幫手執行檔：`ytm-host`（`ytm-host-darwin-arm64` 等）；發佈用工具 `ytm-release`
+    - 安裝資料夾：macOS `~/Library/Application Support/yt-toolbar-master/`、Windows `%LOCALAPPDATA%\yt-toolbar-master\`；記錄檔：macOS `~/Library/Logs/yt-toolbar-master/`
+    - 下載暫存資料夾 `.ytm-tmp-<id>`；輸出標記、事件名稱、CSS／DOM 前綴、console 前綴等所有 `yte`／`youtube-extension` 字樣改為 `ytm`／`yt-toolbar-master`
+    - npm 套件名稱 `yt-toolbar-master`
+    - 例外：Chrome 的 `key`（擴充功能 ID 與名稱無關，不需要換）。
+  - 規格與 plan 中描述這些名稱的地方（plan 3.3、4.7、4.8、4.9 等）一併更新。
 - **T53 一鍵下載**（009 第一節，plan 3.11）：設定、畫質選擇函式與單元測試、面板流程、「改用其他畫質」、重複下載判斷、提示文字。
 - **T54 安裝後接著下載**（009 第二節）。
 - **T55 右鍵下載**（009 第三節）：`contextMenus` 權限、選單建立與更新、連結解析與單元測試、通知、設定開關。
 - **T56 檢查與文件**：權限檢查測試（`utils/policy.test.ts`）加入 `contextMenus`；README（英文與繁中）功能介紹加入一鍵與右鍵下載；e2e-checklist 新增第 11 節（009 驗收條件）；與既有功能的組合測試（鎖定畫質、編輯工具列、隱藏的工具、下載清單）。
-- **完成條件**：同階段 8（含 `release:dry`、`web-ext lint --self-hosted`）；全文搜尋確認除了 T52 列出的保留識別碼以外，沒有殘留 `chidi0716/youtube-extension`。
+- **完成條件**：同階段 8（含 `release:dry`、`web-ext lint --self-hosted`）；全文搜尋確認程式碼、腳本、文件中沒有殘留 `youtube-extension`、`youtube_extension`、`yte-`、`yte_`（`specs/` 的歷史紀錄與 `.git` 除外）。
 
 ## 階段 5：收尾
 
