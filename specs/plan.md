@@ -422,7 +422,7 @@ install/
 
 | 指令 | 參數 | 說明 |
 |---|---|---|
-| `status`（擴充） | — | 新增 `installDir`、`components: [{name: "helper"|"yt-dlp"|"deno"|"ffmpeg"|"ffprobe", version, path, source: "bundled"|"homebrew"|"winget"|"path"}]`、`update: {auto, lastCheck, lastResult: "ok"|"updated"|"failed"|null, consecutiveFailures, running}` |
+| `status`（階段 11 起） | — | `hostVersion`、`ready`、`complete`、`components: [{name: "helper"|"yt-dlp"|"deno"|"ffmpeg"|"ffprobe", found, version, path, source: "bundled"|"homebrew"|"winget"|"path"|"", error}]`、`defaultDir`、`namePresets`、`update: {auto, lastCheck, lastResult: "ok"|"updated"|"failed"|null, consecutiveFailures, running}` |
 | `setAutoUpdate` | `enabled`（布林） | 寫入狀態檔 |
 | `checkUpdates` | — | 立即啟動 `--update`（不受 24 小時限制），回傳 `{started: true}`；已在執行時回傳 `{started: false}` |
 | `uninstall` | — | 有進行中的工作時回傳錯誤 `JOBS_RUNNING`；否則啟動分離的 `ytm-host --uninstall --delay 2` 後回傳 `{ok: true}`，2 秒後刪除安裝資料夾（含工具與記錄檔）、原生訊息設定檔與登錄機碼 |
