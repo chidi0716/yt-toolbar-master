@@ -90,9 +90,6 @@ func LayoutFor(goos, home string, getenv func(string) string) Layout {
 // BinDir 回傳安裝資料夾中放工具的資料夾。
 func BinDir() string { return CurrentLayout().BinDir }
 
-// InstallDir 回傳安裝資料夾。
-func InstallDir() string { return DataDir() }
-
 // SameFile 回傳兩個路徑是否指向同一個檔案（不存在時比較字串）。
 func SameFile(a, b string) bool {
 	sa, err1 := os.Stat(a)

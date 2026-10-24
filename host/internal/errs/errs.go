@@ -58,17 +58,6 @@ const (
 	Unknown Code = "UNKNOWN"
 )
 
-// All 列出全部代碼，供測試與文件對照。
-var All = []Code{
-	InvalidRequest, UnknownCommand, InvalidArgs, ResponseTooLarge,
-	YtDlpNotFound, FFmpegNotFound, DenoNotFound, UnsupportedPlatform,
-	YtDlpOutdated, LoginRequired, VerificationRequired, VideoUnavailable, LiveNotSupported,
-	FormatUnavailable, NoSubtitles, Network, DiskFull, PermissionDenied, Timeout, UpdateFailed,
-	JobNotFound, JobNotFinished, FileNotFound, TooManyJobs, Busy, Interrupted,
-	JobsRunning, ManifestInvalid, ChecksumMismatch,
-	Unknown,
-}
-
 // Error 是帶有固定代碼的錯誤。
 type Error struct {
 	Code    Code   `json:"code"`

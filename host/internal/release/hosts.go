@@ -107,8 +107,3 @@ func AllowedURLString(s string) bool {
 func ProjectDownloadURL(tag, name string) string {
 	return "https://github.com/" + Repo + "/releases/download/" + tag + "/" + name
 }
-
-// IsProjectReleaseURL 回傳 s 是否是本專案 Release 的固定版本檔案網址（不是 latest）。
-func IsProjectReleaseURL(s string) bool {
-	return strings.HasPrefix(s, "https://github.com/"+Repo+"/releases/download/") && AllowedURLString(s)
-}
