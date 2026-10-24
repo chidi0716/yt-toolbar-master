@@ -9,14 +9,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/errs"
-	"github.com/chidi0716/youtube-extension/host/internal/jobs"
-	"github.com/chidi0716/youtube-extension/host/internal/platform"
-	"github.com/chidi0716/youtube-extension/host/internal/protocol"
-	"github.com/chidi0716/youtube-extension/host/internal/release"
-	"github.com/chidi0716/youtube-extension/host/internal/updater"
-	"github.com/chidi0716/youtube-extension/host/internal/validate"
-	"github.com/chidi0716/youtube-extension/host/internal/ytdlp"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/jobs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/protocol"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/release"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/updater"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/ytdlp"
 )
 
 // App 實作 commands.Backend。

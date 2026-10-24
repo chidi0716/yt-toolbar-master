@@ -1,7 +1,7 @@
 #!/bin/sh
 # 移除下載功能（macOS）。plan 4.8、4.9、002 FR-77、008 FR-31。
 #
-#   curl -fsSL https://github.com/chidi0716/youtube-extension/releases/latest/download/uninstall.sh | sh
+#   curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.sh | sh
 #   （或手動安裝的資料夾中：sh uninstall.sh）
 #
 # 移除安裝時建立的所有檔案：專屬資料夾（小幫手、yt-dlp、deno、ffmpeg、狀態）、

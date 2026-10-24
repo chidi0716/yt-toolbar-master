@@ -3,7 +3,7 @@ package platform
 import (
 	"testing"
 
-	"github.com/chidi0716/youtube-extension/host/internal/testenv"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/testenv"
 )
 
 func TestMain(m *testing.M) { testenv.Main(m) }

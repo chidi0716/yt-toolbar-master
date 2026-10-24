@@ -2,6 +2,8 @@
 
 依 plan 3.3 固定。原生訊息設定檔（T15 的安裝腳本與範本）必須使用以下值。
 
+專案改名為 YT Toolbar Master（T52）後，這些值**維持不變**，否則已安裝的版本與小幫手會失聯（plan 3.3）。
+
 | 項目 | 值 | 用在哪裡 |
 |---|---|---|
 | Chrome 擴充功能 ID | `bkjlangdjfpllnkcpfpdlajchbginjdj` | Chrome 原生訊息設定檔的 `allowed_origins`：`chrome-extension://bkjlangdjfpllnkcpfpdlajchbginjdj/` |

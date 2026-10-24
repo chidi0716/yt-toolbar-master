@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/chidi0716/youtube-extension/host/internal/validate"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
 )
 
 // 橋接程式輸出中用來辨識的前綴。yt-dlp 的 %(...)j 會把非 ASCII 字元跳脫成 \uXXXX，

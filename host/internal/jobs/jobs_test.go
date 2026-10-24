@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/errs"
-	"github.com/chidi0716/youtube-extension/host/internal/testenv"
-	"github.com/chidi0716/youtube-extension/host/internal/validate"
-	"github.com/chidi0716/youtube-extension/host/internal/ytdlp"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/testenv"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/ytdlp"
 )
 
 func TestMain(m *testing.M) { testenv.Main(m) }

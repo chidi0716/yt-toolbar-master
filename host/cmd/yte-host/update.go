@@ -6,12 +6,12 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/installer"
-	"github.com/chidi0716/youtube-extension/host/internal/logx"
-	"github.com/chidi0716/youtube-extension/host/internal/platform"
-	"github.com/chidi0716/youtube-extension/host/internal/release"
-	"github.com/chidi0716/youtube-extension/host/internal/updater"
-	"github.com/chidi0716/youtube-extension/host/internal/ytdlp"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/installer"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/logx"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/release"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/updater"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/ytdlp"
 )
 
 // MaxUpdateDuration 是一次 --update 的時間上限（等待下載最多 6 小時，加上下載與替換的時間）。

@@ -247,7 +247,7 @@ export function createFloating(): FloatingFeature {
     container = next;
     const target = container?.parentElement ?? null;
     if (!target) {
-      console.info('[youtube-extension] floating player: player container not found');
+      console.info('[yt-toolbar-master] floating player: player container not found');
       disconnect();
       return;
     }

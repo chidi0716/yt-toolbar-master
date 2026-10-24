@@ -4,7 +4,7 @@
 //   yte-host-darwin-arm64、yte-host-darwin-amd64、yte-host-windows-amd64.exe
 // 並組出「手動安裝」用的資料夾（008 FR-16；執行檔＋安裝／解除安裝腳本，
 // 原生訊息設定檔由小幫手的 --install --offline 寫入）：
-//   youtube-extension-host-macos/、youtube-extension-host-windows/
+//   yt-toolbar-master-host-macos/、yt-toolbar-master-host-windows/
 // 以 Node 撰寫，在 macOS、Windows、Linux 上都能執行；需要已安裝 Go。
 import { execFileSync } from 'node:child_process';
 import { chmodSync, copyFileSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
@@ -47,12 +47,12 @@ for (const target of targets) {
 
 const packages = [
   {
-    name: 'youtube-extension-host-macos',
+    name: 'yt-toolbar-master-host-macos',
     os: 'darwin',
     scripts: [join('macos', 'install.sh'), join('macos', 'uninstall.sh')],
   },
   {
-    name: 'youtube-extension-host-windows',
+    name: 'yt-toolbar-master-host-windows',
     os: 'windows',
     scripts: [join('windows', 'install.ps1'), join('windows', 'uninstall.ps1')],
   },

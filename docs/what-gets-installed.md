@@ -16,7 +16,7 @@ The extension's Video and MP3 downloads need a few programs on your computer. Th
 
 | Program | What it does | Where it comes from |
 |---|---|---|
-| **Helper** (`yte-host`) | A small program from this project that lets the browser extension use the programs below. It only accepts a fixed set of commands from this extension, never web addresses or arbitrary commands. | [This project's GitHub releases](https://github.com/chidi0716/youtube-extension/releases) |
+| **Helper** (`yte-host`) | A small program from this project that lets the browser extension use the programs below. It only accepts a fixed set of commands from this extension, never web addresses or arbitrary commands. | [This project's GitHub releases](https://github.com/chidi0716/yt-toolbar-master/releases) |
 | **yt-dlp** | The open-source program that actually downloads videos and audio from YouTube. | [yt-dlp on GitHub](https://github.com/yt-dlp/yt-dlp/releases) (official releases) |
 | **ffmpeg** and **ffprobe** | Join the video and audio tracks, convert audio to MP3, add covers and chapters. | macOS: [ffmpeg.martin-riedl.de](https://ffmpeg.martin-riedl.de) · Windows: [yt-dlp/FFmpeg-Builds](https://github.com/yt-dlp/FFmpeg-Builds/releases) (maintained by the yt-dlp team) |
 | **deno** | A JavaScript runtime that yt-dlp needs to see all of YouTube's formats. | [deno on GitHub](https://github.com/denoland/deno/releases) (official releases) |
@@ -64,8 +64,8 @@ No other servers are contacted. There is no analytics, tracking or telemetry. Vi
 
 - **From the extension:** settings page → **Downloads** → **Remove download feature**. It deletes the folder above (helper, yt-dlp, deno, ffmpeg, log) and the browser registration.
 - **Without the extension:**
-  - macOS (Terminal): `curl -fsSL https://github.com/chidi0716/youtube-extension/releases/latest/download/uninstall.sh | sh`
-  - Windows (PowerShell): `irm https://github.com/chidi0716/youtube-extension/releases/latest/download/uninstall.ps1 | iex`
+  - macOS (Terminal): `curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.sh | sh`
+  - Windows (PowerShell): `irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.ps1 | iex`
 
 Your downloaded videos and MP3 files are never removed. Programs you installed yourself are not touched.
 

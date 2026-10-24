@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/chidi0716/youtube-extension/host/internal/platform"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
 )
 
 // Env 是尋找執行檔時用到的環境，方便在測試中替換。

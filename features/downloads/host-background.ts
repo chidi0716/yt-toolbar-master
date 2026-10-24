@@ -19,7 +19,7 @@ import {
 import { downloadDir, embedInfo, namePreset } from '@/utils/settings';
 import { applyEvent, errorInfo, isActive, isFinal, markMissing, mergeHostJobs, newJob, pruneJobs, type DownloadRequest, type JobRecord } from './jobs';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 const INFO_TTL_MS = 30 * 60_000;
 const STATUS_TTL_MS = 60_000;
 const NOTIFICATION_PREFIX = 'yte-job:';

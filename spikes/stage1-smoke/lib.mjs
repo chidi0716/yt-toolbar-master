@@ -95,7 +95,7 @@ export async function launch({ lang = 'en-US', name = 'fixture', viewport, color
       join(profile, 'NativeMessagingHosts', 'com.chidi0716.youtube_extension.json'),
       JSON.stringify({
         name: 'com.chidi0716.youtube_extension',
-        description: 'youtube-extension helper (test)',
+        description: 'yt-toolbar-master helper (test)',
         path: nativeHost,
         type: 'stdio',
         allowed_origins: [`chrome-extension://${EXT_ID}/`],

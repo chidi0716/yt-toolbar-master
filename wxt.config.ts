@@ -10,7 +10,7 @@ const GECKO_ID = 'youtube-extension@chidi0716';
 
 // Firefox：簽署版由瀏覽器依這個網址自動更新（plan 4.10、008 FR-23）。網址會轉址到最新正式版本
 // （不含預先發行版本）的 updates.json，由發佈流程產生。
-const GECKO_UPDATE_URL = 'https://github.com/chidi0716/youtube-extension/releases/latest/download/updates.json';
+const GECKO_UPDATE_URL = 'https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/updates.json';
 
 // See https://wxt.dev/api/reference/wxt/interfaces/inlineconfig.html
 export default defineConfig({

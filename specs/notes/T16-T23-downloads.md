@@ -137,7 +137,7 @@ BiDi 不能導覽到 `moz-extension:`，以 `--remote-allow-system-access` 從�
 
 1. **安裝工具**：`brew install yt-dlp ffmpeg deno`；確認 `yt-dlp --version`、`ffmpeg -version`、`deno --version` 都有輸出。
 2. **建置**：在 repo 中 `npm install`、`npm run build`、`npm run build:firefox`、`npm run build:host`（需要 Go 1.24 以上）。
-3. **安裝橋接程式**：`sh host/dist/youtube-extension-host-macos/install.sh`（不要 sudo）。
+3. **安裝橋接程式**：`sh host/dist/yt-toolbar-master-host-macos/install.sh`（不要 sudo）。
 4. **載入擴充功能**：Chrome 在 `chrome://extensions` 開啟開發人員模式，「載入未封裝項目」選 `.output/chrome-mv3`（ID 應為 `bkjlangdjfpllnkcpfpdlajchbginjdj`）；
    Firefox 如上。重新啟動瀏覽器。
 5. **未安裝狀態（先做）**：安裝橋接程式之前（或執行 `uninstall.sh` 後），開一部影片的「影片」「MP3」面板：顯示四個元件、macOS 安裝步驟與「重新檢查」；
@@ -159,4 +159,4 @@ BiDi 不能導覽到 `moz-extension:`，以 `--remote-allow-system-access` 從�
 15. **只缺 deno**：`brew uninstall deno` 後按「重新檢查」：仍可下載，面板上方顯示建議安裝 deno 的提示與 `brew install deno`；測完 `brew install deno`。
 16. **錯誤訊息**：拔掉網路後下載顯示「網路連線問題，請重試」與「重試」；會員限定或年齡限制影片顯示需要登入。
 17. **直播**：直播中的影片，影片、MP3、字幕面板都顯示無法下載。
-18. **解除安裝**：`sh host/dist/youtube-extension-host-macos/uninstall.sh` 後面板回到未安裝狀態。
+18. **解除安裝**：`sh host/dist/yt-toolbar-master-host-macos/uninstall.sh` 後面板回到未安裝狀態。

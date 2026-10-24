@@ -220,7 +220,7 @@ for (const [flag, what, step] of [
       check(
         `${what}：按鈕提示說明可能原因（含其他擴充功能接管主題），console 記錄失敗的步驟（FR-15）`,
         tip.notice && tip.text === HINT_EN && logs.some((l) => l.includes(step)),
-        `${JSON.stringify(tip)} ${logs.filter((l) => l.includes('youtube-extension')).join(' | ')}`,
+        `${JSON.stringify(tip)} ${logs.filter((l) => l.includes('yt-toolbar-master')).join(' | ')}`,
       );
       if (flag === 'fixture_no_appearance=1') {
         await shot(page, 'T06e-unavailable-hint.png', { x: 0, y: 0, width: 900, height: 740 });

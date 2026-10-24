@@ -16,7 +16,7 @@
 
 | 程式 | 用途 | 來源 |
 |---|---|---|
-| **小幫手**（`yte-host`） | 本專案的小程式，讓瀏覽器擴充功能能使用下面的程式。只接受本擴充功能的固定指令，不接受網址或任意命令。 | [本專案的 GitHub 正式版本](https://github.com/chidi0716/youtube-extension/releases) |
+| **小幫手**（`yte-host`） | 本專案的小程式，讓瀏覽器擴充功能能使用下面的程式。只接受本擴充功能的固定指令，不接受網址或任意命令。 | [本專案的 GitHub 正式版本](https://github.com/chidi0716/yt-toolbar-master/releases) |
 | **yt-dlp** | 實際從 YouTube 下載影片與音訊的開源程式。 | [yt-dlp 的 GitHub](https://github.com/yt-dlp/yt-dlp/releases)（官方正式版本） |
 | **ffmpeg** 與 **ffprobe** | 合併影像與聲音、把聲音轉成 MP3、嵌入封面與章節。 | macOS：[ffmpeg.martin-riedl.de](https://ffmpeg.martin-riedl.de)；Windows：[yt-dlp/FFmpeg-Builds](https://github.com/yt-dlp/FFmpeg-Builds/releases)（yt-dlp 團隊維護） |
 | **deno** | yt-dlp 需要的 JavaScript 執行環境，讓它看得到 YouTube 的全部格式。 | [deno 的 GitHub](https://github.com/denoland/deno/releases)（官方正式版本） |
@@ -64,8 +64,8 @@
 
 - **從擴充功能**：設定頁 →「下載」→「移除下載功能」。會刪除上面的資料夾（小幫手、yt-dlp、deno、ffmpeg、記錄檔）與瀏覽器註冊。
 - **擴充功能已經移除時**：
-  - macOS（終端機）：`curl -fsSL https://github.com/chidi0716/youtube-extension/releases/latest/download/uninstall.sh | sh`
-  - Windows（PowerShell）：`irm https://github.com/chidi0716/youtube-extension/releases/latest/download/uninstall.ps1 | iex`
+  - macOS（終端機）：`curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.sh | sh`
+  - Windows（PowerShell）：`irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.ps1 | iex`
 
 已下載的影片與 MP3 不會被刪除，你自己安裝的程式也不會被動到。
 

@@ -58,7 +58,7 @@ const shot = async (page, name, { wide = false } = {}) => {
 
 const page = context.pages()[0] ?? (await context.newPage());
 page.on('console', (msg) => {
-  if (msg.text().includes('[youtube-extension]')) console.log('  console:', msg.text());
+  if (msg.text().includes('[yt-toolbar-master]')) console.log('  console:', msg.text());
 });
 page.on('pageerror', (err) => console.log('  pageerror:', String(err).slice(0, 200)));
 

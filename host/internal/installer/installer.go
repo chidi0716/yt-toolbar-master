@@ -15,9 +15,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/chidi0716/youtube-extension/host/internal/errs"
-	"github.com/chidi0716/youtube-extension/host/internal/platform"
-	"github.com/chidi0716/youtube-extension/host/internal/release"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/release"
 )
 
 // Installer 是一次安裝。

@@ -9,7 +9,7 @@ import { player } from '@/utils/youtube/player';
 import { Icon } from '../icons';
 import { PanelError, PanelLoading } from './PanelStatus';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 const COPIED_MS = 2000;
 const PREVIEW_MAX = 52;
 

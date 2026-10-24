@@ -3,7 +3,7 @@ package ytdlp
 import (
 	"strings"
 
-	"github.com/chidi0716/youtube-extension/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
 )
 
 // rule 把 yt-dlp 錯誤訊息中的關鍵字（不分大小寫）對應到錯誤代碼。依順序比對，先符合者優先。

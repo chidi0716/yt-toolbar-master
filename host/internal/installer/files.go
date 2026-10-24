@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/errs"
-	"github.com/chidi0716/youtube-extension/host/internal/release"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/release"
 )
 
 // maxExtracted 是從壓縮檔取出的單一檔案大小上限（Windows 的 ffmpeg.exe 約 190 MB）。

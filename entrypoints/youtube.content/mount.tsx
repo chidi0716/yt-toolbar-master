@@ -30,7 +30,7 @@ import { normalizeLayout, type ToolbarLayout } from '@/utils/toolbar-layout';
 import { WATCH_HOSTS, findPlayer, findToolbarAnchor } from '@/utils/youtube/dom';
 import { getVideoId, isWatchPage, onNavigate } from '@/utils/youtube/page';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 /** 首次載入時等待錨點出現的上限；超過就安靜放棄（constitution 第 7 點）。 */
 const ANCHOR_WAIT_MS = 20_000;
 

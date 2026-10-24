@@ -33,7 +33,7 @@ while [ \$# -gt 0 ]; do
   esac
 done
 case "\$url" in
-  https://github.com/chidi0716/youtube-extension/releases/download/$tag/*) ;;
+  https://github.com/chidi0716/yt-toolbar-master/releases/download/$tag/*) ;;
   *) echo "unexpected url \$url" >&2; exit 22 ;;
 esac
 name="\${url##*/}"

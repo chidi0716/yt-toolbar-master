@@ -1,6 +1,6 @@
 ﻿# One-line installer for the download helper (Windows). plan 4.9, 008 FR-10, FR-11.
 #
-#   irm https://github.com/chidi0716/youtube-extension/releases/latest/download/install.ps1 | iex
+#   irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.ps1 | iex
 #
 # This script only does three things; the helper (yte-host --install) does the rest and explains each step:
 #   1. Download components.json and the helper over HTTPS from the same (fixed-version) GitHub release of this project.
@@ -17,7 +17,7 @@
     $ErrorActionPreference = 'Stop'
     $ProgressPreference = 'SilentlyContinue'
     $Tag = '@RELEASE_TAG@'
-    $Base = "https://github.com/chidi0716/youtube-extension/releases/download/$Tag"
+    $Base = "https://github.com/chidi0716/yt-toolbar-master/releases/download/$Tag"
     $Platform = 'windows-amd64'
     $Helper = 'yte-host-windows-amd64.exe'
 

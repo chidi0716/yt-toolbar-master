@@ -99,6 +99,7 @@ host/                           橋接程式（Go），見第 4 節
 - **Chrome**：在 `wxt.config.ts` 的 manifest 加入固定的 `key`（公鑰），讓未封裝載入的 ID 永遠相同。金鑰在實作時產生一次，只提交公鑰，私鑰不進 repo。
 - **Firefox**：`browser_specific_settings.gecko.id` 改為 `youtube-extension@chidi0716`。
 - Chrome 不打包 `.crx`（Chrome 不允許安裝商店以外的 `.crx`），因此不需要保留私鑰；只以「載入未封裝項目」安裝。
+- **改名後保留舊名的識別碼**（T52）：專案改名為「YT Toolbar Master」（repo `chidi0716/yt-toolbar-master`）後，以下識別碼**刻意維持舊名**：Chrome `key`（擴充功能 ID）、Firefox `gecko.id`（`youtube-extension@chidi0716`）、原生訊息名稱 `com.chidi0716.youtube_extension`、安裝資料夾 `youtube-extension-host`、記錄檔位置（`~/Library/Logs/youtube-extension-host/`、`%LOCALAPPDATA%\youtube-extension-host\logs\`）。原因：使用者看不到這些名稱；改了之後，Firefox 會把新版當成另一個附加元件（舊版不會自動更新）、Chrome 的擴充功能 ID 改變後原生訊息設定檔的 `allowed_origins` 不再相符，已安裝的小幫手、自動更新與記錄檔都會失聯。顯示名稱、網址、Go module 路徑、發佈檔名（`yt-toolbar-master-…`）、原生訊息設定檔的 `description` 與 console 記錄的前綴（`[yt-toolbar-master]`）改用新名稱。
 
 ### 3.3.1 Firefox 發佈方式
 
@@ -440,7 +441,7 @@ install/
 
 - `.github/workflows/release.yml`，在推送 `v*` 標籤時執行：
   1. `npm ci`、`npm test`、`npm run compile`、`go test ./...`。
-  2. 建置 Chrome 版 zip 與 Firefox 版；Firefox 以 `web-ext sign --channel unlisted` 送簽署（Secrets：`AMO_JWT_ISSUER`、`AMO_JWT_SECRET`，上傳原始碼同 3.3.1）。**Secrets 尚未設定時略過簽署**，附上未簽署的 `youtube-extension-<版本>-firefox-temporary.zip`，不產生 `updates.json`，Release 說明加註「Firefox／Zen 版本尚未簽署，只能以臨時附加元件載入」（008 FR-52）。
+  2. 建置 Chrome 版 zip 與 Firefox 版；Firefox 以 `web-ext sign --channel unlisted` 送簽署（Secrets：`AMO_JWT_ISSUER`、`AMO_JWT_SECRET`，上傳原始碼同 3.3.1）。**Secrets 尚未設定時略過簽署**，附上未簽署的 `yt-toolbar-master-<版本>-firefox-temporary.zip`，不產生 `updates.json`，Release 說明加註「Firefox／Zen 版本尚未簽署，只能以臨時附加元件載入」（008 FR-52）。
   3. 建置三種小幫手。
   4. 依 `release/components.lock.json` 產生並驗證 `components.json`。
   5. 產生 `updates.json`（Firefox 更新資訊，列出這個版本與 `.xpi` 的下載網址）。

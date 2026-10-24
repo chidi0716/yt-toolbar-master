@@ -13,7 +13,7 @@ export type HostState =
   | { state: 'connected'; status: HostStatusResult };
 
 /** README 的安裝章節（QUESTIONS Q33）。 */
-export const INSTALL_GUIDE_URL = 'https://github.com/chidi0716/youtube-extension#install-the-helper';
+export const INSTALL_GUIDE_URL = 'https://github.com/chidi0716/yt-toolbar-master#install-the-helper';
 
 /** 可以下載（yt-dlp 與 ffmpeg 都可用）。 */
 export const canDownload = (s: HostState): s is Extract<HostState, { state: 'connected' }> => s.state === 'connected' && s.status.ready;

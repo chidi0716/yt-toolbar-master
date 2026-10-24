@@ -34,7 +34,7 @@ import { hostUpdateHintDismissed } from '@/utils/settings';
 import { Button } from '../controls/Button';
 import { Icon } from '../icons';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 
 const COMPONENT_LABELS: Record<HostComponent, MessageKey> = {
   host: 'hostComponentHelper',

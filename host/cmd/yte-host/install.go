@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/installer"
-	"github.com/chidi0716/youtube-extension/host/internal/jobs"
-	"github.com/chidi0716/youtube-extension/host/internal/platform"
-	"github.com/chidi0716/youtube-extension/host/internal/release"
-	"github.com/chidi0716/youtube-extension/host/internal/ytdlp"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/installer"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/jobs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/release"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/ytdlp"
 )
 
 // UninstallRetry 是移除安裝資料夾時重試的時間（Windows 上剛結束的小幫手可能還鎖著檔案）。

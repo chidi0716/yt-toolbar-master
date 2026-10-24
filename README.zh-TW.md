@@ -1,4 +1,4 @@
-# youtube-extension
+# YT Toolbar Master
 
 [English](./README.md) | **繁體中文**
 
@@ -69,7 +69,7 @@ YouTube 上的工具列  →  擴充功能背景腳本  →  本機橋接程式 
 1. 按 ⌘＋空白鍵，輸入「終端機」並按 Enter。
 2. 貼上這行指令並按 Enter：
    ```bash
-   curl -fsSL https://github.com/chidi0716/youtube-extension/releases/latest/download/install.sh | sh
+   curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.sh | sh
    ```
 3. 看到「完成」後回到瀏覽器，影片與 MP3 面板會自動切換成可下載的畫面。
 
@@ -78,7 +78,7 @@ YouTube 上的工具列  →  擴充功能背景腳本  →  本機橋接程式 
 1. 按開始鍵，輸入「PowerShell」並開啟。
 2. 貼上這行指令並按 Enter：
    ```powershell
-   irm https://github.com/chidi0716/youtube-extension/releases/latest/download/install.ps1 | iex
+   irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.ps1 | iex
    ```
 3. 看到「完成」後回到瀏覽器，影片與 MP3 面板會自動切換成可下載的畫面。
 
@@ -86,7 +86,7 @@ YouTube 上的工具列  →  擴充功能背景腳本  →  本機橋接程式 
 
 ### 這個指令會做什麼？
 
-1. 從本專案的 [GitHub 正式版本](https://github.com/chidi0716/youtube-extension/releases)下載對應系統的小幫手，並與發佈清單（`components.json`）核對 SHA-256。
+1. 從本專案的 [GitHub 正式版本](https://github.com/chidi0716/yt-toolbar-master/releases)下載對應系統的小幫手，並與發佈清單（`components.json`）核對 SHA-256。
 2. 小幫手檢查發佈清單（只接受以 HTTPS 從本專案 GitHub 正式版本取得的清單），再下載：
    - yt-dlp：[yt-dlp 官方正式版本](https://github.com/yt-dlp/yt-dlp/releases)，核對官方檢查碼；
    - deno：[deno 官方正式版本](https://github.com/denoland/deno/releases)，核對官方檢查碼；
@@ -100,13 +100,13 @@ YouTube 上的工具列  →  擴充功能背景腳本  →  本機橋接程式 
 **想先看過腳本再執行？** 先下載、閱讀，再執行：
 
 ```bash
-curl -fsSL -o install.sh https://github.com/chidi0716/youtube-extension/releases/latest/download/install.sh
+curl -fsSL -o install.sh https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.sh
 less install.sh
 sh install.sh
 ```
 
 ```powershell
-irm https://github.com/chidi0716/youtube-extension/releases/latest/download/install.ps1 -OutFile install.ps1
+irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.ps1 -OutFile install.ps1
 notepad install.ps1
 powershell -ExecutionPolicy Bypass -File install.ps1
 ```
@@ -125,11 +125,11 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 擴充功能已經移除時，執行：
 
 ```bash
-curl -fsSL https://github.com/chidi0716/youtube-extension/releases/latest/download/uninstall.sh | sh
+curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.sh | sh
 ```
 
 ```powershell
-irm https://github.com/chidi0716/youtube-extension/releases/latest/download/uninstall.ps1 | iex
+irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.ps1 | iex
 ```
 
 ### 手動安裝
@@ -137,7 +137,7 @@ irm https://github.com/chidi0716/youtube-extension/releases/latest/download/unin
 想自己安裝 yt-dlp、ffmpeg、deno，或從原始碼建置小幫手時：
 
 1. 安裝這些工具，例如以 [Homebrew](https://brew.sh)（`brew install yt-dlp ffmpeg deno`）或 [winget](https://learn.microsoft.com/windows/package-manager/winget/)（`winget install yt-dlp.yt-dlp Gyan.FFmpeg DenoLand.Deno`）。
-2. 取得小幫手：從[版本頁面](https://github.com/chidi0716/youtube-extension/releases)下載 `youtube-extension-host-macos.zip` 或 `youtube-extension-host-windows.zip` 並解壓縮；或安裝 [Go](https://go.dev/dl/) 1.24 以上與 Node.js 後執行 `npm run build:host`（輸出在 `host/dist/`）。
+2. 取得小幫手：從[版本頁面](https://github.com/chidi0716/yt-toolbar-master/releases)下載 `yt-toolbar-master-host-macos.zip` 或 `yt-toolbar-master-host-windows.zip` 並解壓縮；或安裝 [Go](https://go.dev/dl/) 1.24 以上與 Node.js 後執行 `npm run build:host`（輸出在 `host/dist/`）。
 3. 在該資料夾執行腳本（不要加 `sudo`）：
    ```bash
    sh install.sh
@@ -172,13 +172,13 @@ YouTube 經常改版，yt-dlp 會很快跟上。以一行指令安裝時，小�
 在「終端機」以 `curl` 下載的檔案不會被標記為「來自網路」，所以一行指令安裝不會遇到這個問題。若是從瀏覽器下載 zip 手動安裝，請在該資料夾再執行一次 `sh install.sh`（會移除隔離屬性），或改用一行指令安裝；不要加 `sudo`。
 
 **Zen（或其他以 Firefox 為基礎的瀏覽器）找不到橋接程式**
-安裝程式為 Firefox 註冊小幫手，Zen 通常會讀取同一個位置。安裝後請完全結束 Zen 再開啟，並按「重新檢查」。若仍顯示尚未連接，請開 issue 回報 Zen 版本、macOS 或 Windows 版本，以及 `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.youtube_extension.json`（macOS）是否存在；擴充功能主控台（`about:debugging` 中找到本擴充功能，按「檢查」）裡 `[youtube-extension]` 開頭的訊息也很有幫助。
+安裝程式為 Firefox 註冊小幫手，Zen 通常會讀取同一個位置。安裝後請完全結束 Zen 再開啟，並按「重新檢查」。若仍顯示尚未連接，請開 issue 回報 Zen 版本、macOS 或 Windows 版本，以及 `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.youtube_extension.json`（macOS）是否存在；擴充功能主控台（`about:debugging` 中找到本擴充功能，按「檢查」）裡 `[yt-toolbar-master]` 開頭的訊息也很有幫助。
 
 **下載失敗，顯示「無法寫入下載資料夾」**
 設定頁選擇的資料夾被移動或刪除、磁碟已滿，或資料夾沒有寫入權限。請在設定頁改選其他資料夾或按「使用預設」。macOS 上「桌面」「文件」等資料夾可能需要授權：出現詢問是否允許存取時請允許。
 
 **Firefox 重新啟動後擴充功能不見了**
-從 `about:debugging` 載入的是暫時附加元件，Firefox 重新啟動後會被移除。請改從[版本頁面](https://github.com/chidi0716/youtube-extension/releases)下載簽署過的 `.xpi` 安裝（見[手動載入擴充功能](#手動載入擴充功能)），它也會自動更新。
+從 `about:debugging` 載入的是暫時附加元件，Firefox 重新啟動後會被移除。請改從[版本頁面](https://github.com/chidi0716/yt-toolbar-master/releases)下載簽署過的 `.xpi` 安裝（見[手動載入擴充功能](#手動載入擴充功能)），它也會自動更新。
 
 ## 開發
 
@@ -204,7 +204,7 @@ npm run release:dry     # 不需要 Secret，產生所有發佈檔案 → releas
 
 ## 手動載入擴充功能
 
-[版本頁面](https://github.com/chidi0716/youtube-extension/releases)有打包好的 `youtube-extension-<版本>-chrome.zip` 與 `youtube-extension-<版本>-firefox.xpi`（尚未經 Mozilla 簽署的版本改附 `youtube-extension-<版本>-firefox-temporary.zip`，Firefox 與 Zen 只能以臨時附加元件載入）。使用自己建置的版本時，改用 `.output/chrome-mv3` 或 `.output/firefox-mv3`。
+[版本頁面](https://github.com/chidi0716/yt-toolbar-master/releases)有打包好的 `yt-toolbar-master-<版本>-chrome.zip` 與 `yt-toolbar-master-<版本>-firefox.xpi`（尚未經 Mozilla 簽署的版本改附 `yt-toolbar-master-<版本>-firefox-temporary.zip`，Firefox 與 Zen 只能以臨時附加元件載入）。使用自己建置的版本時，改用 `.output/chrome-mv3` 或 `.output/firefox-mv3`。
 
 - **Chrome**：把 Chrome 版解壓縮到一個會保留的資料夾，開啟 `chrome://extensions`，打開「開發人員模式」，點「載入未封裝項目」，選擇該資料夾（或 `.output/chrome-mv3`）。Chrome 無法自動更新這個擴充功能；有新版本時擴充功能會顯示提醒。更新方式：把新版本解壓縮覆蓋同一個資料夾，再到 `chrome://extensions` 按「重新載入」。
 - **Firefox（開發用）**：開啟 `about:debugging#/runtime/this-firefox`，點「載入臨時附加元件」，選擇 `.output/firefox-mv3/manifest.json`。臨時附加元件在 Firefox 重新啟動後會被移除。
@@ -230,7 +230,7 @@ npm run release:dry     # 不需要 Secret，產生所有發佈檔案 → releas
 
 1. **開啟不可變更版本**：repo 的 **Settings → General**，在 **Releases** 區開啟不可變更版本（immutable releases）。之後已發佈的版本與檔案就不能再修改。
 2. 在本機試跑整個流程：`npm run release:dry`（輸出在 `release/dist/`，Firefox 版不送簽署）。
-3. 建立第一個版本（見下方）。不需要任何 Secret：沒有 Mozilla API 金鑰時，Release 會附上未簽署的 `youtube-extension-<版本>-firefox-temporary.zip`（Firefox／Zen 只能以臨時附加元件載入）、不產生 `updates.json`，並在說明中註明。
+3. 建立第一個版本（見下方）。不需要任何 Secret：沒有 Mozilla API 金鑰時，Release 會附上未簽署的 `yt-toolbar-master-<版本>-firefox-temporary.zip`（Firefox／Zen 只能以臨時附加元件載入）、不產生 `updates.json`，並在說明中註明。
 
 **之後（選用）：Firefox／Zen 的 Mozilla 簽署**。在 <https://addons.mozilla.org/developers/addon/api/key/> 建立 API 金鑰，加到 repo 的 Secrets（**Settings → Secrets and variables → Actions → New repository secret**）：`AMO_JWT_ISSUER`（「JWT issuer」）與 `AMO_JWT_SECRET`（「JWT secret」）。下一個版本起 `.xpi` 會經過簽署，Firefox／Zen 也會自動更新。
 

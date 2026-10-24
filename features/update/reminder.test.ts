@@ -5,7 +5,7 @@ import { COLLAPSE_AFTER_MS, createReminderController, PRESENCE_MS, type Reminder
 const view = (patch: Partial<ReminderView> = {}): ReminderView => ({
   currentVersion: '0.1.0',
   eligible: true,
-  latest: { version: '0.2.0', title: 'v0.2.0', url: 'https://github.com/chidi0716/youtube-extension/releases/tag/v0.2.0' },
+  latest: { version: '0.2.0', title: 'v0.2.0', url: 'https://github.com/chidi0716/yt-toolbar-master/releases/tag/v0.2.0' },
   lastCheckedAt: 0,
   lastResult: 'ok',
   disabled: false,
@@ -191,7 +191,7 @@ describe('新版本提醒卡片（008 FR-28、constitution 第 7c 點）', () =>
     c.setConditions(READY);
     c.setView(view());
     c.dismiss();
-    c.setView(view({ latest: { version: '0.3.0', title: 'v0.3.0', url: 'https://github.com/chidi0716/youtube-extension/releases/tag/v0.3.0' } }));
+    c.setView(view({ latest: { version: '0.3.0', title: 'v0.3.0', url: 'https://github.com/chidi0716/yt-toolbar-master/releases/tag/v0.3.0' } }));
     expect(phase()).toBe('card');
     expect(shown).toEqual(['0.2.0', '0.3.0']);
   });

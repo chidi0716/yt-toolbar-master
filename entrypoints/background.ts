@@ -29,7 +29,7 @@ export default defineBackground(() => {
         done.then(
           (view) => sendResponse({ ok: true, view }),
           (err: unknown) => {
-            console.info('[youtube-extension] update reminder failed', err);
+            console.info('[yt-toolbar-master] update reminder failed', err);
             sendResponse({ ok: false, error: 'UNKNOWN' });
           },
         );

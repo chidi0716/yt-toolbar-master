@@ -11,7 +11,7 @@ import { ensurePageStyles } from './page-styles';
 import { createSettingFeature } from './setting-feature';
 import { createStore, type Store, type ToggleState, type ViewingFeature } from './store';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 
 // ---------------------------------------------------------------------------
 // 切換分頁時自動暫停（FR-60）

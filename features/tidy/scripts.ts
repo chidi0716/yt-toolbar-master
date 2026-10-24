@@ -6,7 +6,7 @@ import { player } from '@/utils/youtube/player';
 import type { TidyScriptFeature } from './index';
 import { pickOriginalTrack, shouldAutoContinue } from './script-logic';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 const isMainVideo = (target: EventTarget | null) => !!(target as Element | null)?.matches?.(SELECTORS.video);
 
 // ---------------------------------------------------------------------------

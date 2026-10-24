@@ -87,7 +87,7 @@ data 是頁面 JavaScript 的屬性，只有 main world 讀得到（isolated wor
 5. 再按一次按鈕：回到深色，頭像選單的「外觀」勾選「深色主題」。
 6. 把「外觀」設成「使用裝置主題」再按一次：改為明確的深色或淺色（與目前顯示相反）。
 7. 若按下後按鈕提示出現「無法切換，請使用 YouTube 的外觀設定」，或主題沒有改變，請回報：
-   - 開發者工具 console 中 `[youtube-extension]` 開頭的訊息（含括號中的原因代碼）；
+   - 開發者工具 console 中 `[yt-toolbar-master]` 開頭的訊息（含括號中的原因代碼）；
    - 在 Elements 中選取頭像按鈕，它與上層幾個元素的 tag 與 id。
 
 ## T06e 失敗提示（003 FR-15、FR-91）

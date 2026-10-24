@@ -36,7 +36,7 @@ describe('權限（plan 3.2、constitution 第 4 點）', () => {
       // Firefox 的 update_url 是瀏覽器自己的更新檢查（plan 4.10），不是擴充功能的連線，先取出另外檢查。
       const gecko = (manifest.browser_specific_settings as { gecko?: Record<string, unknown> } | undefined)?.gecko;
       if (browser === 'firefox') {
-        expect(gecko?.update_url).toBe('https://github.com/chidi0716/youtube-extension/releases/latest/download/updates.json');
+        expect(gecko?.update_url).toBe('https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/updates.json');
       }
       const rest = JSON.parse(JSON.stringify(manifest));
       delete rest.browser_specific_settings?.gecko?.update_url;

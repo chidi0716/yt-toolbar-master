@@ -51,7 +51,7 @@ export function createCinema(): CinemaFeature {
 
   function on() {
     if (!findPlayerContainer()) {
-      console.info('[youtube-extension] cinema mode: player container not found');
+      console.info('[yt-toolbar-master] cinema mode: player container not found');
       return;
     }
     ensurePageStyles();

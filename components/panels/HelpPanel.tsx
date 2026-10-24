@@ -10,7 +10,7 @@ import { FIXED, TOOLS } from '../toolbar/buttons';
 function openOptions() {
   const message: ContentMessage = { type: 'openOptions' };
   browser.runtime.sendMessage(message).catch((err: unknown) => {
-    console.info('[youtube-extension] failed to open settings', err);
+    console.info('[yt-toolbar-master] failed to open settings', err);
   });
 }
 

@@ -7,7 +7,7 @@ import { sendToBackground } from './content';
 import type { HostState } from './host-status';
 import type { DownloadRequest, JobRecord } from './jobs';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 
 export class HostError extends Error {
   constructor(readonly code: HostErrorCode) {

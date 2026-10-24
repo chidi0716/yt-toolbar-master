@@ -372,13 +372,13 @@ for (const [task, ua, os] of [
         s.os === os &&
           s.commands.length === 1 &&
           (os === 'mac'
-            ? s.osTitle === 'Install on macOS' && s.commands[0] === 'curl -fsSL https://github.com/chidi0716/youtube-extension/releases/latest/download/install.sh | sh'
-            : s.osTitle === 'Install on Windows' && s.commands[0] === 'irm https://github.com/chidi0716/youtube-extension/releases/latest/download/install.ps1 | iex'),
+            ? s.osTitle === 'Install on macOS' && s.commands[0] === 'curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.sh | sh'
+            : s.osTitle === 'Install on Windows' && s.commands[0] === 'irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.ps1 | iex'),
         `${s.osTitle}: ${s.commands.join(' / ')}`,
       );
       check(
         `${os}：連到 README 的安裝章節（新分頁）（FR-2）`,
-        s.link?.href === 'https://github.com/chidi0716/youtube-extension#install-the-helper' && s.link.target === '_blank' && /noopener/.test(s.link.rel),
+        s.link?.href === 'https://github.com/chidi0716/yt-toolbar-master#install-the-helper' && s.link.target === '_blank' && /noopener/.test(s.link.rel),
         JSON.stringify(s.link),
       );
       await shot(page, `T22a-video-panel-${os}.png`);

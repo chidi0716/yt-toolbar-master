@@ -19,7 +19,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/chidi0716/youtube-extension/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
 )
 
 var (

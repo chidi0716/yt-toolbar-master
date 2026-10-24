@@ -20,12 +20,12 @@ export default defineContentScript({
       });
     } catch (err) {
       // 不得讓 YouTube 頁面出錯（constitution 第 7 點）。
-      console.info('[youtube-extension] page tidy failed to start', err);
+      console.info('[yt-toolbar-master] page tidy failed to start', err);
     }
     try {
       ctx.onInvalidated(watchYouTubeTheme(DARK_THEME_ATTRIBUTE));
     } catch (err) {
-      console.info('[youtube-extension] failed to watch the YouTube theme', err);
+      console.info('[yt-toolbar-master] failed to watch the YouTube theme', err);
     }
   },
 });

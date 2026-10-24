@@ -6,7 +6,7 @@ import { findVideo } from '@/utils/youtube/dom';
 import { getVideoId } from '@/utils/youtube/page';
 import { player } from '@/utils/youtube/player';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 
 /** 送訊息給背景腳本；背景腳本沒有回覆或出錯時視為失敗。 */
 export async function sendToBackground<T extends Record<string, unknown> = Record<string, never>>(

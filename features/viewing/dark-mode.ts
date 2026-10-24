@@ -18,7 +18,7 @@ import { describeFailure, switchThemeWithMenu, type AppearanceMenuDeps, type The
 import { THEME_MENU_BUSY_CLASS, ensurePageStyles } from './page-styles';
 import { createStore, type ToggleState, type ViewingFeature } from './store';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 /**
  * 無法切換時，按鈕提示顯示說明的時間（003 FR-15，約 6 秒）。時間到時滑鼠仍在按鈕上，
  * 工具列會讓提示留到滑鼠移開為止。一次性的計時器（001 NFR-3）。

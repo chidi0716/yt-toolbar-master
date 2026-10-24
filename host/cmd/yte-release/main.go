@@ -20,7 +20,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/chidi0716/youtube-extension/host/internal/release"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/release"
 )
 
 func main() {

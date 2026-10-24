@@ -26,7 +26,7 @@ install/
 spikes/stage3/                冒煙測試與安裝腳本的模擬測試（.cache/ 不進版控）
 ```
 
-`npm run build:host` 產出 `host/dist/yte-host-darwin-arm64`、`yte-host-darwin-amd64`、`yte-host-windows-amd64.exe`，並組出 `host/dist/youtube-extension-host-macos/` 與 `-windows/` 兩個安裝資料夾。`npm run test:host` 執行 `go vet` 與 `go test`。
+`npm run build:host` 產出 `host/dist/yte-host-darwin-arm64`、`yte-host-darwin-amd64`、`yte-host-windows-amd64.exe`，並組出 `host/dist/yt-toolbar-master-host-macos/` 與 `-windows/` 兩個安裝資料夾。`npm run test:host` 執行 `go vet` 與 `go test`。
 
 依賴：只有 `golang.org/x/sys`（v0.30.0，Windows 的 Job Object 與已知資料夾）。`go.mod` 維持 `go 1.24`；建置時設定 `GOTOOLCHAIN=local`，不自動下載其他版本的 Go。
 
@@ -130,7 +130,7 @@ spikes/stage3/                冒煙測試與安裝腳本的模擬測試（.cach
 
 ## 需要專案擁有者在 macOS 上手動驗證
 
-1. `npm run build:host`，再執行 `sh host/dist/youtube-extension-host-macos/install.sh`（不加 sudo）。確認輸出中兩個「Registered」路徑存在，且 `~/Library/Application Support/youtube-extension-host/yte-host --version` 印出版本。
+1. `npm run build:host`，再執行 `sh host/dist/yt-toolbar-master-host-macos/install.sh`（不加 sudo）。確認輸出中兩個「Registered」路徑存在，且 `~/Library/Application Support/youtube-extension-host/yte-host --version` 印出版本。
 2. 未安裝 yt-dlp、ffmpeg 或 deno 時，安裝腳本印出 `brew install yt-dlp ffmpeg deno`；三者都安裝後重新執行不再提示。
 3. 重新啟動 Chrome，在擴充功能的背景頁主控台執行：
    ```js
@@ -147,7 +147,7 @@ spikes/stage3/                冒煙測試與安裝腳本的模擬測試（.cach
 9. `{"id":"6","cmd":"pickFolder"}`：出現選擇資料夾視窗且在瀏覽器前面；選擇後回傳路徑，按取消回傳 `cancelled: true`。若出現「要求控制其他 App」的權限提示，請回報。
 10. `{"id":"7","cmd":"updateYtDlp"}`：Homebrew 安裝時回傳 `ran: false` 與 `brew upgrade yt-dlp`。
 11. 查看 `~/Library/Logs/youtube-extension-host/host.log`：只有指令名稱、工作狀態與錯誤代碼，路徑中的家目錄顯示為 `~`。
-12. 執行 `sh host/dist/youtube-extension-host-macos/uninstall.sh`，確認上述設定檔、`~/Library/Application Support/youtube-extension-host/` 與記錄檔資料夾都已刪除，重新檢查時顯示找不到橋接程式。
+12. 執行 `sh host/dist/yt-toolbar-master-host-macos/uninstall.sh`，確認上述設定檔、`~/Library/Application Support/youtube-extension-host/` 與記錄檔資料夾都已刪除，重新檢查時顯示找不到橋接程式。
 
 ## T15a（Q37、Q39 的回答）
 

@@ -1,4 +1,4 @@
-module github.com/chidi0716/youtube-extension/host
+module github.com/chidi0716/yt-toolbar-master/host
 
 go 1.24
 

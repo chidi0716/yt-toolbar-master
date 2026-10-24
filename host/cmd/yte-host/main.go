@@ -21,15 +21,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/app"
-	"github.com/chidi0716/youtube-extension/host/internal/commands"
-	"github.com/chidi0716/youtube-extension/host/internal/installer"
-	"github.com/chidi0716/youtube-extension/host/internal/jobs"
-	"github.com/chidi0716/youtube-extension/host/internal/logx"
-	"github.com/chidi0716/youtube-extension/host/internal/platform"
-	"github.com/chidi0716/youtube-extension/host/internal/protocol"
-	"github.com/chidi0716/youtube-extension/host/internal/validate"
-	"github.com/chidi0716/youtube-extension/host/internal/ytdlp"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/app"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/commands"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/installer"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/jobs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/logx"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/protocol"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/ytdlp"
 )
 
 // version 在建置時以 -ldflags "-X main.version=..." 覆寫。

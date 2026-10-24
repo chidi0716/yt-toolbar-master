@@ -1,7 +1,7 @@
 #!/bin/sh
 # 一行指令安裝下載功能（macOS）。plan 4.9、008 FR-10、FR-11。
 #
-#   curl -fsSL https://github.com/chidi0716/youtube-extension/releases/latest/download/install.sh | sh
+#   curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.sh | sh
 #
 # 這個腳本只做三件事，其餘全部由小幫手（yte-host --install）完成並逐步說明：
 #   1. 以 HTTPS 從本專案同一個 GitHub Release（固定版本）下載 components.json 與這台 Mac 的小幫手；
@@ -12,7 +12,7 @@
 set -eu
 
 TAG="@RELEASE_TAG@"
-BASE="https://github.com/chidi0716/youtube-extension/releases/download/$TAG"
+BASE="https://github.com/chidi0716/yt-toolbar-master/releases/download/$TAG"
 
 say() { printf '%s\n' "$1"; }
 fail() {

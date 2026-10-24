@@ -1,6 +1,6 @@
 {
   "name": "com.chidi0716.youtube_extension",
-  "description": "youtube-extension download helper (runs yt-dlp and ffmpeg on this computer)",
+  "description": "YT Toolbar Master download helper (runs yt-dlp and ffmpeg on this computer)",
   "path": "@HOST_PATH@",
   "type": "stdio",
   "allowed_extensions": [

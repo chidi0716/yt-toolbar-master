@@ -10,7 +10,7 @@ import (
 	"testing"
 	"unicode/utf16"
 
-	"github.com/chidi0716/youtube-extension/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
 )
 
 func env(vars map[string]string) func(string) string {

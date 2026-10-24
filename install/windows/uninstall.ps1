@@ -1,6 +1,6 @@
 ﻿# Remove the download helper (Windows). plan 4.8, 4.9, 002 FR-77, 008 FR-31.
 #
-#   irm https://github.com/chidi0716/youtube-extension/releases/latest/download/uninstall.ps1 | iex
+#   irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.ps1 | iex
 #   (or, from the manual-install zip: powershell -ExecutionPolicy Bypass -File uninstall.ps1)
 #
 # Removes everything the installer created: %LOCALAPPDATA%\youtube-extension-host\ (the helper,

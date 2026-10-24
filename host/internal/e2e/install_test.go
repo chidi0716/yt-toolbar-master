@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chidi0716/youtube-extension/host/internal/testenv"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/testenv"
 )
 
 // TestInstallOfflineEndToEnd 以真正的 yte-host 執行 --install --offline 與 --uninstall

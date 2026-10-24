@@ -10,7 +10,7 @@ async function send(message: ContentMessage): Promise<ReminderView | null> {
     const res = (await browser.runtime.sendMessage(message)) as MessageResponse<{ view: ReminderView }> | undefined;
     return res?.ok ? res.view : null;
   } catch (err) {
-    console.info('[youtube-extension] update status failed', err);
+    console.info('[yt-toolbar-master] update status failed', err);
     return null;
   }
 }

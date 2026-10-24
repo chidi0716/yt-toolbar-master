@@ -14,7 +14,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chidi0716/youtube-extension/host/internal/testenv"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/testenv"
 )
 
 func TestMain(m *testing.M) { testenv.Main(m) }
@@ -62,17 +62,17 @@ func marshal(t *testing.T, m *Manifest) []byte {
 func TestAllowedManifestURL(t *testing.T) {
 	ok := []string{
 		LatestBase + ManifestName,
-		"https://github.com/chidi0716/youtube-extension/releases/download/v0.2.0/components.json",
+		"https://github.com/chidi0716/yt-toolbar-master/releases/download/v0.2.0/components.json",
 		"https://release-assets.githubusercontent.com/github-production-release-asset/1/2?sp=r",
 		"https://objects.githubusercontent.com/github-production-release-asset-2e65be/1/2",
 	}
 	bad := []string{
 		"https://github.com/yt-dlp/yt-dlp/releases/download/2026.10.21/components.json",
-		"https://github.com/chidi0716/youtube-extension/raw/main/components.json",
-		"https://github.com/chidi0716/youtube-extension-fork/releases/download/v1/components.json",
+		"https://github.com/chidi0716/yt-toolbar-master/raw/main/components.json",
+		"https://github.com/chidi0716/yt-toolbar-master-fork/releases/download/v1/components.json",
 		"https://ffmpeg.martin-riedl.de/download/components.json",
-		"http://github.com/chidi0716/youtube-extension/releases/latest/download/components.json",
-		"https://evil.example/chidi0716/youtube-extension/releases/latest/download/components.json",
+		"http://github.com/chidi0716/yt-toolbar-master/releases/latest/download/components.json",
+		"https://evil.example/chidi0716/yt-toolbar-master/releases/latest/download/components.json",
 	}
 	for _, s := range ok {
 		if u, _ := url.Parse(s); !AllowedManifestURL(u) {
@@ -193,8 +193,8 @@ func TestManifestValidation(t *testing.T) {
 
 func TestAllowedURL(t *testing.T) {
 	allowed := []string{
-		"https://github.com/chidi0716/youtube-extension/releases/download/v0.2.0/components.json",
-		"https://github.com/chidi0716/youtube-extension/releases/latest/download/components.json",
+		"https://github.com/chidi0716/yt-toolbar-master/releases/download/v0.2.0/components.json",
+		"https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/components.json",
 		"https://github.com/yt-dlp/yt-dlp/releases/download/2026.10.21/yt-dlp_macos",
 		"https://github.com/denoland/deno/releases/download/v2.9.8/deno-aarch64-apple-darwin.zip",
 		"https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2026-09-30-18-57/checksums.sha256",
@@ -392,7 +392,7 @@ func TestBuildManifest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if m2.Helper[WindowsAMD64].URL != "https://github.com/chidi0716/youtube-extension/releases/download/v0.2.0/yte-host-windows-amd64.exe" ||
+	if m2.Helper[WindowsAMD64].URL != "https://github.com/chidi0716/yt-toolbar-master/releases/download/v0.2.0/yte-host-windows-amd64.exe" ||
 		m2.Helper[DarwinAMD64].SHA256 != HashBytes([]byte{1}) {
 		t.Fatalf("helper entries: %+v", m2.Helper)
 	}

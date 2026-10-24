@@ -8,7 +8,7 @@
   - 「✔」：已由本機假頁面或端到端測試涵蓋（Chromium），實測主要確認真實 YouTube 上的行為；
   - 「部分」：只有一部分被涵蓋（括號中說明）；
   - 「—」：只能手動驗證（例如需要登入、真實播放器、系統對話框）。
-- **回報問題**：請附瀏覽器與版本、作業系統、步驟編號，以及（若有）開發者工具 Console 中 `[youtube-extension]` 開頭的訊息。
+- **回報問題**：請附瀏覽器與版本、作業系統、步驟編號，以及（若有）開發者工具 Console 中 `[yt-toolbar-master]` 開頭的訊息。
   擴充功能背景的訊息在 Chrome 的 `chrome://extensions` →「Service Worker」、Firefox 的 `about:debugging` →「檢查」中查看。
 
 ## 0. 安裝與準備
@@ -21,7 +21,7 @@
    - Chrome：`chrome://extensions` 開啟「開發人員模式」→「載入未封裝項目」→ 選 `.output/chrome-mv3`。擴充功能 ID 應為 `bkjlangdjfpllnkcpfpdlajchbginjdj`。
    - Firefox／Zen：`about:debugging#/runtime/this-firefox` →「載入暫時附加元件」→ 選 `.output/firefox-mv3/manifest.json`
      （暫時附加元件在瀏覽器重新啟動後會消失，需要重新載入；長期使用請依 README 以簽署過的 `.xpi` 安裝）。
-4. 安裝橋接程式：`sh host/dist/youtube-extension-host-macos/install.sh`（不要 sudo）。輸出中兩個「Registered」路徑存在，
+4. 安裝橋接程式：`sh host/dist/yt-toolbar-master-host-macos/install.sh`（不要 sudo）。輸出中兩個「Registered」路徑存在，
    `~/Library/Application Support/youtube-extension-host/yte-host --version` 印出版本；未安裝 yt-dlp、ffmpeg 或 deno 時印出 `brew install …`。
 5. 重新啟動瀏覽器。
 6. 準備測試影片：一部有 4K 的影片、一部最高 720p 的影片、一部很舊的影片（例如 2005 年）、一部有章節的影片、一部有上傳字幕與自動字幕的影片、
@@ -87,7 +87,7 @@
 | 4.1.2 | 縮圖面板只列出實際存在的尺寸（新影片 1280×720 到 320×180，舊影片較少），點任一尺寸下載「標題 [ID].jpg」，圖片尺寸與面板相同；未安裝橋接程式也能使用。 | ✔ | ☐ | ☐ | ☐ | ☐ |
 | 4.1.3 | 截圖得到「標題 [ID] 01m02s.png」，解析度與影片原始解析度相同（「詳細統計資料」確認），不含控制列與字幕；按鈕短暫顯示「已儲存截圖」。 | ✔ | ☐ | ☐ | ☐ | ☐ |
 | 4.1.4 | 有自動字幕的影片，字幕面板分為「上傳的字幕」與「自動產生的字幕」，自動字幕有圖示，預設選中瀏覽器語言；下載 SRT（時間碼正確）、TXT（沒有時間碼）、VTT 各一次，存到瀏覽器的下載位置。 | ✔ | ☐ | ☐ | ☐ | ☐ |
-| 4.1.5 | 沒有字幕的影片顯示「這部影片沒有字幕」。若出現「無法直接從 YouTube 下載這個字幕」，請回報背景的 `[youtube-extension] caption …` 訊息（QUESTIONS Q32）。 | ✔ | ☐ | ☐ | ☐ | ☐ |
+| 4.1.5 | 沒有字幕的影片顯示「這部影片沒有字幕」。若出現「無法直接從 YouTube 下載這個字幕」，請回報背景的 `[yt-toolbar-master] caption …` 訊息（QUESTIONS Q32）。 | ✔ | ☐ | ☐ | ☐ | ☐ |
 | 4.1.6 | 直播與尚未開始的影片，影片、MP3、字幕面板都顯示「直播與尚未開始的影片無法下載」。 | ✔ | ☐ | ☐ | ☐ | ☐ |
 
 ### 4.2 經由橋接程式（完成第 0 節第 4、5 步後）
@@ -134,7 +134,7 @@
 |---|---|---|---|---|---|---|
 | 4.4.1 | 送給橋接程式一個不在白名單的指令、非法影片 ID、含 `../` 的資料夾，全部被拒絕。 | ✔（go test） | — | — | — | — |
 | 4.4.2 | 記錄檔（macOS：`~/Library/Logs/youtube-extension-host/host.log`；Windows：`%LOCALAPPDATA%\youtube-extension-host\logs\host.log`）只有指令名稱、工作狀態與錯誤代碼，家目錄顯示為 `~`。 | ✔ | — | — | ☐ | ☐ |
-| 4.4.3 | 解除安裝（`sh host/dist/youtube-extension-host-macos/uninstall.sh`／`uninstall.ps1`）後，橋接程式、設定檔（與 Windows 的登錄機碼）、狀態與記錄檔都已刪除，面板回到未安裝狀態；下載的檔案、yt-dlp、ffmpeg 不受影響。 | 部分（模擬） | ☐ | ☐ | ☐ | ☐ |
+| 4.4.3 | 解除安裝（`sh host/dist/yt-toolbar-master-host-macos/uninstall.sh`／`uninstall.ps1`）後，橋接程式、設定檔（與 Windows 的登錄機碼）、狀態與記錄檔都已刪除，面板回到未安裝狀態；下載的檔案、yt-dlp、ffmpeg 不受影響。 | 部分（模擬） | ☐ | ☐ | ☐ | ☐ |
 | 4.4.4 | 安裝腳本不需要 sudo／系統管理員；Gatekeeper 沒有擋下橋接程式（若出現「無法打開」，請回報）。 | 部分（模擬） | — | — | ☐ | ☐ |
 
 ## 5. 頁面整理（005）
@@ -261,7 +261,7 @@
 | 10.1.2 | 本機 `npm run release:dry` 成功，`release/dist/upload/` 有 13 個檔案（Firefox 為未簽署的 `-firefox-temporary.zip`，沒有 `updates.json`）。 | ✔ | ☐ |
 | 10.1.3 | 先推送一個預先發行標籤（例如 `v0.2.0-beta.1`，注意 Q58 的版本號問題）：Actions 成功，Release 標示為 Pre-release，`releases/latest` 不指向它。 | — | ☐ |
 | 10.1.4 | 推送正式標籤：Actions 的 `lock-check -download` 對每個第三方檔案印出「matches the official checksum」與「downloaded and verified」；`yte-release check` 印出 components.json 正確。 | — | ☐ |
-| 10.1.5 | **尚未設定 Mozilla 金鑰**時推送正式標籤：Release 照常建立，附上 `youtube-extension-<版本>-firefox-temporary.zip`、沒有 `updates.json`，說明中註明只能以臨時附加元件載入；該 zip 解壓後可以在 `about:debugging` 載入（008 FR-52）。 | ✔（本機模擬） | ☐ |
+| 10.1.5 | **尚未設定 Mozilla 金鑰**時推送正式標籤：Release 照常建立，附上 `yt-toolbar-master-<版本>-firefox-temporary.zip`、沒有 `updates.json`，說明中註明只能以臨時附加元件載入；該 zip 解壓後可以在 `about:debugging` 載入（008 FR-52）。 | ✔（本機模擬） | ☐ |
 | 10.1.5a | 設定 `AMO_JWT_ISSUER`、`AMO_JWT_SECRET` 後的下一個正式版本：Firefox 版送 Mozilla 簽署成功（manifest 有 `update_url`，不公開頻道應接受，Q57），Release 附有 `.xpi` 與 `updates.json`。 | — | ☐ |
 | 10.1.6 | Release 有：`install.sh`、`install.ps1`、`uninstall.sh`、`uninstall.ps1`、三種 `yte-host-*`、兩個手動安裝 zip、`components.json`、Chrome zip、`.xpi` 與 `updates.json`（或未簽署時的 `-firefox-temporary.zip`）、`SHA256SUMS`；說明文字含各瀏覽器的更新步驟。下載後 `shasum -a 256 -c SHA256SUMS` 全部 OK。 | — | ☐ |
 | 10.1.7 | `https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.sh` 下載到的腳本中 `TAG=` 是這個版本；`install.ps1` 是純 ASCII（沒有 BOM）。 | ✔（release:dry） | ☐ |
@@ -283,7 +283,7 @@
 | 10.2.10 | 安裝後使用者資料夾以外沒有新增檔案；PATH 沒有改變（重新開一個終端機，`which yt-dlp` 結果與安裝前相同）。 | — | ☐ | ☐ |
 | 10.2.11 | 竄改測試：把 `components.json` 中一個檔案的網址改成其他網站，或刪掉一個欄位，再以 `yte-host --install --manifest …` 執行，顯示發佈清單無效、不下載任何東西；把清單中一個 SHA256 改掉，顯示檔案與清單不符、保留舊版本；把下載的小幫手改一個位元組後執行引導腳本的核對，顯示 SHA256 不符並停止。 | ✔ | ☐ | ☐ |
 | 10.2.12 | Zen：一行指令安裝後（不另外設定）Zen 找得到小幫手（Q41）。 | — | ☐ | ☐ |
-| 10.2.13 | README 的「手動安裝」：下載 `youtube-extension-host-macos.zip`／`-windows.zip`，以自己安裝的 yt-dlp、ffmpeg、deno 執行 `install.sh`／`install.ps1`，可以下載。 | ✔（Linux e2e） | ☐ | ☐ |
+| 10.2.13 | README 的「手動安裝」：下載 `yt-toolbar-master-host-macos.zip`／`-windows.zip`，以自己安裝的 yt-dlp、ffmpeg、deno 執行 `install.sh`／`install.ps1`，可以下載。 | ✔（Linux e2e） | ☐ | ☐ |
 
 ### 10.3 自動更新（實機）
 

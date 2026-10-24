@@ -1,4 +1,4 @@
-# youtube-extension
+# YT Toolbar Master
 
 **English** | [繁體中文](./README.zh-TW.md)
 
@@ -67,7 +67,7 @@ One command installs everything, about 150 MB (about 300 MB on Windows), in a si
 1. Press ⌘ + Space, type **Terminal** and press Enter.
 2. Paste this line and press Enter:
    ```bash
-   curl -fsSL https://github.com/chidi0716/youtube-extension/releases/latest/download/install.sh | sh
+   curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.sh | sh
    ```
 3. When you see **Done!**, go back to the browser. The Video and MP3 panels switch to the download view by themselves.
 
@@ -76,7 +76,7 @@ One command installs everything, about 150 MB (about 300 MB on Windows), in a si
 1. Press the Start key, type **PowerShell** and open it.
 2. Paste this line and press Enter:
    ```powershell
-   irm https://github.com/chidi0716/youtube-extension/releases/latest/download/install.ps1 | iex
+   irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.ps1 | iex
    ```
 3. When you see **Done!**, go back to the browser. The Video and MP3 panels switch to the download view by themselves.
 
@@ -84,7 +84,7 @@ The same command and steps are shown in the extension's Video and MP3 panels and
 
 ### What does the command do?
 
-1. Downloads the helper for your system from this project's [GitHub releases](https://github.com/chidi0716/youtube-extension/releases) and checks its SHA-256 against the release list (`components.json`).
+1. Downloads the helper for your system from this project's [GitHub releases](https://github.com/chidi0716/yt-toolbar-master/releases) and checks its SHA-256 against the release list (`components.json`).
 2. The helper checks the release list (it only accepts it from this project's GitHub releases over HTTPS), then downloads:
    - yt-dlp from the [official yt-dlp releases](https://github.com/yt-dlp/yt-dlp/releases), checked against the official checksums;
    - deno from the [official deno releases](https://github.com/denoland/deno/releases), checked against the official checksums;
@@ -98,13 +98,13 @@ Every step is printed as it happens. Running the command again only repairs or u
 **Prefer to read the script first?** Download it, read it, then run it:
 
 ```bash
-curl -fsSL -o install.sh https://github.com/chidi0716/youtube-extension/releases/latest/download/install.sh
+curl -fsSL -o install.sh https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.sh
 less install.sh
 sh install.sh
 ```
 
 ```powershell
-irm https://github.com/chidi0716/youtube-extension/releases/latest/download/install.ps1 -OutFile install.ps1
+irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.ps1 -OutFile install.ps1
 notepad install.ps1
 powershell -ExecutionPolicy Bypass -File install.ps1
 ```
@@ -123,11 +123,11 @@ Use **Remove download feature** in the settings page (**Downloads**). It removes
 If the extension is already gone, run:
 
 ```bash
-curl -fsSL https://github.com/chidi0716/youtube-extension/releases/latest/download/uninstall.sh | sh
+curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.sh | sh
 ```
 
 ```powershell
-irm https://github.com/chidi0716/youtube-extension/releases/latest/download/uninstall.ps1 | iex
+irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.ps1 | iex
 ```
 
 ### Manual install
@@ -135,7 +135,7 @@ irm https://github.com/chidi0716/youtube-extension/releases/latest/download/unin
 If you prefer to install yt-dlp, ffmpeg and deno yourself, or to build the helper from source:
 
 1. Install the tools, for example with [Homebrew](https://brew.sh) (`brew install yt-dlp ffmpeg deno`) or [winget](https://learn.microsoft.com/windows/package-manager/winget/) (`winget install yt-dlp.yt-dlp Gyan.FFmpeg DenoLand.Deno`).
-2. Get the helper: download `youtube-extension-host-macos.zip` or `youtube-extension-host-windows.zip` from the [releases page](https://github.com/chidi0716/youtube-extension/releases) and unzip it, or build it with [Go](https://go.dev/dl/) 1.24+ and Node.js: `npm run build:host` (output in `host/dist/`).
+2. Get the helper: download `yt-toolbar-master-host-macos.zip` or `yt-toolbar-master-host-windows.zip` from the [releases page](https://github.com/chidi0716/yt-toolbar-master/releases) and unzip it, or build it with [Go](https://go.dev/dl/) 1.24+ and Node.js: `npm run build:host` (output in `host/dist/`).
 3. Run the script in that folder (no `sudo`):
    ```bash
    sh install.sh
@@ -170,13 +170,13 @@ Yes. Without deno, yt-dlp may not see some YouTube formats (often the highest qu
 Files downloaded by `curl` in Terminal are not marked as coming from the internet, so the one-line install does not trigger this. If you installed manually from a zip downloaded in the browser, run `sh install.sh` from that folder again (it removes the quarantine attribute), or use the one-line install. Do not use `sudo`.
 
 **Zen (or another Firefox-based browser) cannot find the helper.**
-The installer registers the helper for Firefox, which Zen normally reads. Restart Zen completely after installing and click **Check again**. If it still says the helper isn't connected, please open an issue with your Zen version, your macOS or Windows version, and whether `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.youtube_extension.json` (macOS) exists. Messages starting with `[youtube-extension]` in the extension's console (open `about:debugging`, find the extension, click **Inspect**) also help.
+The installer registers the helper for Firefox, which Zen normally reads. Restart Zen completely after installing and click **Check again**. If it still says the helper isn't connected, please open an issue with your Zen version, your macOS or Windows version, and whether `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.youtube_extension.json` (macOS) exists. Messages starting with `[yt-toolbar-master]` in the extension's console (open `about:debugging`, find the extension, click **Inspect**) also help.
 
 **Downloads fail with “Couldn't write to the download folder.”**
 The folder chosen in the settings page was moved or deleted, the disk is full, or the folder isn't writable. Choose another folder or click **Use default** in the settings page. On macOS, folders such as Desktop or Documents may need permission: if a prompt asks to allow access, allow it.
 
 **The extension disappeared from Firefox after a restart.**
-Add-ons loaded from `about:debugging` are temporary and are removed when Firefox restarts. Install the signed `.xpi` from the [releases page](https://github.com/chidi0716/youtube-extension/releases) instead (see [Load the extension manually](#load-the-extension-manually)); it also updates itself.
+Add-ons loaded from `about:debugging` are temporary and are removed when Firefox restarts. Install the signed `.xpi` from the [releases page](https://github.com/chidi0716/yt-toolbar-master/releases) instead (see [Load the extension manually](#load-the-extension-manually)); it also updates itself.
 
 ## Development
 
@@ -202,7 +202,7 @@ npm run release:dry     # all release files, without secrets → release/dist (s
 
 ## Load the extension manually
 
-Ready-made packages are on the [releases page](https://github.com/chidi0716/youtube-extension/releases): `youtube-extension-<version>-chrome.zip` and `youtube-extension-<version>-firefox.xpi` (a release that is not signed by Mozilla yet has `youtube-extension-<version>-firefox-temporary.zip` instead, which Firefox and Zen can only load as a temporary add-on). To use your own build, use `.output/chrome-mv3` or `.output/firefox-mv3` instead.
+Ready-made packages are on the [releases page](https://github.com/chidi0716/yt-toolbar-master/releases): `yt-toolbar-master-<version>-chrome.zip` and `yt-toolbar-master-<version>-firefox.xpi` (a release that is not signed by Mozilla yet has `yt-toolbar-master-<version>-firefox-temporary.zip` instead, which Firefox and Zen can only load as a temporary add-on). To use your own build, use `.output/chrome-mv3` or `.output/firefox-mv3` instead.
 
 - **Chrome:** unzip the Chrome package to a folder you keep, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and choose that folder (or `.output/chrome-mv3`). Chrome cannot update it by itself; when a new version is out the extension shows a reminder. To update, unzip the new package over the same folder and click the reload button in `chrome://extensions`.
 - **Firefox (development):** open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on**, and choose `.output/firefox-mv3/manifest.json`. Temporary add-ons are removed when Firefox restarts.
@@ -228,7 +228,7 @@ This project does not use a signing key of its own. The helper only accepts `com
 
 1. **Turn on immutable releases:** repository **Settings → General**, in the **Releases** section enable immutable releases. Published releases (and their files) can then no longer be modified.
 2. Try everything locally: `npm run release:dry` (output in `release/dist/`; the Firefox package is not signed).
-3. Create the first release (below). No secrets are needed: without the Mozilla API key, the release gets an unsigned `youtube-extension-<version>-firefox-temporary.zip` (Firefox/Zen can only load it as a temporary add-on), no `updates.json`, and a note in the release text.
+3. Create the first release (below). No secrets are needed: without the Mozilla API key, the release gets an unsigned `yt-toolbar-master-<version>-firefox-temporary.zip` (Firefox/Zen can only load it as a temporary add-on), no `updates.json`, and a note in the release text.
 
 **Later (optional): Mozilla signing for Firefox/Zen.** Create an API key at <https://addons.mozilla.org/developers/addon/api/key/> and add it as repository secrets (**Settings → Secrets and variables → Actions → New repository secret**): `AMO_JWT_ISSUER` (“JWT issuer”) and `AMO_JWT_SECRET` (“JWT secret”). From the next release on, the `.xpi` is signed and Firefox/Zen update by themselves.
 

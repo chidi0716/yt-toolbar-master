@@ -140,7 +140,7 @@ Linux（只供開發與測試）：`$XDG_STATE_HOME`（或 `~/.local/state`）`/
 3. 建置三種小幫手與手動安裝的 zip。
 4. 產生 `components.json` 並以 `yte-release check` 再檢查一次。
 5. 引導腳本與移除腳本：代入版本標籤（`@RELEASE_TAG@`）；`.ps1` 轉成純 ASCII。
-6. 擴充功能：Chrome zip；Firefox 先以 `web-ext lint --self-hosted` 檢查。有 Mozilla 金鑰（Actions 把 `AMO_JWT_ISSUER`、`AMO_JWT_SECRET` 傳成 `WEB_EXT_API_KEY`、`WEB_EXT_API_SECRET`）、不是預先發行版本、也不是試跑時，以 `scripts/sign-firefox.mjs` 送 Mozilla 簽署並附 `.xpi`；否則附未簽署的 `youtube-extension-<版本>-firefox-temporary.zip`（008 FR-52）。
+6. 擴充功能：Chrome zip；Firefox 先以 `web-ext lint --self-hosted` 檢查。有 Mozilla 金鑰（Actions 把 `AMO_JWT_ISSUER`、`AMO_JWT_SECRET` 傳成 `WEB_EXT_API_KEY`、`WEB_EXT_API_SECRET`）、不是預先發行版本、也不是試跑時，以 `scripts/sign-firefox.mjs` 送 Mozilla 簽署並附 `.xpi`；否則附未簽署的 `yt-toolbar-master-<版本>-firefox-temporary.zip`（008 FR-52）。
 7. `updates.json`：只在有簽署的 `.xpi` 時附上；版本取自建置出的 Firefox manifest，`update_link` 指向這個版本的 `.xpi`，附 `update_hash`（sha256）與 `applications.gecko.strict_min_version`。試跑時寫到 `release/dist/updates.preview.json`（不附加）。
 8. `release-notes.md`（範本中的 `{{firefoxSteps}}`、`{{firefoxStepsZh}}`、`{{firefoxFiles}}` 依是否簽署代入不同的說明）與 `SHA256SUMS`。
 - Actions 以 `gh release create <tag> release/dist/upload/* --notes-file … --verify-tag` 建立 Release；標籤含 `-` 時加 `--prerelease`。

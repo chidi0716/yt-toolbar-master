@@ -4,7 +4,7 @@ import { updateCheck, updateReminder } from '@/utils/settings';
 import { CHECK_INTERVAL_MS, type LatestRelease } from '@/utils/update-check';
 import { createUpdateService, type UpdateServiceDeps } from './background';
 
-const RELEASE: LatestRelease = { version: '0.2.0', title: 'v0.2.0', url: 'https://github.com/chidi0716/youtube-extension/releases/tag/v0.2.0' };
+const RELEASE: LatestRelease = { version: '0.2.0', title: 'v0.2.0', url: 'https://github.com/chidi0716/yt-toolbar-master/releases/tag/v0.2.0' };
 
 describe('背景腳本的新版本查詢（008 FR-26、FR-27、FR-29a）', () => {
   let now: number;
