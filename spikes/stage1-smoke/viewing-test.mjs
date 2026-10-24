@@ -194,7 +194,7 @@ for (const [flag, what, step] of [
     'T06',
     async (page) => {
       // 找不到選單或選項（例如 YouTube 改版，或其他擴充功能接管了主題）：不做任何修改，
-      // 按鈕提示說明可能原因（約 6 秒，或滑鼠移開為止），console 記錄失敗的步驟（FR-15、T06e）
+      // 按鈕提示說明原因（約 6 秒，或滑鼠移開為止），console 記錄失敗的步驟（FR-15、T06e）
       const logs = [];
       page.on('console', (m) => logs.push(m.text()));
       const prefBefore = await prefOf(page);
@@ -218,7 +218,7 @@ for (const [flag, what, step] of [
         `pref=${await prefOf(page)} ${JSON.stringify(state)} ${JSON.stringify(frames)} log=${await menuLog(page)}`,
       );
       check(
-        `${what}：按鈕提示說明可能原因（含其他擴充功能接管主題），console 記錄失敗的步驟（FR-15）`,
+        `${what}：按鈕提示說明原因（含其他擴充功能接管主題），console 記錄失敗的步驟（FR-15）`,
         tip.notice && tip.text === HINT_EN && logs.some((l) => l.includes(step)),
         `${JSON.stringify(tip)} ${logs.filter((l) => l.includes('yt-toolbar-master')).join(' | ')}`,
       );

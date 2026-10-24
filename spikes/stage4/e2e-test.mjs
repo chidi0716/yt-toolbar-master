@@ -204,7 +204,7 @@ await session('connected', async ({ page, context, home, downloads }) => {
   );
   check('DRM 與故事板格式不列出（FR-11）', !rows.some((r) => r.format.includes('999') || r.format.includes('sb0')));
   check(
-    'T18a：4K 沒有 H.264 時以 AV1＋M4A 合併成 MP4 列在主清單，標「4K」並加註可能無法播放（FR-13、Q43）',
+    'T18a：4K 沒有 H.264 時以 AV1＋M4A 合併成 MP4 列在主清單，標「4K」並加註「AV1：部分播放器不支援」（FR-13、Q43）',
     rows[0]?.format === '401+140' && rows[0].badge === '4K' && rows[0].note === 'AV1: not supported by some players' && rows.slice(1).every((r) => r.note === ''),
     JSON.stringify(rows[0]),
   );

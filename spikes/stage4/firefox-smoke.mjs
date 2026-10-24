@@ -149,7 +149,7 @@ try {
   const notes = await evaluate('browser.notifications.getAll().then((n) => JSON.stringify(n))');
   if (JSON.parse(notes)[`ytm-job:${start.jobId}`] !== undefined) check('Firefox：完成時建立通知', true, notes);
   else {
-    // headless 且沒有 D-Bus 時，Firefox 的系統通知可能立即關閉；以設定頁直接建立一則通知比對環境。
+    // headless 且沒有 D-Bus 時，Firefox 的系統通知會立即關閉；以設定頁直接建立一則通知比對環境。
     const probe = await evaluate(
       "browser.notifications.create('probe', { type: 'basic', title: 't', message: 'm' }).then(() => browser.notifications.getAll()).then((n) => JSON.stringify(n), (e) => 'error: ' + e.message)",
     );

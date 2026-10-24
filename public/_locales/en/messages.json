@@ -1367,7 +1367,7 @@
   },
   "quickSpecAny": {
     "message": "$HEIGHT$, any format",
-    "description": "One-click download: default quality with any format (may be WEBM).",
+    "description": "One-click download: default quality with any format (WEBM when it has a higher quality).",
     "placeholders": {
       "height": {
         "content": "$1",

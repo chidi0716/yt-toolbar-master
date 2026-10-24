@@ -2,7 +2,7 @@
 // - 完全相同：通過；
 // - 近似：每個顏色的 RGB 各差不到 16、不透明度差不到 0.1（例如 #fff 對 #f1f1f1）。
 //   這來自 YouTube 依載入時的主題以 `:root:root` 固定的少數變數，擴充功能改用 YouTube 樣式表中
-//   [dark]／[light] 的值覆寫，與另一個主題載入時的固定值可能有些微差異；
+//   [dark]／[light] 的值覆寫，與另一個主題載入時的固定值有些微差異；
 // - 雜訊：滑鼠移入效果的顏色（YouTube 依影片縮圖決定，相同主題載入兩次也會不同），不列入比對。
 const NOISE = [/^div\.ytSpecTouchFeedbackShapeHoverEffect$/];
 

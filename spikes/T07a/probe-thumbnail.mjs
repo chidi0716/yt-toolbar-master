@@ -1,5 +1,5 @@
 // T07a 實測：劇院模式開啟後，右側推薦影片的縮圖看起來仍然很亮。列出縮圖 <img> 到 #secondary 之間
-// 每個祖先的不透明度、定位與可能讓它脫離一般繪製順序的屬性，並截取右側欄的圖。
+// 每個祖先的不透明度、定位與會讓它脫離一般繪製順序的屬性，並截取右側欄的圖。
 // 從首頁以站內換頁進入觀看頁；只嘗試一次，遇到驗證頁就結束。
 //   npm run build && node spikes/T07a/probe-thumbnail.mjs
 import { mkdirSync, rmSync } from 'node:fs';

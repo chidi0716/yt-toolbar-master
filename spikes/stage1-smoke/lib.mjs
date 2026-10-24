@@ -191,7 +191,7 @@ export async function extensionWorker(context) {
 
 /** 設定介面語言（sync:uiLanguage）：'auto'、'zh_TW' 或 'en'。 */
 export async function setUiLanguage(context, value) {
-  // service worker 剛啟動時 chrome.storage 可能還沒準備好：稍候再試。
+  // service worker 剛啟動時 chrome.storage 有時還沒準備好：稍候再試。
   for (let i = 0; ; i++) {
     const sw = await extensionWorker(context);
     const ok = await sw
