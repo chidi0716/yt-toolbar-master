@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -169,7 +170,7 @@ func TestUninstallCommand(t *testing.T) {
 	}
 }
 
-// TestStatusComponents 測試 plan 4.9 的 status 擴充：installDir、components、update。
+// TestStatusComponents 測試 status 的 components 與 update（plan 4.9）。
 func TestStatusComponents(t *testing.T) {
 	a, _ := newUpdateApp(t, "0.2.0")
 	// 小幫手從安裝資料夾執行、yt-dlp 在安裝資料夾中，其他來自 PATH。
@@ -186,18 +187,10 @@ func TestStatusComponents(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := v.(*StatusResult)
-	if s.InstallDir != a.Layout.InstallDir || !s.Update.Auto || s.Update.LastCheck != nil || s.Update.LastResult != nil {
+	if !s.Update.Auto || s.Update.LastCheck != nil || s.Update.LastResult != nil {
 		t.Fatalf("%+v", s)
 	}
-	got := map[string]Component{}
-	var names []string
-	for _, c := range s.Components {
-		got[c.Name] = c
-		names = append(names, c.Name)
-	}
-	if strings.Join(names, ",") != "helper,yt-dlp,deno,ffmpeg,ffprobe" {
-		t.Fatalf("components: %v", names)
-	}
+	got := components(t, s)
 	if c := got["helper"]; c.Source != "bundled" || c.Version != "0.2.0" || !c.Found {
 		t.Errorf("helper: %+v", c)
 	}
@@ -212,7 +205,19 @@ func TestStatusComponents(t *testing.T) {
 	}
 	// JSON 欄位名稱（擴充功能依這些名稱讀取）。
 	j, _ := json.Marshal(s)
-	for _, key := range []string{`"installDir":`, `"components":[{"name":"helper","version":"0.2.0"`, `"update":{"auto":true,"lastCheck":null,"lastResult":null,"consecutiveFailures":0,"running":false}`, `"source":"bundled"`} {
+	var top map[string]json.RawMessage
+	json.Unmarshal(j, &top)
+	if keys := sortedKeys(top); keys != "complete,components,defaultDir,hostVersion,namePresets,ready,update" {
+		t.Errorf("status keys: %s", keys)
+	}
+	var comps []map[string]json.RawMessage
+	json.Unmarshal(top["components"], &comps)
+	for _, c := range comps {
+		if keys := sortedKeys(c); keys != "error,found,name,path,source,version" {
+			t.Errorf("component keys: %s", keys)
+		}
+	}
+	for _, key := range []string{`"components":[{"name":"helper","found":true,"version":"0.2.0","path":`, `"source":"bundled","error":""}`, `"namePresets":[{"id":"title-id","example":`, `"update":{"auto":true,"lastCheck":null,"lastResult":null,"consecutiveFailures":0,"running":false}`} {
 		if !strings.Contains(string(j), key) {
 			t.Errorf("status JSON does not contain %s:\n%s", key, j)
 		}
@@ -232,4 +237,13 @@ func TestStatusComponents(t *testing.T) {
 			t.Errorf("missing %s: %+v", c.Name, c)
 		}
 	}
+}
+
+func sortedKeys(m map[string]json.RawMessage) string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return strings.Join(keys, ",")
 }

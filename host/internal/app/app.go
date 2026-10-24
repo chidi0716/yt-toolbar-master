@@ -4,8 +4,6 @@ package app
 import (
 	"context"
 	"os"
-	"runtime"
-	"strings"
 	"sync"
 	"time"
 
@@ -85,179 +83,108 @@ func (a *App) logf(format string, args ...any) {
 // tools 每次重新尋找 yt-dlp 與 ffmpeg，讓使用者安裝後按「重新檢查」就能生效。
 func (a *App) tools() *ytdlp.Tools { return ytdlp.Locate(a.Env) }
 
-// ToolStatus 是 yt-dlp、ffmpeg 或 deno 的狀態。
-type ToolStatus struct {
-	Found         bool   `json:"found"`
-	Path          string `json:"path,omitempty"`
-	Version       string `json:"version,omitempty"`
-	Error         string `json:"error,omitempty"`         // 找不到或無法執行時的錯誤代碼（YTDLP_NOT_FOUND、FFMPEG_NOT_FOUND、DENO_NOT_FOUND）
-	Manager       string `json:"manager,omitempty"`       // homebrew、winget 等（只有 yt-dlp）
-	UpdateCommand string `json:"updateCommand,omitempty"` // 由套件管理工具安裝時的更新指令
-}
-
 // PresetInfo 是檔名格式（給設定頁顯示）。
 type PresetInfo struct {
 	ID      string `json:"id"`
 	Example string `json:"example"`
 }
 
-// StatusResult 是 status 指令的結果（plan 4.3）。
+// StatusResult 是 status 指令的結果（plan 4.3、4.9）。
 type StatusResult struct {
 	HostVersion string `json:"hostVersion"`
-	OS          string `json:"os"`
-	Arch        string `json:"arch"`
 	// Ready：yt-dlp 與 ffmpeg 都可以使用（可以下載）。
 	Ready bool `json:"ready"`
 	// Complete：另外 deno 也可以使用（yt-dlp 能取得 YouTube 的完整格式）。
-	Complete bool       `json:"complete"`
-	YtDlp    ToolStatus `json:"ytDlp"`
-	FFmpeg   ToolStatus `json:"ffmpeg"`
-	Deno     ToolStatus `json:"deno"`
-	// Missing 列出找不到或無法執行的元件（"yt-dlp"、"ffmpeg"、"deno"），依此順序。
-	Missing []string `json:"missing"`
-	// InstallCommand 是一次安裝全部缺少元件的指令（macOS：brew；Windows：winget），
-	// 沒有缺少或其他作業系統時為空字串（002 FR-2）。
-	InstallCommand string       `json:"installCommand"`
-	DefaultDir     string       `json:"defaultDir"`
-	NamePresets    []PresetInfo `json:"namePresets"`
-
-	// 008（plan 4.9）
-	InstallDir string       `json:"installDir"`
-	Components []Component  `json:"components"`
-	Update     updater.View `json:"update"`
+	Complete    bool         `json:"complete"`
+	Components  []Component  `json:"components"`
+	DefaultDir  string       `json:"defaultDir"`
+	NamePresets []PresetInfo `json:"namePresets"`
+	Update      updater.View `json:"update"`
 }
 
-// Component 是 status 中的一個元件（008 FR-24）：名稱、版本、路徑與來源。
+// Component 是 status 中的一個元件（008 FR-24），依序為 helper、yt-dlp、deno、ffmpeg、ffprobe。
 // Source 為 "bundled"（安裝資料夾）、"homebrew"、"winget" 或 "path"；找不到時 found 為 false，
-// 其他欄位為空字串。
+// 其他欄位為空字串。Error 是找到但無法執行時的錯誤代碼。
 type Component struct {
-	Name    string `json:"name"` // helper、yt-dlp、deno、ffmpeg、ffprobe
+	Name    string `json:"name"`
+	Found   bool   `json:"found"`
 	Version string `json:"version"`
 	Path    string `json:"path"`
 	Source  string `json:"source"`
-	Found   bool   `json:"found"`
+	Error   string `json:"error"`
 }
 
-// Status 實作 status 指令。找不到 yt-dlp 或 ffmpeg 不算錯誤，以 found=false 表示。
+func (c *Component) usable() bool { return c.Found && c.Error == "" }
+
+// Status 實作 status 指令。找不到工具不算錯誤，以 found=false 表示。
 func (a *App) Status(ctx context.Context) (any, error) {
 	t := a.tools()
+	l := a.layout()
 	res := &StatusResult{
 		HostVersion: a.Version,
-		OS:          runtime.GOOS,
-		Arch:        runtime.GOARCH,
 		DefaultDir:  platform.DefaultDownloadDir(),
+		Update:      updater.ViewOf(l.InstallDir),
 	}
 	for _, p := range validate.NamePresets {
 		res.NamePresets = append(res.NamePresets, PresetInfo{ID: p.ID, Example: p.Example})
 	}
-	var wg sync.WaitGroup
-	if t.YtDlp != "" {
-		res.YtDlp.Found, res.YtDlp.Path = true, t.YtDlp
-		res.YtDlp.Manager = t.ManagerOf()
-		res.YtDlp.UpdateCommand = ytdlp.UpdateCommand(a.Env.GOOS, res.YtDlp.Manager)
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			v, err := t.YtDlpVersion(ctx)
-			if err != nil {
-				res.YtDlp.Error = string(errs.From(err).Code)
-			}
-			res.YtDlp.Version = v
-		}()
-	}
-	if t.FFmpeg != "" {
-		res.FFmpeg.Found, res.FFmpeg.Path = true, t.FFmpeg
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			v, err := t.FFmpegVersion(ctx)
-			if err != nil {
-				res.FFmpeg.Error = string(errs.From(err).Code)
-			}
-			res.FFmpeg.Version = v
-		}()
-	}
-	if t.Deno != "" {
-		res.Deno.Found, res.Deno.Path = true, t.Deno
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			v, err := t.DenoVersion(ctx)
-			if err != nil {
-				res.Deno.Error = string(errs.From(err).Code)
-			}
-			res.Deno.Version = v
-		}()
-	}
-	var ffprobeVersion string
-	if t.FFprobe != "" {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			ffprobeVersion, _ = t.FFprobeVersion(ctx)
-		}()
-	}
-	wg.Wait()
-	l := a.layout()
-	res.InstallDir = l.InstallDir
-	res.Update = updater.ViewOf(l.InstallDir)
 	helper := Component{Name: "helper", Version: a.Version, Path: a.SelfPath, Source: "path", Found: a.SelfPath != ""}
 	if a.SelfPath != "" && platform.SameFile(a.SelfPath, l.HelperPath) {
 		helper.Source = "bundled"
 	}
-	res.Components = []Component{helper}
-	for _, c := range []struct{ name, path, version string }{
-		{"yt-dlp", t.YtDlp, res.YtDlp.Version},
-		{"deno", t.Deno, res.Deno.Version},
-		{"ffmpeg", t.FFmpeg, res.FFmpeg.Version},
-		{"ffprobe", t.FFprobe, ffprobeVersion},
-	} {
-		comp := Component{Name: c.name}
-		if c.path != "" {
-			comp = Component{Name: c.name, Version: c.version, Path: c.path, Source: a.Env.Source(c.path), Found: true}
-		}
-		res.Components = append(res.Components, comp)
-	}
-	res.Missing = []string{}
-	for _, c := range []struct {
-		name string
-		st   *ToolStatus
-		code errs.Code
-	}{{"yt-dlp", &res.YtDlp, errs.YtDlpNotFound}, {"ffmpeg", &res.FFmpeg, errs.FFmpegNotFound}, {"deno", &res.Deno, errs.DenoNotFound}} {
-		if !c.st.Found {
-			c.st.Error = string(c.code)
-		}
-		if c.st.Error != "" {
-			res.Missing = append(res.Missing, c.name)
+	ytDlp, deno, ffmpeg, ffprobe := a.component("yt-dlp", t.YtDlp), a.component("deno", t.Deno), a.component("ffmpeg", t.FFmpeg), a.component("ffprobe", t.FFprobe)
+	setVersion := func(c *Component, v string, err error) {
+		c.Version = v
+		if err != nil {
+			c.Error = string(errs.From(err).Code)
 		}
 	}
-	res.Ready = res.YtDlp.Error == "" && res.FFmpeg.Error == ""
-	res.Complete = res.Ready && res.Deno.Error == ""
-	res.InstallCommand = InstallCommand(a.Env.GOOS, res.Missing)
+	var wg sync.WaitGroup
+	if ytDlp.Found {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			v, err := t.YtDlpVersion(ctx)
+			setVersion(&ytDlp, v, err)
+		}()
+	}
+	if ffmpeg.Found {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			v, err := t.FFmpegVersion(ctx)
+			setVersion(&ffmpeg, v, err)
+		}()
+	}
+	if deno.Found {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			v, err := t.DenoVersion(ctx)
+			setVersion(&deno, v, err)
+		}()
+	}
+	if ffprobe.Found {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			v, err := t.FFprobeVersion(ctx)
+			setVersion(&ffprobe, v, err)
+		}()
+	}
+	wg.Wait()
+	res.Components = []Component{helper, ytDlp, deno, ffmpeg, ffprobe}
+	res.Ready = ytDlp.usable() && ffmpeg.usable()
+	res.Complete = res.Ready && deno.usable()
 	return res, nil
 }
 
-// InstallCommand 回傳一次安裝 missing 中全部元件的指令（002 FR-2）。
-func InstallCommand(goos string, missing []string) string {
-	if len(missing) == 0 {
-		return ""
+// component 回傳在 path 找到的工具（版本另外填入）；path 為空字串代表找不到。
+func (a *App) component(name, path string) Component {
+	if path == "" {
+		return Component{Name: name}
 	}
-	var pkgs []string
-	for _, m := range missing {
-		switch goos {
-		case "darwin":
-			pkgs = append(pkgs, m) // Homebrew 的套件名稱與元件名稱相同
-		case "windows":
-			pkgs = append(pkgs, map[string]string{"yt-dlp": "yt-dlp.yt-dlp", "ffmpeg": "Gyan.FFmpeg", "deno": "DenoLand.Deno"}[m])
-		}
-	}
-	switch goos {
-	case "darwin":
-		return "brew install " + strings.Join(pkgs, " ")
-	case "windows":
-		return "winget install " + strings.Join(pkgs, " ")
-	}
-	return ""
+	return Component{Name: name, Found: true, Path: path, Source: a.Env.Source(path)}
 }
 
 // maxInfoResult 是 getInfo 結果的大小上限，比 1MB 的訊息上限略小，保留外層欄位的空間。

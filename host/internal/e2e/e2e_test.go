@@ -224,7 +224,12 @@ func TestEndToEnd(t *testing.T) {
 
 	// status
 	st := ok(t, b.request("status", nil, nil))
-	if st["ready"] != true || st["complete"] != true || st["deno"].(map[string]any)["version"] != "2.1.4" || st["ytDlp"].(map[string]any)["version"] != "2026.10.21" || st["ffmpeg"].(map[string]any)["version"] != "7.1-fake" {
+	versions := map[string]any{}
+	for _, c := range st["components"].([]any) {
+		c := c.(map[string]any)
+		versions[c["name"].(string)] = c["version"]
+	}
+	if st["ready"] != true || st["complete"] != true || versions["deno"] != "2.1.4" || versions["yt-dlp"] != "2026.10.21" || versions["ffmpeg"] != "7.1-fake" {
 		t.Fatalf("status: %v", st)
 	}
 

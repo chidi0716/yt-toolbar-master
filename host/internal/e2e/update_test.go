@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// TestUpdateCommandsEndToEnd 經由原生訊息測試 plan 4.9 新增的指令：status 的擴充欄位、
+// TestUpdateCommandsEndToEnd 經由原生訊息測試 plan 4.9 新增的指令：status 的 components 與 update、
 // setAutoUpdate、checkUpdates、uninstall（真的啟動分離的 --uninstall --delay 2）。
 func TestUpdateCommandsEndToEnd(t *testing.T) {
 	if runtime.GOOS != "linux" {
@@ -20,9 +20,6 @@ func TestUpdateCommandsEndToEnd(t *testing.T) {
 	defer func() { t.Logf("transcript:\n%s", b.log) }()
 
 	st := ok(t, b.request("status", nil, nil))
-	if st["installDir"] != installDir {
-		t.Errorf("installDir: %v", st["installDir"])
-	}
 	comps, _ := st["components"].([]any)
 	if len(comps) != 5 || comps[0].(map[string]any)["name"] != "helper" {
 		t.Fatalf("components: %v", st["components"])
