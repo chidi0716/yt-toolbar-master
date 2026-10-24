@@ -425,7 +425,7 @@ install/
 | `status`（階段 11 起） | — | `hostVersion`、`ready`、`complete`、`components: [{name: "helper"|"yt-dlp"|"deno"|"ffmpeg"|"ffprobe", found, version, path, source: "bundled"|"homebrew"|"winget"|"path"|"", error}]`、`defaultDir`、`namePresets`、`update: {auto, lastCheck, lastResult: "ok"|"updated"|"failed"|null, consecutiveFailures, running}` |
 | `setAutoUpdate` | `enabled`（布林） | 寫入狀態檔 |
 | `checkUpdates` | — | 立即啟動 `--update`（不受 24 小時限制），回傳 `{started: true}`；已在執行時回傳 `{started: false}` |
-| `uninstall` | — | 有進行中的工作時回傳錯誤 `JOBS_RUNNING`；否則啟動分離的 `ytm-host --uninstall --delay 2` 後回傳 `{ok: true}`，2 秒後刪除安裝資料夾（含工具與記錄檔）、原生訊息設定檔與登錄機碼 |
+| `uninstall` | — | 有進行中的工作時回傳錯誤 `JOBS_RUNNING`；否則啟動分離的 `ytm-host --uninstall --wait-pid <自己的 PID>` 後回傳 `{ok: true}`；擴充功能讀到回應後關閉連線，小幫手結束後（最多等 1 分鐘）刪除安裝資料夾（含工具與記錄檔）、原生訊息設定檔與登錄機碼 |
 
 新錯誤代碼：`JOBS_RUNNING`、`SIGNATURE_INVALID`、`CHECKSUM_MISMATCH`（擴充功能要有對應的中英文訊息）。
 
