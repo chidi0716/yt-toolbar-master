@@ -4,7 +4,7 @@
 // 尚未安裝小幫手時只顯示安裝引導，偵測到安裝完成後顯示「開始下載」按鈕，不自動開始（009 第二節，tasks T54）。
 import type { ComponentChildren } from 'preact';
 import { useContext, useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { cancelJob, downloadJobs, getInfo, HostError, quickSettings, startDownload, startQuickDownload } from '@/features/downloads/host-client';
+import { cancelJob, getInfo, HostError, quickSettings, startDownload, startQuickDownload, videoJobs } from '@/features/downloads/host-client';
 import { canDownload, missingOnlyDeno } from '@/features/downloads/host-status';
 import { isActive, isMp3Bitrate, MP3_BITRATES, mp3Label, videoLabel, type DownloadRequest, type JobRecord, type Mp3Bitrate } from '@/features/downloads/jobs';
 import { existingQuickJob, initialDownloadMode, quickSummary, videoSpecLabel, type DownloadMode, type QuickKind } from '@/features/downloads/quick';
@@ -320,7 +320,7 @@ type QuickPhase = { phase: 'preparing' } | { phase: 'job'; jobId: string } | { p
  */
 function QuickDownload(props: { videoId: string; kind: QuickKind; pageTitle: string; onChooseOther: () => void }) {
   const { videoId, kind, pageTitle, onChooseOther } = props;
-  const jobs = useStore(downloadJobs());
+  const jobs = useStore(useMemo(() => videoJobs(videoId, (j) => j.kind === kind), [videoId, kind]));
   const [state, setState] = useState<QuickPhase>(() => {
     const existing = existingQuickJob(jobs, videoId, kind);
     return existing ? { phase: 'job', jobId: existing.jobId } : { phase: 'preparing' };

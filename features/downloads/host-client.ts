@@ -1,13 +1,13 @@
 // 內容腳本端：經由背景腳本使用橋接程式（tasks T16、T19 至 T22）。
 // 下載工作的清單由背景腳本推播（jobsChanged），這裡保存一份給面板與工具列按鈕使用。
-import { createStore, type Store } from '@/features/viewing/store';
+import { createStore, derive, type ReadStore, type Store } from '@/features/viewing/store';
 import { isBackgroundMessage } from '@/utils/messages';
 import { toErrorCode, type HostErrorCode, type HostInfo, type HostStatusResult, type UpdateResult } from '@/utils/native-protocol';
 import { defaultVideoContainer, defaultVideoHeight, mp3Bitrate, quickDownload, watchSettings } from '@/utils/settings';
 import { sendToBackground } from '@/utils/messages';
 import type { QuickResult } from './host-background';
 import type { HostState } from './host-status';
-import type { DownloadRequest, JobRecord } from './jobs';
+import { reuseJobs, type DownloadRequest, type JobRecord } from './jobs';
 import { toQuickDefaults, type QuickDefaults, type QuickKind } from './quick';
 
 const LOG_PREFIX = '[yt-toolbar-master]';
@@ -51,22 +51,30 @@ export const checkUpdates = () => call<{ started: boolean }>({ type: 'hostCheckU
 export const uninstallHost = () => call({ type: 'hostUninstall' });
 export const pickFolder = () => call<{ path: string | null }>({ type: 'pickFolder' }).then((r) => r.path);
 
-/** 下載工作（所有影片）；第一次使用時向背景腳本查詢，之後由推播更新。 */
-let jobsStore: Store<JobRecord[]> | null = null;
+/**
+ * 下載工作（所有影片）；第一次使用時（工具列第一次掛載）向背景腳本查詢，之後由推播更新。
+ * 內容沒變的紀錄沿用同一個物件，按鈕與面板只在自己的工作改變時重新繪製。
+ */
+let jobsStore: Store<readonly JobRecord[]> | null = null;
 
-export function downloadJobs(): Store<JobRecord[]> {
+export function downloadJobs(): ReadStore<readonly JobRecord[]> {
   if (jobsStore) return jobsStore;
-  const store = createStore<JobRecord[]>([]);
+  const store = createStore<readonly JobRecord[]>([]);
   jobsStore = store;
+  const update = (next: JobRecord[]) => store.set((prev) => reuseJobs(prev, next));
   browser.runtime.onMessage.addListener((message, sender) => {
     if (sender.id !== browser.runtime.id || !isBackgroundMessage(message)) return;
-    store.set(message.jobs);
+    update(message.jobs);
   });
   void sendToBackground<{ jobs: JobRecord[] }>({ type: 'getJobs' }).then((res) => {
-    if (res.ok && Array.isArray(res.jobs)) store.set(res.jobs);
+    if (res.ok && Array.isArray(res.jobs)) update(res.jobs);
   });
   return store;
 }
+
+/** 某部影片（與某一類）的工作；清單中其他工作改變時結果不變。 */
+export const videoJobs = (videoId: string, filter: (job: JobRecord) => boolean = () => true) =>
+  derive([downloadJobs()], (list) => list.filter((j) => j.videoId === videoId && filter(j)));
 
 /** 一鍵下載的設定（009 FR-1 至 FR-3）；讀到之前為 null。 */
 export interface QuickSettings {

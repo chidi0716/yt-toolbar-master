@@ -150,9 +150,10 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
 
   // 下載工作（002 FR-3）：按鈕上的進度環。一鍵下載（009 FR-7）：「影片」「MP3」的提示文字標明點下去會發生什麼。
   // 每個按鈕各自訂閱自己的狀態，狀態改變時不重新繪製整條工具列。
-  const jobs = downloadJobs();
-  const quick = quickSettings();
+  // 工作清單與一鍵下載設定在工具列第一次繪製時才建立（不在每個 YouTube 頁面啟動時查詢）。
   const downloadStatus = (id: string): ToolSources => {
+    const jobs = downloadJobs();
+    const quick = quickSettings();
     const tooltip = (kind: 'video' | 'mp3', q: QuickSettings | null) => (q?.enabled ? quickTooltip(kind, q.defaults) : undefined);
     return {
       video: derive([jobs, quick], (list, q) => ({ progress: buttonProgress(list, id, 'video'), tooltip: tooltip('video', q) })),

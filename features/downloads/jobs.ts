@@ -150,6 +150,19 @@ export function otherActiveJobs(jobs: readonly JobRecord[], videoId: string): Jo
   return jobs.filter((j) => j.videoId !== videoId && isActive(j));
 }
 
+/**
+ * 收到新的清單時沿用內容沒變的紀錄（同一個物件），全部沒變時回傳原本的清單：
+ * 面板只在自己的工作確實改變時重新繪製。
+ */
+export function reuseJobs(prev: readonly JobRecord[], next: readonly JobRecord[]): readonly JobRecord[] {
+  const byId = new Map(prev.map((j) => [j.jobId, j]));
+  const merged = next.map((j) => {
+    const old = byId.get(j.jobId);
+    return old && JSON.stringify(old) === JSON.stringify(j) ? old : j;
+  });
+  return merged.length === prev.length && merged.every((j, i) => j === prev[i]) ? prev : merged;
+}
+
 /** 只保留進行中的工作與最近結束的工作。 */
 export function pruneJobs(jobs: readonly JobRecord[], now: number): JobRecord[] {
   let finished = 0;

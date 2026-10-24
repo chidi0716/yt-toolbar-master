@@ -1,6 +1,7 @@
 // 背景腳本端：經由橋接程式的下載（tasks T16、plan 3.8）。
 // - 連線（utils/native.ts）、狀態與影片資訊的暫存（002 NFR-2）；
-// - 下載工作清單：以 storage.session 保存，改變時推播給曾經查詢過的 YouTube 分頁（002 FR-3、FR-4）；
+// - 下載工作清單：進度只存在記憶體，工作的狀態改變時才寫入 storage.session；推播給曾經查詢過的 YouTube 分頁，
+//   只有進度改變時每秒最多推播一次（002 FR-3、FR-4）；
 // - 完成／失敗通知，點通知在 Finder／檔案總管中顯示檔案（002 FR-5、FR-6）；擴充功能沒有連線時結束的工作
 //   在下一次連線時以 jobs 的 missed 補發通知（plan 4.6）。
 import { initI18n, t } from '@/utils/i18n';
@@ -28,6 +29,8 @@ const INFO_TTL_MS = 30 * 60_000;
 const NOTIFICATION_PREFIX = 'ytm-job:';
 /** 沒有進行中的下載、也沒有等待中的指令這麼久之後關閉連線（橋接程式隨之結束，也不讓 service worker 一直執行）。 */
 const IDLE_CLOSE_MS = 60_000;
+/** 只有進度改變時，推播的最短間隔。 */
+const PROGRESS_BROADCAST_MS = 1000;
 
 const jobsItem = storage.defineItem<JobRecord[]>('session:downloadJobs', { fallback: [] });
 const notifiedItem = storage.defineItem<string[]>('session:notifiedJobs', { fallback: [] });
@@ -98,8 +101,16 @@ export async function resumeDownloads(): Promise<void> {
   if (jobs.some(isActive) || unfinished) client.connect();
 }
 
-async function setJobs(next: JobRecord[]): Promise<void> {
+/**
+ * 更新工作清單。progressOnly：只有進度（百分比、速度、剩餘時間）改變，不寫入 storage，推播合併為每秒最多一次；
+ * service worker 重新啟動後從最近一次保存的狀態繼續，進度由下一個事件補上。
+ */
+async function setJobs(next: JobRecord[], progressOnly = false): Promise<void> {
   jobs = pruneJobs(next, Date.now());
+  if (progressOnly) {
+    scheduleBroadcast();
+    return;
+  }
   await jobsItem.setValue(jobs);
   const active = jobs.some(isActive);
   if (active !== unfinished) {
@@ -109,7 +120,18 @@ async function setJobs(next: JobRecord[]): Promise<void> {
   broadcast();
 }
 
+let broadcastTimer: ReturnType<typeof setTimeout> | null = null;
+let lastBroadcast = 0;
+
+function scheduleBroadcast() {
+  if (broadcastTimer !== null) return;
+  broadcastTimer = setTimeout(broadcast, Math.max(0, lastBroadcast + PROGRESS_BROADCAST_MS - Date.now()));
+}
+
 function broadcast() {
+  if (broadcastTimer !== null) clearTimeout(broadcastTimer);
+  broadcastTimer = null;
+  lastBroadcast = Date.now();
   const message = { type: 'jobsChanged', jobs };
   for (const tabId of [...tabs]) {
     browser.tabs.sendMessage(tabId, message).catch(() => {
@@ -122,7 +144,10 @@ function broadcast() {
 
 async function onHostEvent(event: HostEvent) {
   await load();
-  await setJobs(applyEvent(jobs, event, Date.now()));
+  const before = event.kind === 'progress' ? jobs.find((j) => j.jobId === event.jobId) : undefined;
+  const next = applyEvent(jobs, event, Date.now());
+  const after = before && next.find((j) => j.jobId === event.jobId);
+  await setJobs(next, !!after && after.state === before.state && after.stage === before.stage);
   if (event.kind !== 'progress' && event.kind !== 'stage') {
     await notifyFinished(event.jobId);
     scheduleIdleClose();
