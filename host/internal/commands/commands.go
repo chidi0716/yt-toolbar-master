@@ -50,21 +50,9 @@ type jobIDArgs struct {
 	JobID *string `json:"jobId"`
 }
 
-func decodeArgs(raw json.RawMessage, v any) error {
-	dec := json.NewDecoder(bytesReader(raw))
-	dec.DisallowUnknownFields()
-	if err := dec.Decode(v); err != nil {
-		return errs.New(errs.InvalidArgs, "args: %v", err)
-	}
-	if dec.More() {
-		return errs.New(errs.InvalidArgs, "args: trailing data")
-	}
-	return nil
-}
-
 func jobIDFrom(raw json.RawMessage) (string, error) {
 	var a jobIDArgs
-	if err := decodeArgs(raw, &a); err != nil {
+	if err := validate.DecodeStrict(raw, &a); err != nil {
 		return "", err
 	}
 	if a.JobID == nil {
@@ -91,7 +79,7 @@ var handlers = map[string]handler{
 	"status": noArgs(Backend.Status),
 	"getInfo": func(ctx context.Context, b Backend, args json.RawMessage) (any, error) {
 		var a videoIDArgs
-		if err := decodeArgs(args, &a); err != nil {
+		if err := validate.DecodeStrict(args, &a); err != nil {
 			return nil, err
 		}
 		if a.VideoID == nil {
@@ -133,7 +121,7 @@ var handlers = map[string]handler{
 	"updateYtDlp": noArgs(Backend.UpdateYtDlp),
 	"setAutoUpdate": func(ctx context.Context, b Backend, args json.RawMessage) (any, error) {
 		var a enabledArgs
-		if err := decodeArgs(args, &a); err != nil {
+		if err := validate.DecodeStrict(args, &a); err != nil {
 			return nil, err
 		}
 		if a.Enabled == nil {

@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
 )
 
@@ -112,7 +113,7 @@ func (s *Store) Create(spec *Spec) (*Status, error) {
 	if err := os.Mkdir(s.JobDir(spec.JobID), 0o700); err != nil {
 		return nil, err
 	}
-	if err := writeJSON(s.file(spec.JobID, "spec.json"), spec); err != nil {
+	if err := platform.WriteJSONAtomic(s.file(spec.JobID, "spec.json"), spec, 0o600); err != nil {
 		return nil, err
 	}
 	st := &Status{
@@ -164,7 +165,7 @@ func (s *Store) ReadStatus(id string) (*Status, error) {
 
 // WriteStatus 以「寫暫存檔再改名」的方式更新狀態，讀取端不會讀到寫一半的檔案。
 func (s *Store) WriteStatus(st *Status) error {
-	return writeJSON(s.file(st.JobID, "status.json"), &statusFile{Status: *st, Client: st.Client, RunnerPID: st.RunnerPID})
+	return platform.WriteJSONAtomic(s.file(st.JobID, "status.json"), &statusFile{Status: *st, Client: st.Client, RunnerPID: st.RunnerPID}, 0o600)
 }
 
 // List 回傳全部工作的 ID（依建立時間排序前先以 ID 排序；呼叫端再依狀態排序）。
@@ -210,14 +211,11 @@ func (s *Store) Delivered(id string) bool { return s.exists(id, "delivered") }
 
 // Lock 取得執行鎖；已被其他程序持有時回傳錯誤。
 func (s *Store) Lock(id string) (unlock func(), err error) {
-	p := s.file(id, "runner.lock")
-	f, err := os.OpenFile(p, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600)
+	unlock, err = LockFile(s.file(id, "runner.lock"), false)
 	if err != nil {
 		return nil, fmt.Errorf("job %s is already running: %w", id, err)
 	}
-	fmt.Fprintf(f, "%d\n", os.Getpid())
-	f.Close()
-	return func() { os.Remove(p) }, nil
+	return unlock, nil
 }
 
 // Remove 刪除工作的資料夾。
@@ -274,27 +272,4 @@ func readJSON(path string, v any) error {
 		return err
 	}
 	return json.Unmarshal(b, v)
-}
-
-func writeJSON(path string, v any) error {
-	b, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		return err
-	}
-	tmp := fmt.Sprintf("%s.%d.tmp", path, os.Getpid())
-	if err := os.WriteFile(tmp, b, 0o600); err != nil {
-		return err
-	}
-	// Windows 上目標檔案正被讀取時改名會暫時失敗，稍等再試。
-	for i := 0; ; i++ {
-		err = os.Rename(tmp, path)
-		if err == nil || i >= 20 {
-			break
-		}
-		time.Sleep(25 * time.Millisecond)
-	}
-	if err != nil {
-		os.Remove(tmp)
-	}
-	return err
 }

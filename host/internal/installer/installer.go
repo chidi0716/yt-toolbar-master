@@ -12,8 +12,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
-	"syscall"
 
 	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
@@ -202,7 +200,7 @@ func (in *Installer) bundledPaths(tool string) []string {
 
 func allExist(paths []string) bool {
 	for _, p := range paths {
-		if st, err := os.Stat(p); err != nil || !st.Mode().IsRegular() {
+		if !platform.IsFile(p) {
 			return false
 		}
 	}
@@ -285,7 +283,7 @@ func (in *Installer) InstallOffline() error {
 		}
 		if p == "" {
 			for _, b := range []string{tool, tool + ".exe"} {
-				if allExist([]string{filepath.Join(in.Layout.BinDir, b)}) {
+				if platform.IsFile(filepath.Join(in.Layout.BinDir, b)) {
 					p = filepath.Join(in.Layout.BinDir, b)
 				}
 			}
@@ -332,12 +330,8 @@ func classify(err error) error {
 		return errs.New(errs.ChecksumMismatch, "%v", err)
 	case errors.As(err, &he), errors.As(err, &ne), errors.As(err, &ue), errors.Is(err, io.ErrUnexpectedEOF):
 		return errs.New(errs.Network, "%v", err)
-	case errors.Is(err, syscall.ENOSPC) || strings.Contains(strings.ToLower(err.Error()), "not enough space"):
-		return errs.New(errs.DiskFull, "%v", err)
-	case errors.Is(err, os.ErrPermission):
-		return errs.New(errs.PermissionDenied, "%v", err)
 	}
-	return errs.New(errs.Unknown, "%v", err)
+	return errs.FromFS(err)
 }
 
 // Explain 回傳給使用者看的中英文說明與解決方式（008 FR-14）。

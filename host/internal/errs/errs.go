@@ -7,6 +7,9 @@ package errs
 import (
 	"errors"
 	"fmt"
+	"os"
+	"strings"
+	"syscall"
 )
 
 // Code 是固定的錯誤代碼。
@@ -89,4 +92,23 @@ func From(err error) *Error {
 		return e
 	}
 	return &Error{Code: Unknown, Message: err.Error()}
+}
+
+// FromFS 把檔案系統的錯誤轉成 DISK_FULL、PERMISSION_DENIED 或 UNKNOWN；已經是 *Error 的保持不變。
+func FromFS(err error) *Error {
+	if err == nil {
+		return nil
+	}
+	var e *Error
+	if errors.As(err, &e) {
+		return e
+	}
+	msg := strings.ToLower(err.Error())
+	switch {
+	case errors.Is(err, syscall.ENOSPC) || strings.Contains(msg, "no space") || strings.Contains(msg, "not enough space"):
+		return New(DiskFull, "%v", err)
+	case errors.Is(err, os.ErrPermission):
+		return New(PermissionDenied, "%v", err)
+	}
+	return New(Unknown, "%v", err)
 }

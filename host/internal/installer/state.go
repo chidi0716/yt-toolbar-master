@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
 )
 
 // StateFileName 記錄安裝資料夾中各工具是依哪個清單版本安裝的（install-state.json）。
@@ -29,24 +31,8 @@ func LoadState(installDir string) *State {
 
 // Save 以「寫暫存檔再改名」的方式寫入狀態。
 func (s *State) Save(installDir string) error {
-	return writeJSONAtomic(filepath.Join(installDir, StateFileName), s)
-}
-
-func writeJSONAtomic(path string, v any) error {
-	b, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
+	if err := os.MkdirAll(installDir, 0o755); err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return err
-	}
-	tmp := path + ".tmp-" + randomSuffix()
-	if err := os.WriteFile(tmp, append(b, '\n'), 0o644); err != nil {
-		return err
-	}
-	if err := os.Rename(tmp, path); err != nil {
-		os.Remove(tmp)
-		return err
-	}
-	return nil
+	return platform.WriteJSONAtomic(filepath.Join(installDir, StateFileName), s, 0o644)
 }

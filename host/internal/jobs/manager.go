@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/logx"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
 )
 
@@ -76,7 +77,7 @@ func (m *Manager) init() {
 		m.wake = make(chan struct{}, 1)
 	}
 	if m.Log == nil {
-		m.Log = nopLogger{}
+		m.Log = logx.Nop{}
 	}
 	if m.Now == nil {
 		m.Now = time.Now

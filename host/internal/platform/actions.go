@@ -165,7 +165,7 @@ func (a *Actions) command(ctx context.Context, c *Command) *exec.Cmd {
 
 // Reveal 在 Finder／檔案總管中選取檔案。
 func (a *Actions) Reveal(ctx context.Context, path string) error {
-	if st, err := os.Stat(path); err != nil || !st.Mode().IsRegular() {
+	if !IsFile(path) {
 		return errs.New(errs.FileNotFound, "the file was moved or deleted")
 	}
 	c, err := RevealCommand(a.GOOS, path, a.Getenv)

@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/logx"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/ytdlp"
 )
@@ -22,10 +24,6 @@ import (
 type Logger interface {
 	Printf(format string, a ...any)
 }
-
-type nopLogger struct{}
-
-func (nopLogger) Printf(string, ...any) {}
 
 // 執行程序的時間設定。
 const (
@@ -66,7 +64,7 @@ func retryAfterUpdate(e *errs.Error) bool {
 // Run 執行工作直到結束，回傳最後的狀態。只在 --run-job 模式中呼叫。
 func (r *Runner) Run(id string) (*Status, error) {
 	if r.Log == nil {
-		r.Log = nopLogger{}
+		r.Log = logx.Nop{}
 	}
 	if r.Now == nil {
 		r.Now = time.Now
@@ -355,7 +353,7 @@ func (r *Runner) finalize(d *validate.Download, tmp, reported string) (string, *
 			}
 			txt := strings.TrimSuffix(src, ".vtt") + ".txt"
 			if err := os.WriteFile(txt, []byte(text), 0o644); err != nil {
-				return "", writeError(err)
+				return "", errs.FromFS(err)
 			}
 			src = txt
 		}
@@ -370,25 +368,14 @@ func (r *Runner) finalize(d *validate.Download, tmp, reported string) (string, *
 		}
 		src = reported
 	}
-	if st, err := os.Stat(src); err != nil || !st.Mode().IsRegular() {
+	if !platform.IsFile(src) {
 		return "", errs.New(errs.Unknown, "output file is missing")
 	}
 	dest, err := moveUnique(src, d.Dir)
 	if err != nil {
-		return "", writeError(err)
+		return "", errs.FromFS(err)
 	}
 	return dest, nil
-}
-
-func writeError(err error) *errs.Error {
-	msg := strings.ToLower(err.Error())
-	switch {
-	case strings.Contains(msg, "no space") || strings.Contains(msg, "not enough space"):
-		return errs.New(errs.DiskFull, "%v", err)
-	case errors.Is(err, os.ErrPermission):
-		return errs.New(errs.PermissionDenied, "%v", err)
-	}
-	return errs.New(errs.Unknown, "%v", err)
 }
 
 // findFile 回傳 dir 中以 suffix 結尾的檔案（不分大小寫）。
