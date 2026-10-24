@@ -1,5 +1,5 @@
 // T26／T47 的自動檢查（constitution 第 2、4 點，plan 3.2、3.9）：
-// - 權限與主機權限與 plan 3.2 完全一致（新版本提醒不新增任何權限）；
+// - 權限與主機權限與 plan 3.2 完全一致（新版本提醒不新增任何權限；009 只新增 contextMenus）；
 // - GitHub API 的網址只能出現在 utils/update-check.ts；
 // - 新版本提醒以外，擴充功能的程式不連到 GitHub。
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -43,6 +43,20 @@ describe('權限（plan 3.2、constitution 第 4 點）', () => {
       expect(JSON.stringify(rest)).not.toMatch(/github|management|<all_urls>|"tabs"|scripting|webRequest|cookies/);
     });
   }
+});
+
+describe('contextMenus（plan 3.2、009 第三節）', () => {
+  it('只有 features/downloads/context-menu.ts 使用右鍵選單 API', () => {
+    const hits = sourceFiles().filter((f) => /\b(contextMenus|menus)\.(create|update|remove|removeAll|onClicked)\b/.test(readFileSync(join(root, f), 'utf8')));
+    expect(hits).toEqual(['features/downloads/context-menu.ts']);
+  });
+
+  it('選單只出現在 YouTube 頁面的影片連結上', () => {
+    const source = readFileSync(join(root, 'features/downloads/context-menu.ts'), 'utf8');
+    expect(source).toContain("documentUrlPatterns: ['*://*.youtube.com/*']");
+    expect(source).toContain("targetUrlPatterns: ['*://*.youtube.com/watch*', '*://*.youtube.com/shorts/*', '*://youtu.be/*']");
+    expect(source).not.toMatch(/<all_urls>|contexts:\s*\[[^\]]*'(all|page|selection)'/);
+  });
 });
 
 describe('連線範圍（constitution 第 2 點、plan 3.9）', () => {

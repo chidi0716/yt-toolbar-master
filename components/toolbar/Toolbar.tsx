@@ -13,7 +13,7 @@ import { ComingSoon } from '../panels/PanelStatus';
 import { useStore } from '../panels/useStore';
 import { FIXED, TOOLS, getButton, isToolOngoing, type ButtonDef, type ButtonId } from './buttons';
 import { OtherTools } from './OtherTools';
-import { initialPanelState, panelReducer } from './panel-state';
+import { initialPanelState, panelReducer, reminderBlocked } from './panel-state';
 import { PanelHost } from './PanelHost';
 import type { HorizontalRange } from './position';
 import { ToolbarButton } from './ToolbarButton';
@@ -154,7 +154,7 @@ export function Toolbar({
     reminder.attach(host);
     return () => reminder.attach(null);
   }, [reminder, host]);
-  useEffect(() => reminder?.setToolbarBlocked(state.openId !== null || editing), [reminder, state.openId, editing]);
+  useEffect(() => reminder?.setToolbarBlocked(reminderBlocked(state, editing)), [reminder, state.openId, editing]);
 
   const handleClick = (def: ButtonDef) => {
     if (def.kind === 'panel') {

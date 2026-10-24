@@ -12,6 +12,8 @@ A toolbar appears between the player and the video title on watch pages. It foll
 
 **Download tools**
 
+- **One-click download** (on by default): click **Video** or **MP3** and the download starts right away in your default quality (1080p MP4 unless you change it; MP3 uses the bitrate you chose last). The panel shows the title, the quality and size (for example “1080p60 MP4, ~320 MB”) and the progress; **Choose another quality** cancels it and shows the full list below. Clicking again while it runs does not download twice. Turn it off in the settings page to choose every time.
+- **Right-click download:** right-click a video on YouTube (home page, search results, recommendations, playlists) → **YT Toolbar Master** → **Download video (1080p MP4)** or **Download MP3 (192 kbps)**, without opening the video. A notification tells you it started and when it's done; the download also shows up in the Video and MP3 panels of every YouTube tab, where you can cancel it. This can be turned off in the settings page.
 - **Video:** a quality list from high to low (8K / 4K / 2K / 1080 / HD labels) with file sizes, as MP4 by default and WEBM under “Show more formats”. 2K and above, which YouTube has no H.264 version of, use AV1 (or VP9) inside MP4 and are marked “May not play in some players”.
 - **MP3:** 64–320 kbps (remembers your choice).
 - **Time range** for video and MP3: download only a part, with a range slider, start/end fields, “Sync with player” and “Set to current time”.
