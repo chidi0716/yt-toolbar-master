@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -163,7 +164,7 @@ func TestUninstallCommand(t *testing.T) {
 	if err != nil || !v.(*UninstallResult).OK {
 		t.Fatalf("%+v %v", v, err)
 	}
-	if got := rec.list(); got[len(got)-1] != "--uninstall --delay 2" {
+	if got := rec.list(); got[len(got)-1] != "--uninstall --wait-pid "+strconv.Itoa(os.Getpid()) {
 		t.Fatalf("spawned: %v", got)
 	}
 	b, _ := json.Marshal(v)

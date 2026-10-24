@@ -4,6 +4,7 @@ package app
 import (
 	"context"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -228,10 +229,12 @@ func (a *App) maybeStartUpdate() {
 	}
 }
 
-// UpdateFlag 與 UninstallFlag 是小幫手啟動自己時的參數。
+// 小幫手啟動自己時的參數。
 const (
 	UpdateFlag    = "--update"
 	UninstallFlag = "--uninstall"
+	// WaitPIDFlag：--uninstall 等這個 PID 的程序結束後才刪除。
+	WaitPIDFlag = "--wait-pid"
 )
 
 // SetAutoUpdateResult 是 setAutoUpdate 的結果。
@@ -272,11 +275,9 @@ type UninstallResult struct {
 	OK bool `json:"ok"`
 }
 
-// UninstallDelay 是移除前等待的秒數，讓這個回應先送達擴充功能。
-const UninstallDelay = "2"
-
 // Uninstall 實作 uninstall（008 FR-30）：有進行中的下載時回傳 JOBS_RUNNING；否則啟動分離的
-// ytm-host --uninstall --delay 2 後回傳 {ok: true}。
+// ytm-host --uninstall --wait-pid <自己的 PID> 後回傳 {ok: true}。擴充功能收到回應後關閉連線，
+// 這個程序隨之結束，移除程序才開始刪除。
 func (a *App) Uninstall(ctx context.Context) (any, error) {
 	if a.Manager != nil && a.Manager.Store != nil && a.Manager.Store.ActiveCount(a.now()) > 0 {
 		return nil, errs.New(errs.JobsRunning, "downloads are in progress")
@@ -284,7 +285,7 @@ func (a *App) Uninstall(ctx context.Context) (any, error) {
 	if a.SpawnSelf == nil {
 		return nil, errs.New(errs.Unknown, "cannot start the uninstaller")
 	}
-	if _, err := a.SpawnSelf(UninstallFlag, "--delay", UninstallDelay); err != nil {
+	if _, err := a.SpawnSelf(UninstallFlag, WaitPIDFlag, strconv.Itoa(os.Getpid())); err != nil {
 		return nil, errs.New(errs.Unknown, "could not start the uninstaller: %v", err)
 	}
 	return &UninstallResult{OK: true}, nil

@@ -9,7 +9,7 @@ import (
 )
 
 // TestUpdateCommandsEndToEnd 經由原生訊息測試 plan 4.9 新增的指令：status 的 components 與 update、
-// setAutoUpdate、checkUpdates、uninstall（真的啟動分離的 --uninstall --delay 2）。
+// setAutoUpdate、checkUpdates、uninstall（真的啟動分離的 --uninstall --wait-pid）。
 func TestUpdateCommandsEndToEnd(t *testing.T) {
 	if runtime.GOOS != "linux" {
 		t.Skip("uses the Linux development locations")
@@ -45,6 +45,12 @@ func TestUpdateCommandsEndToEnd(t *testing.T) {
 	if r := ok(t, b.request("uninstall", nil, nil)); r["ok"] != true {
 		t.Fatalf("uninstall: %v", r)
 	}
+	// 移除程序等這個小幫手結束（擴充功能收到回應後關閉連線）才刪除。
+	time.Sleep(2500 * time.Millisecond)
+	if _, err := os.Stat(installDir); err != nil {
+		t.Fatalf("the install folder was removed while the helper was still connected: %v", err)
+	}
+	b.stdin.Close()
 	deadline := time.Now().Add(15 * time.Second)
 	for {
 		if _, err := os.Stat(installDir); os.IsNotExist(err) {
