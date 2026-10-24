@@ -367,7 +367,7 @@ await section(
     const early = await page.evaluate(() => ({ cls: window.__classAtDomReady, toolbar: window.__toolbarAtDomReady }));
     check(
       '重新整理後，頁面解析完成時（工具列出現之前）<html> 已有 class',
-      /\byte-hide-comments\b/.test(early.cls ?? '') && early.toolbar === false,
+      /\bytm-hide-comments\b/.test(early.cls ?? '') && early.toolbar === false,
       JSON.stringify(early),
     );
 

@@ -96,7 +96,7 @@ const toolbarState = (page) =>
       const el = document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-btn[data-button="mp3"] + .ytm-tooltip');
       return { text: el.textContent, opacity: getComputedStyle(el).opacity };
     });
-    check('滑鼠停留時顯示提示文字（FR-7）', tip.text === 'MP3' && tip.opacity === '1', JSON.stringify(tip));
+    check('滑鼠停留時顯示提示文字（FR-7）', /^One-click download: MP3 \d+ kbps$/.test(tip.text) && tip.opacity === '1', JSON.stringify(tip));
     await shotToolbar(page, 'T03-tooltip.png');
 
     // 直接執行的按鈕（截圖，T17）：點了在提示文字中顯示結果（002 FR-52）
