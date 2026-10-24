@@ -25,7 +25,9 @@ import { buttonProgress } from '@/features/downloads/jobs';
 import { quickTooltip } from '@/features/downloads/quick';
 import { createUpdateReminder } from '@/features/update/content';
 import { createViewingController } from '@/features/viewing';
+import { TOOLBAR_TAG } from '@/features/viewing/page-styles';
 import { derive } from '@/features/viewing/store';
+import { toolbarZIndexCss } from '@/utils/z-index';
 import { initI18n, onLocaleChange, t } from '@/utils/i18n';
 import { enabled, QUALITY_LOCK_VALUES, readSettings, toolbarLayout, uiLanguage, type QualityLock } from '@/utils/settings';
 import { normalizeLayout, type ToolbarLayout } from '@/utils/toolbar-layout';
@@ -69,11 +71,11 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
   };
 
   const ui = await createShadowRootUi<HTMLElement>(ctx, {
-    name: 'ytm-toolbar',
+    name: TOOLBAR_TAG,
     position: 'inline',
     anchor: () => findToolbarAnchor()?.before ?? null,
     append: 'before',
-    css: `${toolbarCss}\n${controlsCss}\n${panelsCss}`,
+    css: `${toolbarZIndexCss}\n${toolbarCss}\n${controlsCss}\n${panelsCss}`,
     // 工具列內的按鍵不要冒泡到 YouTube，避免觸發 YouTube 的鍵盤快捷鍵（FR-19）。
     isolateEvents: true,
     onMount(container, _shadow, host) {
@@ -165,7 +167,6 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
   /** 換頁、改變工具列設定或介面語言時重新繪製（按鈕的狀態另外由各自的 store 更新）。 */
   function renderInto(container: HTMLElement, host: HTMLElement) {
     if (!videoId) return;
-    viewing.decorateToolbarHost(host);
     render(
       <Toolbar
         host={host}

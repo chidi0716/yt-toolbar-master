@@ -3,6 +3,7 @@ import { render } from 'preact';
 import { Icon } from '@/components/icons';
 import { t } from '@/utils/i18n';
 import { ensureStyle } from '@/utils/style';
+import { Z_INDEX } from '@/utils/z-index';
 import { audioOnly, hideComments, smartPause, wheelVolume } from '@/utils/settings';
 import { SELECTORS, findAutoplayToggle, findPlayer, findVideo, isAutoplayOn, thumbnailUrl } from '@/utils/youtube/dom';
 import { getVideoId, isWatchPage } from '@/utils/youtube/page';
@@ -172,7 +173,7 @@ export function createAudioOnly() {
 const HINT_TAG = 'ytm-volume-hint';
 const HINT_MS = 1000;
 const HINT_CSS = `
-:host { all: initial; position: fixed; z-index: 2300; pointer-events: none; transform: translate(-50%, -50%); }
+:host { all: initial; position: fixed; z-index: ${Z_INDEX.volumeHint}; pointer-events: none; transform: translate(-50%, -50%); }
 .hint {
   display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 24px;
   background: rgba(0, 0, 0, 0.7); color: #fff; font: 500 18px/24px Roboto, Arial, sans-serif;

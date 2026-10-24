@@ -32,8 +32,6 @@ export interface ViewingController {
     /** 鎖定畫質（004 第 1 節）。 */
     quality: QualityLockFeature;
   };
-  /** 工具列（重新）掛載或重新繪製時呼叫，讓功能可以在宿主元素上加 class。 */
-  decorateToolbarHost(host: HTMLElement): void;
 }
 
 export function createViewingController(): ViewingController {
@@ -51,15 +49,9 @@ export function createViewingController(): ViewingController {
     quality: createQualityLock(),
   };
   const features: ViewingFeature[] = [dark, pip, cinema, floating, loop, ...Object.values(more)];
-  // 劇院模式開啟期間浮動播放器暫停作用（003 FR-45）。劇院模式以 Esc、點變暗區域或停用工具列關閉時也跟著恢復。
+  // 劇院模式開啟期間浮動播放器暫停作用，浮動中的播放器回到原位（003 FR-45）；以按鈕、Esc、點變暗區域或停用工具列
+  // 關閉時恢復。播放器容器找不到等原因沒有開成功時狀態不變，浮動播放器不受影響。
   cinema.state.subscribe(() => floating.setSuspended(cinema.state.get().active));
-  const toggleCinema = () => {
-    // 開啟前先讓浮動中的播放器回到原位，再進入劇院模式。
-    if (!cinema.state.get().active) floating.setSuspended(true);
-    cinema.toggle();
-    // 播放器容器找不到等原因沒有開成功時，恢復浮動播放器。
-    floating.setSuspended(cinema.state.get().active);
-  };
   let active = false;
 
   return {
@@ -72,7 +64,7 @@ export function createViewingController(): ViewingController {
       floating: floating.state,
       loop: derive([loop.status], (s) => ({ active: s.running })),
     },
-    actions: { darkMode: dark.toggle, pip: pip.toggle, cinema: toggleCinema, floating: floating.toggle },
+    actions: { darkMode: dark.toggle, pip: pip.toggle, cinema: cinema.toggle, floating: floating.toggle },
     setActive(next) {
       if (next === active) return;
       active = next;
@@ -95,9 +87,6 @@ export function createViewingController(): ViewingController {
           console.info('[yt-toolbar-master] viewing feature failed on navigation', err);
         }
       }
-    },
-    decorateToolbarHost(host) {
-      cinema.decorateToolbarHost(host);
     },
   };
 }

@@ -7,6 +7,7 @@ import { Icon } from '@/components/icons';
 import { useLocale } from '@/components/useLocale';
 import { t } from '@/utils/i18n';
 import { ensureStyle } from '@/utils/style';
+import { Z_INDEX } from '@/utils/z-index';
 import { floatingCorner, floatingPlayer, readSettings } from '@/utils/settings';
 import { findPlayerContainer, findVideo, mastheadHeight } from '@/utils/youtube/dom';
 import { isWatchPage } from '@/utils/youtube/page';
@@ -40,7 +41,7 @@ export interface FloatingFeature extends ViewingFeature {
 }
 
 const CONTROLS_CSS = `
-:host { all: initial; position: fixed; z-index: 2151; pointer-events: none; }
+:host { all: initial; position: fixed; z-index: ${Z_INDEX.floatingControls}; pointer-events: none; }
 .bar {
   position: absolute; inset: 0 0 auto 0; height: 36px;
   display: flex; align-items: center; justify-content: space-between;

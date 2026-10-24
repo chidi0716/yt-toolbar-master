@@ -6,6 +6,7 @@ import type { UpdateReminder } from '@/features/update/content';
 import type { ReminderState } from '@/features/update/reminder';
 import { createStore, type ReadStore } from '@/features/viewing/store';
 import { t } from '@/utils/i18n';
+import { LAYER_LEVEL, pushLayer } from '@/utils/layers';
 import { defaultLayout, splitLayout, type ToolbarLayout, type ToolId } from '@/utils/toolbar-layout';
 import { Icon } from '../icons';
 import { useLocale } from '../useLocale';
@@ -157,19 +158,18 @@ export function Toolbar({
     focusMoreLater.current = false;
     if (host.shadowRoot?.activeElement || document.activeElement === document.body) buttonRefs.current.get('more')?.focus();
   }, [editing, host]);
-  // Esc 取消編輯（006 FR-4）。工具列內的按鍵在 Shadow DOM 邊界被停止冒泡，所以在 document 的 capture 階段監聽；
-  // 只在編輯模式中監聽（006 NFR-1）。
+  // Esc 取消編輯（006 FR-4）；只在編輯模式中監聽（006 NFR-1）。
   useEffect(() => {
     if (!editing) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      event.preventDefault();
-      event.stopPropagation();
-      setDraft(null);
-      focusMoreLater.current = true;
-    };
-    document.addEventListener('keydown', onKeyDown, true);
-    return () => document.removeEventListener('keydown', onKeyDown, true);
+    return pushLayer({
+      level: LAYER_LEVEL.toolbar,
+      onEscape(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        setDraft(null);
+        focusMoreLater.current = true;
+      },
+    });
   }, [editing]);
 
   // 新版本提醒：卡片只在工具列掛載時出現（FR-29b）；展開面板或編輯工具列時延後（constitution 第 7c 點）。
