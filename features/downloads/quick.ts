@@ -127,3 +127,45 @@ export function initialDownloadMode(o: { quickEnabled: boolean; clickedForThisVi
   if (!o.quickEnabled) return 'full';
   return o.clickedForThisVideo && !o.helperJustInstalled ? 'quick' : 'confirm';
 }
+
+/** 下載面板目前顯示什麼，與決定它的條件（一鍵下載是否開啟在面板打開時讀取）。 */
+export interface DownloadPanelState {
+  quickEnabled: boolean;
+  /** 這個狀態所屬的影片。 */
+  videoId: string;
+  /** 使用者為目前這部影片點了按鈕（釘選的面板換了影片時為 false）。 */
+  clicked: boolean;
+  /** 這次打開面板時顯示過安裝引導、之後才偵測到小幫手（FR-11：顯示「小幫手已安裝完成」）。 */
+  installed: boolean;
+  mode: DownloadMode;
+}
+
+export type DownloadPanelEvent =
+  /** 顯示安裝引導之後偵測到小幫手（FR-10、FR-11）。 */
+  | { type: 'helperBecameReady' }
+  /** 釘選的面板換到別部影片。 */
+  | { type: 'videoChanged'; videoId: string }
+  /** 「改用其他畫質」：顯示完整選項。 */
+  | { type: 'chooseOther' }
+  /** 按了「開始下載」。 */
+  | { type: 'started' };
+
+const withMode = (s: Omit<DownloadPanelState, 'mode'>): DownloadPanelState => ({
+  ...s,
+  mode: initialDownloadMode({ quickEnabled: s.quickEnabled, clickedForThisVideo: s.clicked, helperJustInstalled: s.installed }),
+});
+
+export const initialDownloadPanel = (quickEnabled: boolean, videoId: string): DownloadPanelState => withMode({ quickEnabled, videoId, clicked: true, installed: false });
+
+export function downloadPanelReducer(state: DownloadPanelState, event: DownloadPanelEvent): DownloadPanelState {
+  switch (event.type) {
+    case 'helperBecameReady':
+      return withMode({ ...state, installed: true });
+    case 'videoChanged':
+      return withMode({ ...state, videoId: event.videoId, clicked: false, installed: false });
+    case 'chooseOther':
+      return { ...state, mode: 'full' };
+    case 'started':
+      return { ...state, mode: 'quick' };
+  }
+}

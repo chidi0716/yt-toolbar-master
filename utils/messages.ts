@@ -37,6 +37,8 @@ export type ContentMessage =
    * 不重複下載，回傳進行中的工作。title 是頁面上的標題（影片資訊沒有標題時使用）。
    */
   | { type: 'quickDownload'; videoId: string; kind: 'video' | 'mp3'; title: string }
+  /** 準備中的一鍵下載按了「改用其他畫質」：還沒送出下載時不送出（009 FR-4）。 */
+  | { type: 'cancelQuick'; videoId: string; kind: 'video' | 'mp3' }
   | { type: 'cancelJob'; jobId: string }
   /** 在 Finder／檔案總管中顯示完成的檔案（002 FR-5）。 */
   | { type: 'revealJob'; jobId: string }
@@ -153,6 +155,8 @@ export function isContentMessage(value: unknown): value is ContentMessage {
       return isDownloadRequest(m.request);
     case 'quickDownload':
       return isValidVideoId(m.videoId) && (m.kind === 'video' || m.kind === 'mp3') && isTitle(m.title);
+    case 'cancelQuick':
+      return isValidVideoId(m.videoId) && (m.kind === 'video' || m.kind === 'mp3');
     case 'cancelJob':
     case 'revealJob':
       return isValidJobId(m.jobId);

@@ -92,13 +92,14 @@ export async function downloadFromMenu(videoId: string, kind: QuickKind): Promis
   let title = '';
   try {
     const result = await quickDownload(videoId, kind, {
-      source: 'contextMenu',
       onStart: () => void notify(id, t('notifyStarted', videoId), spec),
       onInfo: (name) => {
         title = name;
         if (name) void notify(id, t('notifyStarted', name), spec);
       },
     });
+    // 同一個下載在工具列按了「改用其他畫質」而取消。
+    if (result.status === 'cancelled') return void browser.notifications.clear(id).catch(() => {});
     const name = result.title || title || videoId;
     await notify(id, t(result.status === 'running' ? 'notifyAlreadyDownloading' : 'notifyStarted', name), result.label);
   } catch (err) {

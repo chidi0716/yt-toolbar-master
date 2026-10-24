@@ -253,14 +253,18 @@ export function downloadArgs(
   }
 }
 
-async function startDownload(request: DownloadRequest, estimate: JobRecord['estimate'] = null): Promise<string> {
+async function cancelJob(jobId: string): Promise<void> {
+  const result = await hostRequest('cancel', { jobId });
   await load();
-  const status = await getStatus(false);
-  const preset = await namePreset.getValue();
+  await setJobs(jobs.map((j) => (j.jobId === jobId && isActive(j) ? { ...j, state: result.state === 'cancelled' ? 'cancelled' : j.state, speed: null, eta: null, updatedAt: Date.now() } : j)));
+}
+
+async function startDownload(request: DownloadRequest, estimate: JobRecord['estimate'] = null): Promise<string> {
+  const [, status, [dir, preset, embed]] = await Promise.all([load(), getStatus(false), readSettings([downloadDir, namePreset, embedInfo] as const)]);
   const settings = {
-    dir: (await downloadDir.getValue()) || status.defaultDir,
+    dir: dir || status.defaultDir,
     namePreset: status.namePresets.some((p) => p.id === preset) ? preset : 'title-id',
-    embed: (await embedInfo.getValue()) !== false,
+    embed: embed !== false,
   };
   // 設定的下載資料夾不存在或無法寫入時，橋接程式回應 PERMISSION_DENIED（T15b）。
   const result = await hostRequest('download', downloadArgs(request, settings));
@@ -277,11 +281,12 @@ async function startDownload(request: DownloadRequest, estimate: JobRecord['esti
 // 一鍵下載與右鍵下載（009，plan 3.11）
 // ---------------------------------------------------------------------------
 
-export type QuickSource = 'toolbar' | 'contextMenu';
-
 export interface QuickResult {
-  /** started：開始了新的下載；running：同一部影片的同一種下載已在進行中（FR-5），沒有重複下載。 */
-  status: 'started' | 'running';
+  /**
+   * started：開始了新的下載；running：同一部影片的同一種下載已在進行中（FR-5），沒有重複下載；
+   * cancelled：準備期間被 cancelQuick 取消（沒有下載）。
+   */
+  status: 'started' | 'running' | 'cancelled';
   jobId: string;
   title: string;
   label: string;
@@ -295,6 +300,14 @@ export async function readQuickDefaults(): Promise<QuickDefaults> {
 
 /** 同一部影片、同一種的一鍵下載同時只處理一個（連點兩次時共用同一個結果）。 */
 const quickPending = new Map<string, Promise<QuickResult>>();
+/** 準備期間按了「改用其他畫質」的一鍵下載。 */
+const quickCancelled = new Set<string>();
+
+/** 取消準備中的一鍵下載：還沒送出 download 時不送出；已經送出時取消那個工作。 */
+function cancelQuick(videoId: string, kind: QuickKind) {
+  const key = `${videoId}:${kind}`;
+  if (quickPending.has(key)) quickCancelled.add(key);
+}
 
 /**
  * 一鍵下載：取得影片資訊（共用 getInfo 的暫存）→ 檢查是否可下載（FR-6）→ 依預設值選格式（FR-2、FR-3）→ 開始下載。
@@ -304,7 +317,7 @@ const quickPending = new Map<string, Promise<QuickResult>>();
 export function quickDownload(
   videoId: string,
   kind: QuickKind,
-  options: { source: QuickSource; title?: string; onStart?: () => void; onInfo?: (title: string) => void },
+  options: { title?: string; onStart?: () => void; onInfo?: (title: string) => void } = {},
 ): Promise<QuickResult> {
   const key = `${videoId}:${kind}`;
   const pending = quickPending.get(key);
@@ -313,22 +326,36 @@ export function quickDownload(
     await load();
     const running = activeJobFor(jobs, videoId, kind);
     if (running) return { status: 'running', jobId: running.jobId, title: running.title, label: running.label };
+    // 影片資訊與狀態同時查詢（小幫手不能用時 getInfo 的失敗不用理會）。
+    const infoPromise = getInfo(videoId);
+    infoPromise.catch(() => {});
     const status = await getStatus(false);
     if (!status.ready) throw new HostRequestError(component({ state: 'connected', status }, 'yt-dlp').ok ? 'FFMPEG_NOT_FOUND' : 'YTDLP_NOT_FOUND');
     // 小幫手可以使用：右鍵下載在這時顯示「開始下載」通知（先以影片 ID 顯示，FR-23）。
     options.onStart?.();
-    const [info, defaults] = await Promise.all([getInfo(videoId), readQuickDefaults()]);
+    const [info, defaults] = await Promise.all([infoPromise, readQuickDefaults()]);
     options.onInfo?.(info.title || options.title || '');
     const plan = planQuickDownload(videoId, info, kind, defaults, options.title);
     if (!plan.ok) throw new HostRequestError(plan.error);
     // 取得資訊的期間，其他分頁有機會開始同一個下載：再檢查一次。
     const again = activeJobFor(jobs, videoId, kind);
     if (again) return { status: 'running', jobId: again.jobId, title: again.title, label: again.label };
+    const cancelled = { status: 'cancelled', jobId: '', title: plan.request.title, label: plan.request.label } as const;
+    if (quickCancelled.has(key)) return cancelled;
     const jobId = await startDownload(plan.request, plan.estimate);
+    if (quickCancelled.has(key)) {
+      await cancelJob(jobId);
+      return cancelled;
+    }
     return { status: 'started', jobId, title: plan.request.title, label: plan.request.label };
   })();
   quickPending.set(key, run);
-  void run.finally(() => quickPending.delete(key)).catch(() => {});
+  void run
+    .finally(() => {
+      quickPending.delete(key);
+      quickCancelled.delete(key);
+    })
+    .catch(() => {});
   return run;
 }
 
@@ -337,6 +364,7 @@ const HOST_MESSAGE_TYPES = [
   'getInfo',
   'startDownload',
   'quickDownload',
+  'cancelQuick',
   'cancelJob',
   'revealJob',
   'getJobs',
@@ -357,13 +385,13 @@ async function handle(message: Extract<ContentMessage, { type: HostMessageType }
     case 'startDownload':
       return { ok: true, jobId: await startDownload(message.request) };
     case 'quickDownload':
-      return { ok: true, result: await quickDownload(message.videoId, message.kind, { source: 'toolbar', title: message.title }) };
-    case 'cancelJob': {
-      const result = await hostRequest('cancel', { jobId: message.jobId });
-      await load();
-      await setJobs(jobs.map((j) => (j.jobId === message.jobId && isActive(j) ? { ...j, state: result.state === 'cancelled' ? 'cancelled' : j.state, speed: null, eta: null, updatedAt: Date.now() } : j)));
+      return { ok: true, result: await quickDownload(message.videoId, message.kind, { title: message.title }) };
+    case 'cancelJob':
+      await cancelJob(message.jobId);
       return { ok: true };
-    }
+    case 'cancelQuick':
+      cancelQuick(message.videoId, message.kind);
+      return { ok: true };
     case 'revealJob':
       await hostRequest('reveal', { jobId: message.jobId });
       return { ok: true };

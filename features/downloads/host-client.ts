@@ -44,6 +44,7 @@ export const startDownload = (request: DownloadRequest) => call<{ jobId: string 
 export const startQuickDownload = (videoId: string, kind: QuickKind, title: string) =>
   call<{ result: QuickResult }>({ type: 'quickDownload', videoId, kind, title: title.slice(0, 500) }).then((r) => r.result);
 export const cancelJob = (jobId: string) => call({ type: 'cancelJob', jobId });
+export const cancelQuickDownload = (videoId: string, kind: QuickKind) => call({ type: 'cancelQuick', videoId, kind });
 export const revealJob = (jobId: string) => call({ type: 'revealJob', jobId });
 export const updateYtDlp = () => call<{ update: UpdateResult }>({ type: 'updateYtDlp' }).then((r) => r.update);
 export const setAutoUpdate = (enabled: boolean) => call({ type: 'hostSetAutoUpdate', enabled });

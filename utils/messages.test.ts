@@ -71,6 +71,7 @@ describe('經由橋接程式的訊息（階段 4）', () => {
       { type: 'updateYtDlp' },
       { type: 'quickDownload', videoId: ID, kind: 'video', title: 'T' },
       { type: 'quickDownload', videoId: ID, kind: 'mp3', title: '' },
+      { type: 'cancelQuick', videoId: ID, kind: 'video' },
     ]) {
       expect(isContentMessage(m), JSON.stringify(m)).toBe(true);
     }
@@ -101,6 +102,7 @@ describe('經由橋接程式的訊息（階段 4）', () => {
       { type: 'startDownload', request: null },
       // 一鍵下載（009）：只接受影片與 MP3，格式由背景腳本選擇
       { type: 'quickDownload', videoId: ID, kind: 'subtitle', title: 'T' },
+      { type: 'cancelQuick', videoId: 'bad', kind: 'video' },
       { type: 'quickDownload', videoId: 'bad', kind: 'video', title: 'T' },
       { type: 'quickDownload', videoId: ID, kind: 'video' },
       { type: 'quickDownload', videoId: ID, kind: 'video', title: 'x'.repeat(1000) },

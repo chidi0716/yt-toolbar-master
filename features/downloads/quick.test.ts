@@ -3,7 +3,7 @@ import { setLocale } from '@/utils/i18n';
 import type { HostFormat, HostInfo } from '@/utils/native-protocol';
 import { newJob, type JobRecord } from './jobs';
 import { mp3Label } from './jobs';
-import { activeJobFor, existingQuickJob, initialDownloadMode, planQuickDownload, quickSummary, quickTooltip, toQuickDefaults, videoSpecLabel } from './quick';
+import { activeJobFor, downloadPanelReducer, existingQuickJob, initialDownloadMode, initialDownloadPanel, planQuickDownload, quickSummary, quickTooltip, toQuickDefaults, videoSpecLabel } from './quick';
 
 const ID = 'jNQXAC9IVRw';
 const f = (p: Partial<HostFormat> & { id: string }): HostFormat => ({
@@ -155,5 +155,28 @@ describe('面板一開始顯示什麼（009 FR-4、FR-8、FR-10、FR-11）', () 
         expect(initialDownloadMode({ quickEnabled: false, clickedForThisVideo, helperJustInstalled })).toBe('full');
       }
     }
+  });
+});
+
+describe('downloadPanelReducer（面板的流程，009 FR-4、FR-8、FR-10、FR-11）', () => {
+  it('一鍵下載開啟：點了按鈕直接開始；顯示安裝引導後偵測到小幫手時改為「開始下載」按鈕並標示已安裝', () => {
+    const open = initialDownloadPanel(true, ID);
+    expect(open.mode).toBe('quick');
+    const ready = downloadPanelReducer(open, { type: 'helperBecameReady' });
+    expect(ready).toMatchObject({ mode: 'confirm', installed: true });
+    expect(downloadPanelReducer(ready, { type: 'started' }).mode).toBe('quick');
+    expect(downloadPanelReducer(ready, { type: 'chooseOther' }).mode).toBe('full');
+  });
+
+  it('釘選的面板換了影片：顯示「開始下載」按鈕，不帶「已安裝」', () => {
+    const ready = downloadPanelReducer(initialDownloadPanel(true, ID), { type: 'helperBecameReady' });
+    expect(downloadPanelReducer(ready, { type: 'videoChanged', videoId: 'abcdefghijk' })).toMatchObject({ mode: 'confirm', installed: false, clicked: false });
+  });
+
+  it('一鍵下載關閉：一律是完整選項', () => {
+    const off = initialDownloadPanel(false, ID);
+    expect(off.mode).toBe('full');
+    expect(downloadPanelReducer(off, { type: 'helperBecameReady' })).toMatchObject({ mode: 'full', installed: true });
+    expect(downloadPanelReducer(off, { type: 'videoChanged', videoId: 'abcdefghijk' }).mode).toBe('full');
   });
 });

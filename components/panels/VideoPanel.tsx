@@ -3,11 +3,20 @@
 // 一鍵下載（009 第一節，tasks T53）：開啟時點按鈕就以預設值直接開始，面板顯示這次的下載與「改用其他畫質」。
 // 尚未安裝小幫手時只顯示安裝引導，偵測到安裝完成後顯示「開始下載」按鈕，不自動開始（009 第二節，tasks T54）。
 import type { ComponentChildren } from 'preact';
-import { useContext, useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { cancelJob, getInfo, HostError, quickSettings, startDownload, startQuickDownload, videoJobs } from '@/features/downloads/host-client';
+import { useContext, useEffect, useMemo, useReducer, useRef, useState } from 'preact/hooks';
+import { cancelJob, cancelQuickDownload, getInfo, HostError, quickSettings, startDownload, startQuickDownload, videoJobs } from '@/features/downloads/host-client';
 import { canDownload, missingOnlyDeno } from '@/features/downloads/host-status';
 import { isActive, isMp3Bitrate, MP3_BITRATES, mp3Label, videoLabel, type DownloadRequest, type JobRecord, type Mp3Bitrate } from '@/features/downloads/jobs';
-import { existingQuickJob, initialDownloadMode, quickSummary, videoSpecLabel, type DownloadMode, type QuickKind } from '@/features/downloads/quick';
+import {
+  downloadPanelReducer,
+  existingQuickJob,
+  initialDownloadPanel,
+  quickSummary,
+  videoSpecLabel,
+  type DownloadPanelEvent,
+  type DownloadPanelState,
+  type QuickKind,
+} from '@/features/downloads/quick';
 import { buildQualityList, formatSize, sizeForSection, visibleRows, type QualityRow } from '@/utils/format-list';
 import { t } from '@/utils/i18n';
 import { isLiveInfo, type HostInfo } from '@/utils/native-protocol';
@@ -26,28 +35,33 @@ import { useStore } from './useStore';
 import { isLiveOrUpcoming, useDuration, useVideoData } from './useVideoData';
 
 /**
- * 共通：直播檢查、橋接程式狀態、只缺 deno 的提示。children 的第二個參數表示這次打開面板時小幫手還不能使用、
- * 之後才偵測到（009 FR-11：顯示「小幫手已安裝完成」）。
+ * 共通：直播檢查、橋接程式狀態、只缺 deno 的提示。顯示過安裝引導之後偵測到小幫手時呼叫 onHelperReady
+ * （009 FR-11），處理完之前不顯示下載內容，避免自動開始這次下載（FR-10）。
  */
-function DownloadGate({ videoId, children }: { videoId: string; children: (title: string, installed: boolean) => ComponentChildren }) {
+function DownloadGate({ videoId, onHelperReady, children }: { videoId: string; onHelperReady: () => void; children: (title: string) => ComponentChildren }) {
   const [attempt, setAttempt] = useState(0);
   const video = useVideoData(videoId, attempt);
   const host = useHostState();
-  const settings = useStore(quickSettings());
-  const shownSetup = useRef(false);
-  if (video.status === 'loading' || host.state === null || settings === null) return <PanelLoading />;
+  const [sawSetup, setSawSetup] = useState(false);
+  const ready = host.state !== null && canDownload(host.state);
+  useEffect(() => {
+    if (host.state === null) return;
+    if (!ready) setSawSetup(true);
+    else if (sawSetup) {
+      setSawSetup(false);
+      onHelperReady();
+    }
+  }, [host.state]);
+  if (video.status === 'loading' || host.state === null || (ready && sawSetup)) return <PanelLoading />;
   if (video.status === 'error') return <PanelError onRetry={() => setAttempt((n) => n + 1)} />;
   if (isLiveOrUpcoming(video.data)) return <p class="ytm-muted ytm-live-unavailable">{t('liveUnavailable')}</p>;
-  if (!canDownload(host.state)) {
-    // 只顯示安裝引導，不記住、也不自動開始這次下載（009 FR-10）。
-    shownSetup.current = true;
-    return <HostSetup host={{ ...host, state: host.state }} />;
-  }
+  // 只顯示安裝引導，不記住、也不自動開始這次下載（009 FR-10）。
+  if (!canDownload(host.state)) return <HostSetup host={{ ...host, state: host.state }} />;
   return (
     <>
       {missingOnlyDeno(host.state) && <DenoHint />}
       <UpdateFailureHint state={host.state} onOpenSettings={openSettings} />
-      {children(video.data?.title ?? '', shownSetup.current)}
+      {children(video.data?.title ?? '')}
       <OtherJobs videoId={videoId} />
     </>
   );
@@ -249,14 +263,25 @@ export function Mp3Panel({ videoId }: { videoId: string }) {
 // ---------------------------------------------------------------------------
 
 /**
- * 面板打開（使用者點了「影片」或「MP3」，或從「更多」打開隱藏的工具）時的影片 ID。釘選的面板換到別部影片時，
+ * 面板打開（使用者點了「影片」或「MP3」，或從「更多」打開隱藏的工具）時讀取一鍵下載是否開啟。釘選的面板換到別部影片時，
  * 使用者沒有為那部影片點過按鈕，所以不自動下載，改為顯示「開始下載」按鈕。
  */
 function DownloadPanel({ videoId, kind }: { videoId: string; kind: QuickKind }) {
-  const [openedFor] = useState(videoId);
+  const settings = useStore(quickSettings());
+  if (!settings) return <PanelLoading />;
+  return <DownloadFlow videoId={videoId} kind={kind} quickEnabled={settings.enabled} />;
+}
+
+function DownloadFlow({ videoId, kind, quickEnabled }: { videoId: string; kind: QuickKind; quickEnabled: boolean }) {
+  const [panel, dispatch] = useReducer(downloadPanelReducer, null, () => initialDownloadPanel(quickEnabled, videoId));
+  useEffect(() => {
+    if (panel.videoId !== videoId) dispatch({ type: 'videoChanged', videoId });
+  }, [videoId]);
+  // 換了影片、還沒更新狀態時不顯示，避免替沒點過的影片開始下載。
+  if (panel.videoId !== videoId) return <PanelLoading />;
   return (
-    <DownloadGate key={videoId} videoId={videoId}>
-      {(title, installed) => <DownloadBody videoId={videoId} kind={kind} pageTitle={title} clicked={openedFor === videoId} installed={installed} />}
+    <DownloadGate key={videoId} videoId={videoId} onHelperReady={() => dispatch({ type: 'helperBecameReady' })}>
+      {(title) => <DownloadBody videoId={videoId} kind={kind} pageTitle={title} panel={panel} dispatch={dispatch} />}
     </DownloadGate>
   );
 }
@@ -265,34 +290,31 @@ function DownloadPanel({ videoId, kind }: { videoId: string; kind: QuickKind }) 
  * 一鍵下載開啟時：剛點了按鈕就直接開始（009 FR-4）；剛安裝好小幫手（FR-11）或釘選的面板換了影片時，先顯示「開始下載」按鈕。
  * 一鍵下載關閉、或按了「改用其他畫質」時顯示完整選項。
  */
-function DownloadBody(props: { videoId: string; kind: QuickKind; pageTitle: string; clicked: boolean; installed: boolean }) {
-  const { videoId, kind, pageTitle, clicked, installed } = props;
+function DownloadBody(props: { videoId: string; kind: QuickKind; pageTitle: string; panel: DownloadPanelState; dispatch: (event: DownloadPanelEvent) => void }) {
+  const { videoId, kind, pageTitle, panel, dispatch } = props;
   const settings = useStore(quickSettings());
-  const [mode, setMode] = useState<DownloadMode>(() =>
-    initialDownloadMode({ quickEnabled: settings?.enabled === true, clickedForThisVideo: clicked, helperJustInstalled: installed }),
-  );
-  const full = kind === 'video' ? <QualityList videoId={videoId} pageTitle={pageTitle} /> : <Mp3Options videoId={videoId} pageTitle={pageTitle} />;
-  if (mode === 'quick') return <QuickDownload videoId={videoId} kind={kind} pageTitle={pageTitle} onChooseOther={() => setMode('full')} />;
-  if (mode === 'full' || !settings) {
+  const chooseOther = () => dispatch({ type: 'chooseOther' });
+  if (panel.mode === 'quick') return <QuickDownload videoId={videoId} kind={kind} pageTitle={pageTitle} onChooseOther={chooseOther} />;
+  if (panel.mode === 'full' || !settings) {
     // 一鍵下載關閉：安裝完成後切換成選項清單（009 FR-11）。
     return (
       <>
-        {installed && <InstalledNote />}
-        {full}
+        {panel.installed && <InstalledNote />}
+        {kind === 'video' ? <QualityList videoId={videoId} pageTitle={pageTitle} /> : <Mp3Options videoId={videoId} pageTitle={pageTitle} />}
       </>
     );
   }
   const spec = kind === 'video' ? videoSpecLabel(settings.defaults.height, settings.defaults.container) : mp3Label(settings.defaults.bitrate);
   return (
     <div class={kind === 'video' ? 'ytm-video ytm-quick' : 'ytm-mp3 ytm-quick'} data-kind={kind} data-phase="confirm">
-      {installed && <InstalledNote />}
+      {panel.installed && <InstalledNote />}
       {pageTitle && <p class="ytm-quick-title">{pageTitle}</p>}
       <div class="ytm-quick-actions">
-        <button type="button" class="ytm-link ytm-quick-other" onClick={() => setMode('full')}>
+        <button type="button" class="ytm-link ytm-quick-other" onClick={chooseOther}>
           <Icon name="tune" size={20} />
           <span>{t(kind === 'video' ? 'quickChangeQuality' : 'quickChangeBitrate')}</span>
         </button>
-        <Button variant="primary" onClick={() => setMode('quick')}>
+        <Button variant="primary" onClick={() => dispatch({ type: 'started' })}>
           <Icon name="download" size={18} />
           <span>{t('quickStart', spec)}</span>
         </Button>
@@ -326,7 +348,6 @@ function QuickDownload(props: { videoId: string; kind: QuickKind; pageTitle: str
     return existing ? { phase: 'job', jobId: existing.jobId } : { phase: 'preparing' };
   });
   const mounted = useRef(true);
-  const abandoned = useRef(false);
   useEffect(
     () => () => {
       mounted.current = false;
@@ -338,14 +359,9 @@ function QuickDownload(props: { videoId: string; kind: QuickKind; pageTitle: str
     setState({ phase: 'preparing' });
     try {
       const result = await startQuickDownload(videoId, kind, pageTitle);
-      // 準備期間按了「改用其他畫質」：取消剛開始的下載。
-      if (abandoned.current) {
-        if (result.status === 'started') void cancelJob(result.jobId).catch(() => {});
-        return;
-      }
-      if (mounted.current) setState({ phase: 'job', jobId: result.jobId });
+      if (mounted.current && result.status !== 'cancelled') setState({ phase: 'job', jobId: result.jobId });
     } catch (err) {
-      if (mounted.current && !abandoned.current) setState({ phase: 'error', code: err instanceof HostError ? err.code : 'UNKNOWN' });
+      if (mounted.current) setState({ phase: 'error', code: err instanceof HostError ? err.code : 'UNKNOWN' });
     }
   };
   // 面板打開時開始一次（收起面板不會取消已開始的下載）。
@@ -355,8 +371,9 @@ function QuickDownload(props: { videoId: string; kind: QuickKind; pageTitle: str
 
   const job = state.phase === 'job' ? jobs.find((j) => j.jobId === state.jobId) : undefined;
   const chooseOther = () => {
-    abandoned.current = true;
-    if (job && isActive(job)) void cancelJob(job.jobId).catch(() => {});
+    // 準備中：背景腳本在送出下載前就取消（不先建立再取消）。
+    if (state.phase === 'preparing') void cancelQuickDownload(videoId, kind).catch(() => {});
+    else if (job && isActive(job)) void cancelJob(job.jobId).catch(() => {});
     onChooseOther();
   };
   const title = job?.title || pageTitle;
