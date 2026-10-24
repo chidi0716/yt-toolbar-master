@@ -96,11 +96,11 @@
     "description": "Button that retries loading panel content."
   },
   "helpVideo": {
-    "message": "Download this video in the quality you choose.",
+    "message": "Download this video. With one-click download on, it starts right away in the default quality.",
     "description": "Help panel: one-sentence description of the Video button."
   },
   "helpMp3": {
-    "message": "Download the audio as MP3, optionally only part of it.",
+    "message": "Download the audio as MP3. With one-click download on, it starts right away; you can still pick a bitrate or only part of it.",
     "description": "Help panel: one-sentence description of the MP3 button."
   },
   "helpThumbnail": {
@@ -1344,5 +1344,121 @@
   "uninstallFailed": {
     "message": "Couldn't remove downloads. Make sure the helper is installed, then try again.",
     "description": "Status when uninstall fails."
+  },
+  "quickHeightBest": {
+    "message": "Best quality",
+    "description": "One-click download: the 'best quality' default video quality."
+  },
+  "quickSpecMp4": {
+    "message": "$HEIGHT$ MP4",
+    "description": "One-click download: default quality and format, e.g. 1080p MP4.",
+    "placeholders": {
+      "height": {
+        "content": "$1",
+        "example": "1080p"
+      }
+    }
+  },
+  "quickSpecAny": {
+    "message": "$HEIGHT$, any format",
+    "description": "One-click download: default quality with any format (may be WEBM).",
+    "placeholders": {
+      "height": {
+        "content": "$1",
+        "example": "1080p"
+      }
+    }
+  },
+  "quickTooltip": {
+    "message": "One-click download: $SPEC$",
+    "description": "Toolbar tooltip of the Video and MP3 buttons when one-click download is on.",
+    "placeholders": {
+      "spec": {
+        "content": "$1",
+        "example": "1080p MP4"
+      }
+    }
+  },
+  "quickSummary": {
+    "message": "$LABEL$, $SIZE$",
+    "description": "One-click download panel: the format being downloaded and its size, e.g. 1080p60 MP4, ~320 MB.",
+    "placeholders": {
+      "label": {
+        "content": "$1",
+        "example": "1080p60 MP4"
+      },
+      "size": {
+        "content": "$2",
+        "example": "~320 MB"
+      }
+    }
+  },
+  "quickPreparing": {
+    "message": "Preparing…",
+    "description": "One-click download panel: shown while the video information is loading."
+  },
+  "quickChangeQuality": {
+    "message": "Choose another quality",
+    "description": "One-click download panel: cancels this download and shows the full quality list."
+  },
+  "quickChangeBitrate": {
+    "message": "Choose another bitrate",
+    "description": "One-click MP3 panel: cancels this download and shows the full MP3 options."
+  },
+  "quickAgain": {
+    "message": "Download again",
+    "description": "One-click download panel: starts the same download again after it finished or was cancelled."
+  },
+  "optionsQuickTitle": {
+    "message": "One-click download",
+    "description": "Settings page: heading of the one-click download options."
+  },
+  "optionsQuickDownload": {
+    "message": "One-click download",
+    "description": "Settings page: one-click download switch."
+  },
+  "optionsQuickDownloadDesc": {
+    "message": "Clicking Video or MP3 on the toolbar starts downloading right away with the defaults below; MP3 uses the bitrate you chose last. Turn off to choose every time.",
+    "description": "Settings page: one-click download switch description."
+  },
+  "optionsDefaultHeight": {
+    "message": "Default video quality",
+    "description": "Settings page: default quality for one-click and right-click downloads."
+  },
+  "optionsDefaultHeightDesc": {
+    "message": "If a video doesn't have this quality, the closest lower one is used (or the lowest if all are higher). With several frame rates, the highest is used.",
+    "description": "Settings page: default quality description."
+  },
+  "optionsDefaultContainer": {
+    "message": "Default video format",
+    "description": "Settings page: default format for one-click and right-click downloads."
+  },
+  "optionsContainerMp4": {
+    "message": "MP4 (most compatible)",
+    "description": "Settings page: default format option MP4."
+  },
+  "optionsContainerAny": {
+    "message": "Any format (best quality may be WEBM)",
+    "description": "Settings page: default format option any."
+  },
+  "optionsDefaultMark": {
+    "message": "$LABEL$ (default)",
+    "description": "Settings page: marks the default choice in a list.",
+    "placeholders": {
+      "label": {
+        "content": "$1",
+        "example": "1080p"
+      }
+    }
+  },
+  "quickStart": {
+    "message": "Start download ($SPEC$)",
+    "description": "Download panel: starts a one-click download with the default quality, e.g. Start download (1080p MP4).",
+    "placeholders": {
+      "spec": {
+        "content": "$1",
+        "example": "1080p MP4"
+      }
+    }
   }
 }

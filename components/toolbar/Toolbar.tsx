@@ -53,6 +53,8 @@ export interface ToolbarProps {
   onSaveLayout?: (layout: ToolbarLayout) => void;
   /** 新版本提醒（008 FR-28、FR-29b）：工具列下方的卡片、「更多」上的小圓點與選單頂端的提醒。 */
   reminder?: UpdateReminder;
+  /** 取代按鈕名稱的提示文字（009 FR-7：一鍵下載時標明點下去會發生什麼）。 */
+  tooltips?: Partial<Record<ButtonId, string>>;
 }
 
 const NO_REMINDER = createStore<ReminderState>({ phase: 'none', view: null, cardVisible: false });
@@ -71,6 +73,7 @@ export function Toolbar({
   layout = defaultLayout(),
   onSaveLayout,
   reminder,
+  tooltips,
 }: ToolbarProps) {
   useLocale();
   const reminderState = useStore(reminder?.controller.state ?? NO_REMINDER);
@@ -183,7 +186,7 @@ export function Toolbar({
         def={def}
         label={dotNotes.length ? `${label} (${dotNotes.join(', ')})` : label}
         tooltip={
-          toggleNotice ?? (notice === def.id ? t('comingSoon') : disabledReason ? `${label}: ${disabledReason}` : label)
+          toggleNotice ?? (notice === def.id ? t('comingSoon') : disabledReason ? `${label}: ${disabledReason}` : (tooltips?.[def.id] ?? label))
         }
         notice={notice === def.id || !!toggleNotice}
         expanded={state.openId === def.id}

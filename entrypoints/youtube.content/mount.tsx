@@ -20,8 +20,9 @@ import { Toolbar } from '@/components/toolbar/Toolbar';
 import controlsCss from '@/components/controls/controls.css?inline';
 import toolbarCss from '@/components/toolbar/toolbar.css?inline';
 import { createScreenshot } from '@/features/downloads/content';
-import { downloadJobs } from '@/features/downloads/host-client';
+import { downloadJobs, quickSettings } from '@/features/downloads/host-client';
 import { buttonProgress } from '@/features/downloads/jobs';
+import { quickTooltip } from '@/features/downloads/quick';
 import { createUpdateReminder } from '@/features/update/content';
 import { createViewingController } from '@/features/viewing';
 import { initI18n, onLocaleChange, t } from '@/utils/i18n';
@@ -155,6 +156,13 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
     };
   };
 
+  // 一鍵下載（009 FR-7）：「影片」「MP3」的提示文字標明點下去會發生什麼；設定或語言改變時重新繪製。
+  const quick = quickSettings();
+  const downloadTooltips = () => {
+    const q = quick.get();
+    return q?.enabled ? { video: quickTooltip('video', q.defaults), mp3: quickTooltip('mp3', q.defaults) } : undefined;
+  };
+
   function renderInto(container: HTMLElement, host: HTMLElement) {
     if (!videoId) return;
     viewing.decorateToolbarHost(host);
@@ -171,6 +179,7 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
         layout={layout}
         onSaveLayout={saveLayout}
         reminder={reminder}
+        tooltips={downloadTooltips()}
       />,
       container,
     );
@@ -302,6 +311,7 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
   ctx.onInvalidated(viewing.subscribe(rerender));
   ctx.onInvalidated(screenshot.state.subscribe(rerender));
   ctx.onInvalidated(jobs.subscribe(rerender));
+  ctx.onInvalidated(quick.subscribe(rerender));
   ctx.onInvalidated(() => viewing.setActive(false));
   ctx.onInvalidated(() => reminder.dispose());
   ctx.addEventListener(document, 'fullscreenchange', applyFullscreen);

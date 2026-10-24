@@ -16,8 +16,9 @@ import {
   type HostInfo,
   type HostStatusResult,
 } from '@/utils/native-protocol';
-import { downloadDir, embedInfo, namePreset } from '@/utils/settings';
+import { defaultVideoContainer, defaultVideoHeight, downloadDir, embedInfo, mp3Bitrate, namePreset } from '@/utils/settings';
 import { applyEvent, errorInfo, isActive, isFinal, markMissing, mergeHostJobs, newJob, pruneJobs, type DownloadRequest, type JobRecord } from './jobs';
+import { activeJobFor, planQuickDownload, toQuickDefaults, type QuickDefaults, type QuickKind } from './quick';
 
 const LOG_PREFIX = '[yt-toolbar-master]';
 const INFO_TTL_MS = 30 * 60_000;
@@ -206,7 +207,7 @@ export function downloadArgs(
   }
 }
 
-async function startDownload(request: DownloadRequest): Promise<string> {
+async function startDownload(request: DownloadRequest, estimate: JobRecord['estimate'] = null): Promise<string> {
   await load();
   const status = await getStatus(false);
   const preset = await namePreset.getValue();
@@ -221,15 +222,73 @@ async function startDownload(request: DownloadRequest): Promise<string> {
   if (!jobId) throw new HostRequestError('UNKNOWN', 'download returned no jobId');
   // 事件可能比 download 的回應早到：已經有紀錄時保留進度，只補上請求內容。
   const existing = jobs.find((j) => j.jobId === jobId);
-  const created = newJob(jobId, request, Date.now());
-  await setJobs(existing ? jobs.map((j) => (j.jobId === jobId ? { ...j, label: created.label, title: created.title, request } : j)) : [created, ...jobs]);
+  const created = newJob(jobId, request, Date.now(), estimate);
+  await setJobs(existing ? jobs.map((j) => (j.jobId === jobId ? { ...j, label: created.label, title: created.title, request, estimate } : j)) : [created, ...jobs]);
   return jobId;
+}
+
+// ---------------------------------------------------------------------------
+// 一鍵下載與右鍵下載（009，plan 3.11）
+// ---------------------------------------------------------------------------
+
+export type QuickSource = 'toolbar' | 'contextMenu';
+
+export interface QuickResult {
+  /** started：開始了新的下載；running：同一部影片的同一種下載已在進行中（FR-5），沒有重複下載。 */
+  status: 'started' | 'running';
+  jobId: string;
+  title: string;
+  label: string;
+}
+
+/** 目前的預設值（009 FR-2、FR-3）。 */
+export async function readQuickDefaults(): Promise<QuickDefaults> {
+  const [height, container, bitrate] = await Promise.all([defaultVideoHeight.getValue(), defaultVideoContainer.getValue(), mp3Bitrate.getValue()]);
+  return toQuickDefaults(height, container, bitrate);
+}
+
+/** 同一部影片、同一種的一鍵下載同時只處理一個（連點兩次時共用同一個結果）。 */
+const quickPending = new Map<string, Promise<QuickResult>>();
+
+/**
+ * 一鍵下載：取得影片資訊（共用 getInfo 的暫存）→ 檢查是否可下載（FR-6）→ 依預設值選格式（FR-2、FR-3）→ 開始下載。
+ * 同一部影片的同一種下載進行中時回傳那個工作（FR-5）。失敗時以 HostRequestError 丟出錯誤代碼。
+ * onInfo 在取得影片資訊後呼叫（右鍵下載用來把通知中的影片 ID 換成標題，FR-23）。
+ */
+export function quickDownload(
+  videoId: string,
+  kind: QuickKind,
+  options: { source: QuickSource; title?: string; onInfo?: (title: string) => void },
+): Promise<QuickResult> {
+  const key = `${videoId}:${kind}`;
+  const pending = quickPending.get(key);
+  if (pending) return pending;
+  const run = (async (): Promise<QuickResult> => {
+    await load();
+    const running = activeJobFor(jobs, videoId, kind);
+    if (running) return { status: 'running', jobId: running.jobId, title: running.title, label: running.label };
+    const status = await getStatus(false);
+    if (!status.ready) throw new HostRequestError(status.ytDlp.found ? 'FFMPEG_NOT_FOUND' : 'YTDLP_NOT_FOUND');
+    const [info, defaults] = await Promise.all([getInfo(videoId), readQuickDefaults()]);
+    options.onInfo?.(info.title || options.title || '');
+    const plan = planQuickDownload(videoId, info, kind, defaults, options.title);
+    if (!plan.ok) throw new HostRequestError(plan.error);
+    // 取得資訊的期間，可能已經從其他分頁開始了同一個下載。
+    const again = activeJobFor(jobs, videoId, kind);
+    if (again) return { status: 'running', jobId: again.jobId, title: again.title, label: again.label };
+    const jobId = await startDownload(plan.request, plan.estimate);
+    return { status: 'started', jobId, title: plan.request.title, label: plan.request.label };
+  })();
+  quickPending.set(key, run);
+  void run.finally(() => quickPending.delete(key)).catch(() => {});
+  return run;
 }
 
 type HostMessageType =
   | 'hostStatus'
   | 'getInfo'
   | 'startDownload'
+  | 'quickDownload'
   | 'cancelJob'
   | 'revealJob'
   | 'getJobs'
@@ -242,6 +301,7 @@ export const HOST_MESSAGE_TYPES: readonly string[] = [
   'hostStatus',
   'getInfo',
   'startDownload',
+  'quickDownload',
   'cancelJob',
   'revealJob',
   'getJobs',
@@ -260,6 +320,8 @@ async function handle(message: Extract<ContentMessage, { type: HostMessageType }
       return { ok: true, info: await getInfo(message.videoId) };
     case 'startDownload':
       return { ok: true, jobId: await startDownload(message.request) };
+    case 'quickDownload':
+      return { ok: true, result: await quickDownload(message.videoId, message.kind, { source: 'toolbar', title: message.title }) };
     case 'cancelJob': {
       const result = await client.request('cancel', { jobId: message.jobId });
       await load();

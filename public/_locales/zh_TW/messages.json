@@ -96,11 +96,11 @@
     "description": "Button that retries loading panel content."
   },
   "helpVideo": {
-    "message": "選擇畫質下載這部影片。",
+    "message": "下載這部影片；開啟一鍵下載時，直接以預設畫質開始下載。",
     "description": "Help panel: one-sentence description of the Video button."
   },
   "helpMp3": {
-    "message": "把聲音下載成 MP3，可以只下載其中一段。",
+    "message": "把聲音下載成 MP3；開啟一鍵下載時直接開始，也可以改選位元率或只下載其中一段。",
     "description": "Help panel: one-sentence description of the MP3 button."
   },
   "helpThumbnail": {
@@ -1344,5 +1344,121 @@
   "uninstallFailed": {
     "message": "無法移除下載功能。請確認小幫手已安裝後再試一次。",
     "description": "Status when uninstall fails."
+  },
+  "quickHeightBest": {
+    "message": "最高畫質",
+    "description": "One-click download: the 'best quality' default video quality."
+  },
+  "quickSpecMp4": {
+    "message": "$HEIGHT$ MP4",
+    "description": "One-click download: default quality and format, e.g. 1080p MP4.",
+    "placeholders": {
+      "height": {
+        "content": "$1",
+        "example": "1080p"
+      }
+    }
+  },
+  "quickSpecAny": {
+    "message": "$HEIGHT$ 不限格式",
+    "description": "One-click download: default quality with any format (may be WEBM).",
+    "placeholders": {
+      "height": {
+        "content": "$1",
+        "example": "1080p"
+      }
+    }
+  },
+  "quickTooltip": {
+    "message": "一鍵下載：$SPEC$",
+    "description": "Toolbar tooltip of the Video and MP3 buttons when one-click download is on.",
+    "placeholders": {
+      "spec": {
+        "content": "$1",
+        "example": "1080p MP4"
+      }
+    }
+  },
+  "quickSummary": {
+    "message": "$LABEL$，$SIZE$",
+    "description": "One-click download panel: the format being downloaded and its size, e.g. 1080p60 MP4, ~320 MB.",
+    "placeholders": {
+      "label": {
+        "content": "$1",
+        "example": "1080p60 MP4"
+      },
+      "size": {
+        "content": "$2",
+        "example": "~320 MB"
+      }
+    }
+  },
+  "quickPreparing": {
+    "message": "準備中…",
+    "description": "One-click download panel: shown while the video information is loading."
+  },
+  "quickChangeQuality": {
+    "message": "改用其他畫質",
+    "description": "One-click download panel: cancels this download and shows the full quality list."
+  },
+  "quickChangeBitrate": {
+    "message": "改用其他位元率",
+    "description": "One-click MP3 panel: cancels this download and shows the full MP3 options."
+  },
+  "quickAgain": {
+    "message": "再下載一次",
+    "description": "One-click download panel: starts the same download again after it finished or was cancelled."
+  },
+  "optionsQuickTitle": {
+    "message": "一鍵下載",
+    "description": "Settings page: heading of the one-click download options."
+  },
+  "optionsQuickDownload": {
+    "message": "一鍵下載",
+    "description": "Settings page: one-click download switch."
+  },
+  "optionsQuickDownloadDesc": {
+    "message": "點工具列的「影片」或「MP3」就以下方的預設值直接開始下載；MP3 使用上次選擇的位元率。關閉時每次都先選再下載。",
+    "description": "Settings page: one-click download switch description."
+  },
+  "optionsDefaultHeight": {
+    "message": "預設影片畫質",
+    "description": "Settings page: default quality for one-click and right-click downloads."
+  },
+  "optionsDefaultHeightDesc": {
+    "message": "影片沒有這個畫質時，使用比它低的最高畫質（全部都比它高時用最低的）；有多個幀率時用最高幀率。",
+    "description": "Settings page: default quality description."
+  },
+  "optionsDefaultContainer": {
+    "message": "預設影片格式",
+    "description": "Settings page: default format for one-click and right-click downloads."
+  },
+  "optionsContainerMp4": {
+    "message": "MP4（相容性最好）",
+    "description": "Settings page: default format option MP4."
+  },
+  "optionsContainerAny": {
+    "message": "不限格式（最高畫質可能是 WEBM）",
+    "description": "Settings page: default format option any."
+  },
+  "optionsDefaultMark": {
+    "message": "$LABEL$（預設）",
+    "description": "Settings page: marks the default choice in a list.",
+    "placeholders": {
+      "label": {
+        "content": "$1",
+        "example": "1080p"
+      }
+    }
+  },
+  "quickStart": {
+    "message": "開始下載（$SPEC$）",
+    "description": "Download panel: starts a one-click download with the default quality, e.g. Start download (1080p MP4).",
+    "placeholders": {
+      "spec": {
+        "content": "$1",
+        "example": "1080p MP4"
+      }
+    }
   }
 }

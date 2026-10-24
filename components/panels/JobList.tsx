@@ -118,7 +118,8 @@ function ProgressBar({ percent }: { percent: number | null }) {
   );
 }
 
-function JobRow({ job }: { job: JobRecord }) {
+/** 一個下載。label 可以換掉顯示的說明（一鍵下載的面板加上大小，009 FR-4）。 */
+export function JobRow({ job, label }: { job: JobRecord; label?: string }) {
   const [busy, setBusy] = useState(false);
   const [retryError, setRetryError] = useState<JobRecord['error']>(null);
   const active = isActive(job);
@@ -143,7 +144,7 @@ function JobRow({ job }: { job: JobRecord }) {
   return (
     <li class="ytm-job" data-state={job.state} data-job={job.jobId}>
       <div class="ytm-job-head">
-        <span class="ytm-job-label">{job.label || job.fileName || job.kind}</span>
+        <span class="ytm-job-label">{label || job.label || job.fileName || job.kind}</span>
         {/* 遇到 yt-dlp 過舊等錯誤時，小幫手先更新 yt-dlp 再重試（008 FR-22）。 */}
         <span class="ytm-job-state" data-stage={active && job.stage ? job.stage : undefined}>
           {active && job.stage === 'updating-ytdlp' ? t('jobUpdatingYtDlp') : t(STATE_LABELS[job.state])}

@@ -3,9 +3,12 @@
 import { createStore, type Store } from '@/features/viewing/store';
 import { isBackgroundMessage } from '@/utils/messages';
 import { parseStatus, toErrorCode, type HostErrorCode, type HostInfo, type HostStatusResult, type UpdateResult } from '@/utils/native-protocol';
+import { defaultVideoContainer, defaultVideoHeight, mp3Bitrate, quickDownload } from '@/utils/settings';
 import { sendToBackground } from './content';
+import type { QuickResult } from './host-background';
 import type { HostState } from './host-status';
 import type { DownloadRequest, JobRecord } from './jobs';
+import { DEFAULT_QUICK_DEFAULTS, toQuickDefaults, type QuickDefaults, type QuickKind } from './quick';
 
 const LOG_PREFIX = '[yt-toolbar-master]';
 
@@ -37,6 +40,9 @@ export async function checkHostStatus(refresh = false): Promise<HostState> {
 
 export const getInfo = (videoId: string) => call<{ info: HostInfo }>({ type: 'getInfo', videoId }).then((r) => r.info);
 export const startDownload = (request: DownloadRequest) => call<{ jobId: string }>({ type: 'startDownload', request }).then((r) => r.jobId);
+/** 一鍵下載（009 FR-4、FR-5）：格式由背景腳本依預設值選擇。 */
+export const startQuickDownload = (videoId: string, kind: QuickKind, title: string) =>
+  call<{ result: QuickResult }>({ type: 'quickDownload', videoId, kind, title: title.slice(0, 500) }).then((r) => r.result);
 export const cancelJob = (jobId: string) => call({ type: 'cancelJob', jobId });
 export const revealJob = (jobId: string) => call({ type: 'revealJob', jobId });
 export const updateYtDlp = () => call<{ update: UpdateResult }>({ type: 'updateYtDlp' }).then((r) => r.update);
@@ -58,6 +64,50 @@ export function downloadJobs(): Store<JobRecord[]> {
   });
   void sendToBackground<{ jobs: JobRecord[] }>({ type: 'getJobs' }).then((res) => {
     if (res.ok && Array.isArray(res.jobs)) store.set(res.jobs);
+  });
+  return store;
+}
+
+/** 一鍵下載的設定（009 FR-1 至 FR-3）；讀到之前為 null。 */
+export interface QuickSettings {
+  enabled: boolean;
+  defaults: QuickDefaults;
+}
+
+let quickStore: Store<QuickSettings | null> | null = null;
+
+/** 一鍵下載的設定與預設值；第一次使用時讀取，之後設定頁或其他分頁改變時立即更新（009 FR-7、FR-26）。 */
+export function quickSettings(): Store<QuickSettings | null> {
+  if (quickStore) return quickStore;
+  const store = createStore<QuickSettings | null>(null);
+  quickStore = store;
+  let raw = { enabled: true, height: DEFAULT_QUICK_DEFAULTS.height as unknown, container: DEFAULT_QUICK_DEFAULTS.container as unknown, bitrate: DEFAULT_QUICK_DEFAULTS.bitrate as unknown };
+  const publish = () => store.set({ enabled: raw.enabled !== false, defaults: toQuickDefaults(raw.height, raw.container, raw.bitrate) });
+  void Promise.all([quickDownload.getValue(), defaultVideoHeight.getValue(), defaultVideoContainer.getValue(), mp3Bitrate.getValue()]).then(
+    ([enabled, height, container, bitrate]) => {
+      raw = { enabled, height, container, bitrate };
+      publish();
+    },
+    (err: unknown) => {
+      console.info(`${LOG_PREFIX} failed to read one-click download settings`, err);
+      publish();
+    },
+  );
+  quickDownload.watch((v) => {
+    raw = { ...raw, enabled: v };
+    if (store.get()) publish();
+  });
+  defaultVideoHeight.watch((v) => {
+    raw = { ...raw, height: v };
+    if (store.get()) publish();
+  });
+  defaultVideoContainer.watch((v) => {
+    raw = { ...raw, container: v };
+    if (store.get()) publish();
+  });
+  mp3Bitrate.watch((v) => {
+    raw = { ...raw, bitrate: v };
+    if (store.get()) publish();
   });
   return store;
 }

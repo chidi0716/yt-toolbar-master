@@ -33,6 +33,8 @@ export interface JobRecord {
   stage?: JobStage | null;
   /** 重試用的原始請求（瀏覽器重新啟動後從橋接程式補回的工作沒有）。 */
   request: DownloadRequest | null;
+  /** 一鍵下載與右鍵下載時選到的格式的大小（009 FR-4：面板顯示「約 320 MB」）；其他下載沒有。 */
+  estimate?: { size: number | null; approx: boolean } | null;
   createdAt: number;
   updatedAt: number;
 }
@@ -45,8 +47,9 @@ export const MAX_FINISHED_JOBS = 50;
 export const FINISHED_TTL_MS = 24 * 60 * 60_000;
 
 /** 新的工作（download 指令回應 jobId 之後）。 */
-export function newJob(jobId: string, request: DownloadRequest, now: number): JobRecord {
+export function newJob(jobId: string, request: DownloadRequest, now: number, estimate: JobRecord['estimate'] = null): JobRecord {
   return {
+    estimate,
     jobId,
     videoId: request.videoId,
     kind: request.kind,

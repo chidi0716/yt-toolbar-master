@@ -928,3 +928,35 @@ a.ytm-link {
   margin: 8px 0 0;
   font-size: 12px;
 }
+
+/* ---------- 一鍵下載（009 FR-4、FR-5、FR-11） ---------- */
+
+.ytm-quick-title {
+  margin: 0 0 4px;
+  overflow: hidden;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ytm-quick-preparing {
+  margin: 8px 0;
+}
+
+.ytm-quick-job {
+  margin-top: 8px;
+}
+
+.ytm-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ytm-quick-installed {
+  align-items: center;
+  color: var(--ytm-text-primary);
+}
