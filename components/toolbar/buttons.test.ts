@@ -19,18 +19,18 @@ describe('工具註冊表（006、plan 3.7.3）', () => {
 
 describe('isToolOngoing（006 FR-17：隱藏的工具進行中時「更多」顯示圓點）', () => {
   it('下載中（含不確定進度）', () => {
-    expect(isToolOngoing('video', { progress: { video: 30 } })).toBe(true);
-    expect(isToolOngoing('mp3', { progress: { mp3: 'indeterminate' } })).toBe(true);
-    expect(isToolOngoing('video', { progress: { video: null, mp3: 10 } })).toBe(false);
+    expect(isToolOngoing('video', { progress: 30 })).toBe(true);
+    expect(isToolOngoing('mp3', { progress: 'indeterminate' })).toBe(true);
+    expect(isToolOngoing('video', { progress: null })).toBe(false);
   });
   it('循環中', () => {
-    expect(isToolOngoing('loop', { activePanels: new Set(['loop']) })).toBe(true);
-    expect(isToolOngoing('loop', { activePanels: new Set() })).toBe(false);
+    expect(isToolOngoing('loop', { active: true })).toBe(true);
+    expect(isToolOngoing('loop', { active: false })).toBe(false);
   });
   it('浮動、劇院、子母畫面開啟中；深色模式不算', () => {
-    expect(isToolOngoing('floating', { toggles: { floating: { active: true } } })).toBe(true);
-    expect(isToolOngoing('cinema', { toggles: { cinema: { active: true } } })).toBe(true);
-    expect(isToolOngoing('pip', { toggles: { pip: { active: false } } })).toBe(false);
-    expect(isToolOngoing('darkMode', { toggles: { darkMode: { active: true } } })).toBe(false);
+    expect(isToolOngoing('floating', { active: true })).toBe(true);
+    expect(isToolOngoing('cinema', { active: true })).toBe(true);
+    expect(isToolOngoing('pip', { active: false })).toBe(false);
+    expect(isToolOngoing('darkMode', { active: true })).toBe(false);
   });
 });

@@ -16,15 +16,16 @@ import { ThumbnailPanel } from '@/components/panels/ThumbnailPanel';
 import { Mp3Panel, VideoPanel } from '@/components/panels/VideoPanel';
 import panelsCss from '@/components/panels/panels.css?inline';
 import type { ButtonId } from '@/components/toolbar/buttons';
-import { Toolbar } from '@/components/toolbar/Toolbar';
+import { Toolbar, type ToolSources } from '@/components/toolbar/Toolbar';
 import controlsCss from '@/components/controls/controls.css?inline';
 import toolbarCss from '@/components/toolbar/toolbar.css?inline';
 import { createScreenshot } from '@/features/downloads/content';
-import { downloadJobs, quickSettings } from '@/features/downloads/host-client';
+import { downloadJobs, quickSettings, type QuickSettings } from '@/features/downloads/host-client';
 import { buttonProgress } from '@/features/downloads/jobs';
 import { quickTooltip } from '@/features/downloads/quick';
 import { createUpdateReminder } from '@/features/update/content';
 import { createViewingController } from '@/features/viewing';
+import { derive } from '@/features/viewing/store';
 import { initI18n, onLocaleChange, t } from '@/utils/i18n';
 import { enabled, QUALITY_LOCK_VALUES, readSettings, toolbarLayout, uiLanguage, type QualityLock } from '@/utils/settings';
 import { normalizeLayout, type ToolbarLayout } from '@/utils/toolbar-layout';
@@ -147,24 +148,20 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
     }
   };
 
-  // 下載工作（002 FR-3）：按鈕上的進度環。
+  // 下載工作（002 FR-3）：按鈕上的進度環。一鍵下載（009 FR-7）：「影片」「MP3」的提示文字標明點下去會發生什麼。
+  // 每個按鈕各自訂閱自己的狀態，狀態改變時不重新繪製整條工具列。
   const jobs = downloadJobs();
-  const downloadProgress = (id: string) => {
-    const list = jobs.get();
+  const quick = quickSettings();
+  const downloadStatus = (id: string): ToolSources => {
+    const tooltip = (kind: 'video' | 'mp3', q: QuickSettings | null) => (q?.enabled ? quickTooltip(kind, q.defaults) : undefined);
     return {
-      video: buttonProgress(list, id, 'video'),
-      mp3: buttonProgress(list, id, 'mp3'),
-      subtitles: buttonProgress(list, id, 'subtitle'),
+      video: derive([jobs, quick], (list, q) => ({ progress: buttonProgress(list, id, 'video'), tooltip: tooltip('video', q) })),
+      mp3: derive([jobs, quick], (list, q) => ({ progress: buttonProgress(list, id, 'mp3'), tooltip: tooltip('mp3', q) })),
+      subtitles: derive([jobs], (list) => ({ progress: buttonProgress(list, id, 'subtitle') })),
     };
   };
 
-  // 一鍵下載（009 FR-7）：「影片」「MP3」的提示文字標明點下去會發生什麼；設定或語言改變時重新繪製。
-  const quick = quickSettings();
-  const downloadTooltips = () => {
-    const q = quick.get();
-    return q?.enabled ? { video: quickTooltip('video', q.defaults), mp3: quickTooltip('mp3', q.defaults) } : undefined;
-  };
-
+  /** 換頁、改變工具列設定或介面語言時重新繪製（按鈕的狀態另外由各自的 store 更新）。 */
   function renderInto(container: HTMLElement, host: HTMLElement) {
     if (!videoId) return;
     viewing.decorateToolbarHost(host);
@@ -173,15 +170,12 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
         host={host}
         videoId={videoId}
         getBounds={getBounds}
-        toggles={{ ...viewing.toggles(), screenshot: { ...screenshot.state.get(), toggle: actions.screenshot } }}
-        actions={actions}
+        status={{ ...viewing.status, ...downloadStatus(videoId), screenshot: screenshot.state }}
+        actions={{ ...viewing.actions, ...actions }}
         renderPanel={renderPanel}
-        activePanels={viewing.activePanels()}
-        progress={downloadProgress(videoId)}
         layout={layout}
         onSaveLayout={saveLayout}
         reminder={reminder}
-        tooltips={downloadTooltips()}
       />,
       container,
     );
@@ -310,10 +304,6 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
   );
   // 介面語言改變（007 FR-3）：同一個 Preact 樹重新繪製，工具列與面板狀態不變（NFR-1）。
   ctx.onInvalidated(onLocaleChange(rerender));
-  ctx.onInvalidated(viewing.subscribe(rerender));
-  ctx.onInvalidated(screenshot.state.subscribe(rerender));
-  ctx.onInvalidated(jobs.subscribe(rerender));
-  ctx.onInvalidated(quick.subscribe(rerender));
   ctx.onInvalidated(() => viewing.setActive(false));
   ctx.onInvalidated(() => reminder.dispose());
   ctx.addEventListener(document, 'fullscreenchange', applyFullscreen);

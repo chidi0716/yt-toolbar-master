@@ -4,14 +4,14 @@ import type { ComponentChildren } from 'preact';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'preact/hooks';
 import type { UpdateReminder } from '@/features/update/content';
 import type { ReminderState } from '@/features/update/reminder';
-import { createStore } from '@/features/viewing/store';
+import { createStore, type ReadStore } from '@/features/viewing/store';
 import { t } from '@/utils/i18n';
 import { defaultLayout, splitLayout, type ToolbarLayout, type ToolId } from '@/utils/toolbar-layout';
 import { Icon } from '../icons';
 import { useLocale } from '../useLocale';
 import { ComingSoon } from '../panels/PanelStatus';
 import { useStore } from '../panels/useStore';
-import { FIXED, TOOLS, getButton, isToolOngoing, type ButtonDef, type ButtonId } from './buttons';
+import { FIXED, TOOLS, getButton, isToolOngoing, type ButtonDef, type ButtonId, type ToolStatus } from './buttons';
 import { OtherTools } from './OtherTools';
 import { initialPanelState, panelReducer, reminderBlocked } from './panel-state';
 import { PanelHost } from './PanelHost';
@@ -20,15 +20,9 @@ import { ToolbarButton } from './ToolbarButton';
 import { ToolbarEditor } from './ToolbarEditor';
 import { UpdateCard, UpdateNotice } from './UpdateCard';
 
-/** 切換按鈕背後的功能（003 由各功能模組提供）。 */
-export interface ToggleFeature {
-  active: boolean;
-  toggle: () => void;
-  /** 不能使用時的原因：按鈕停用，提示文字顯示原因（003 FR-32）。 */
-  disabledReason?: string;
-  /** 短暫顯示在提示文字中的訊息（003 FR-15）。 */
-  notice?: string;
-}
+/** 工具按鈕的狀態來源；每個按鈕各自訂閱，狀態改變時只重新繪製那個按鈕。 */
+export type ToolSource = ReadStore<ToolStatus>;
+export type ToolSources = Partial<Record<ButtonId, ToolSource>>;
 
 export interface ToolbarProps {
   /** Shadow DOM 的宿主元素。 */
@@ -37,27 +31,60 @@ export interface ToolbarProps {
   videoId: string;
   /** 播放器左右緣（視窗座標）。 */
   getBounds: () => HorizontalRange | null;
-  /** 切換按鈕的功能；未提供的按鈕顯示「即將推出」。 */
-  toggles?: Partial<Record<ButtonId, ToggleFeature>>;
-  /** 直接執行的按鈕（截圖、關閉）。 */
+  /** 各工具的狀態（開關、進度、提示文字等）。 */
+  status?: ToolSources;
+  /** 切換與直接執行的按鈕（截圖、關閉）的動作；未提供的按鈕顯示「即將推出」。 */
   actions?: Partial<Record<ButtonId, () => void>>;
   /** 面板內容；未提供的面板顯示「即將推出」。 */
   renderPanel?: (id: ButtonId) => ComponentChildren | undefined;
-  /** 面板按鈕背後的功能正在進行中（例如循環播放，003 FR-52），按鈕維持開啟狀態。 */
-  activePanels?: ReadonlySet<ButtonId>;
-  /** 下載進度（002 FR-3）：0–100、不確定（FR-6b）或沒有進行中的下載（null）。 */
-  progress?: Partial<Record<ButtonId, number | 'indeterminate' | null>>;
   /** 使用者的工具列設定（006）；未提供時為預設值。 */
   layout?: ToolbarLayout;
   /** 編輯模式按「完成」時儲存設定（006 FR-4）。 */
   onSaveLayout?: (layout: ToolbarLayout) => void;
   /** 新版本提醒（008 FR-28、FR-29b）：工具列下方的卡片、「更多」上的小圓點與選單頂端的提醒。 */
   reminder?: UpdateReminder;
-  /** 取代按鈕名稱的提示文字（009 FR-7：一鍵下載時標明點下去會發生什麼）。 */
-  tooltips?: Partial<Record<ButtonId, string>>;
 }
 
 const NO_REMINDER = createStore<ReminderState>({ phase: 'none', view: null, cardVisible: false });
+const NO_STATUS: ToolSource = createStore<ToolStatus>({});
+
+/** 隱藏的工具中是否有進行中的狀態（006 FR-17）；只訂閱隱藏的工具。 */
+function useHiddenOngoing(hidden: readonly ToolId[], status: ToolSources): boolean {
+  const compute = () => hidden.some((id) => isToolOngoing(id, (status[id] ?? NO_STATUS).get()));
+  const [ongoing, setOngoing] = useState(compute);
+  const key = hidden.join();
+  useEffect(() => {
+    setOngoing(compute());
+    const offs = hidden.map((id) => status[id]?.subscribe(() => setOngoing(compute())));
+    return () => offs.forEach((off) => off?.());
+  }, [key, status]);
+  return ongoing;
+}
+
+type StatusButtonProps = Omit<Parameters<typeof ToolbarButton>[0], 'tooltip' | 'notice' | 'pressed' | 'disabledReason' | 'progress'> & {
+  source: ToolSource;
+  /** 「即將推出」提示中。 */
+  comingSoon: boolean;
+};
+
+/** 訂閱自己的狀態的按鈕。 */
+function StatusButton({ source, comingSoon, ...props }: StatusButtonProps) {
+  const status = useStore(source);
+  const { def } = props;
+  const name = t(def.label);
+  const tooltip =
+    status.notice ?? (comingSoon ? t('comingSoon') : status.disabledReason ? `${name}: ${status.disabledReason}` : (status.tooltip ?? name));
+  return (
+    <ToolbarButton
+      {...props}
+      tooltip={tooltip}
+      notice={comingSoon || !!status.notice}
+      pressed={status.active}
+      disabledReason={status.disabledReason}
+      progress={status.progress ?? null}
+    />
+  );
+}
 
 const COMING_SOON_MS = 1500;
 
@@ -65,15 +92,12 @@ export function Toolbar({
   host,
   videoId,
   getBounds,
-  toggles = {},
+  status = {},
   actions = {},
   renderPanel,
-  activePanels,
-  progress,
   layout = defaultLayout(),
   onSaveLayout,
   reminder,
-  tooltips,
 }: ToolbarProps) {
   useLocale();
   const reminderState = useStore(reminder?.controller.state ?? NO_REMINDER);
@@ -159,10 +183,8 @@ export function Toolbar({
   const handleClick = (def: ButtonDef) => {
     if (def.kind === 'panel') {
       dispatch({ type: 'toggle', id: def.id });
-    } else if (def.kind === 'toggle' && toggles[def.id]) {
-      if (!toggles[def.id]!.disabledReason) toggles[def.id]!.toggle();
-    } else if (def.kind === 'action' && actions[def.id]) {
-      actions[def.id]!();
+    } else if (actions[def.id]) {
+      if (!status[def.id]?.get().disabledReason) actions[def.id]!();
     } else {
       setNotice(def.id);
     }
@@ -170,28 +192,22 @@ export function Toolbar({
 
   const { left, right, hidden } = splitLayout(layout);
   /** 隱藏的工具有進行中的狀態（下載、循環、浮動等）：「更多」按鈕顯示提示圓點（006 FR-17）。 */
-  const hiddenOngoing = hidden.some((id) => isToolOngoing(id, { progress, activePanels, toggles }));
+  const hiddenOngoing = useHiddenOngoing(hidden, status);
   /** 提醒卡片收合後，「更多」上的小圓點保留到使用者處理為止（FR-28）。 */
   const updateDot = reminderState.phase === 'collapsed';
 
   const renderButton = (def: ButtonDef, align: 'start' | 'center' | 'end') => {
     const label = t(def.label);
-    const disabledReason = toggles[def.id]?.disabledReason;
-    const toggleNotice = toggles[def.id]?.notice;
     const dot = def.id === 'more' && (hiddenOngoing || updateDot);
     const dotNotes = def.id === 'more' ? [hiddenOngoing && t('moreHiddenActive'), updateDot && t('updateReminderDot')].filter(Boolean) : [];
     return (
-      <ToolbarButton
+      <StatusButton
         key={def.id}
         def={def}
+        source={status[def.id] ?? NO_STATUS}
+        comingSoon={notice === def.id}
         label={dotNotes.length ? `${label} (${dotNotes.join(', ')})` : label}
-        tooltip={
-          toggleNotice ?? (notice === def.id ? t('comingSoon') : disabledReason ? `${label}: ${disabledReason}` : (tooltips?.[def.id] ?? label))
-        }
-        notice={notice === def.id || !!toggleNotice}
         expanded={state.openId === def.id}
-        pressed={def.kind === 'panel' ? activePanels?.has(def.id) : toggles[def.id]?.active}
-        disabledReason={disabledReason}
         controls={panelDomId(def.id)}
         tooltipAlign={align}
         buttonRef={(el: HTMLButtonElement | null) => {
@@ -199,7 +215,6 @@ export function Toolbar({
           else buttonRefs.current.delete(def.id);
         }}
         onClick={() => handleClick(def)}
-        progress={progress?.[def.id] ?? null}
         dot={dot}
       />
     );
@@ -231,13 +246,7 @@ export function Toolbar({
     return (
       <>
         {reminder && reminderState.view?.pending && <UpdateNotice view={reminderState.view} reminder={reminder} />}
-        <OtherTools
-          hidden={hidden}
-          toggles={toggles}
-          activePanels={activePanels}
-          progress={progress}
-          onOpen={(tool: ToolId) => handleClick(TOOLS[tool])}
-        />
+        <OtherTools hidden={hidden} status={status} onOpen={(tool: ToolId) => handleClick(TOOLS[tool])} />
         {content}
         <button type="button" class="ytm-more-edit" onClick={startEditing}>
           <Icon name="edit" size={20} />

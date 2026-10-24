@@ -24,6 +24,42 @@ export function createStore<T>(initial: T): Store<T> {
   };
 }
 
+/** 只讀的 store（元件以 useStore 訂閱）。 */
+export type ReadStore<T> = Pick<Store<T>, 'get' | 'subscribe'>;
+
+const shallowEqual = (a: unknown, b: unknown): boolean => {
+  if (Object.is(a, b)) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || !a || !b) return false;
+  const ka = Object.keys(a);
+  return ka.length === Object.keys(b).length && ka.every((k) => Object.is((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
+};
+
+/**
+ * 由幾個 store 算出的值。來源沒變時不重新計算；算出的結果與上次淺層相同時回傳同一個物件，
+ * 訂閱的元件因此只在結果真的改變時重新繪製。
+ */
+export function derive<const S extends readonly ReadStore<unknown>[], T>(
+  sources: S,
+  fn: (...values: { [K in keyof S]: S[K] extends ReadStore<infer V> ? V : never }) => T,
+): ReadStore<T> {
+  let inputs: unknown[] | null = null;
+  let output: T;
+  return {
+    get() {
+      const next = sources.map((s) => s.get());
+      if (inputs && next.every((v, i) => Object.is(v, inputs![i]))) return output;
+      const value = (fn as (...values: unknown[]) => T)(...next);
+      if (!inputs || !shallowEqual(value, output)) output = value;
+      inputs = next;
+      return output;
+    },
+    subscribe(listener) {
+      const offs = sources.map((s) => s.subscribe(listener));
+      return () => offs.forEach((off) => off());
+    },
+  };
+}
+
 /** 工具列上切換按鈕的狀態（001 FR-9、003 FR-2）。 */
 export interface ToggleState {
   active: boolean;
