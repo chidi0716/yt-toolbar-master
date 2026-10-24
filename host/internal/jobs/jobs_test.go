@@ -333,6 +333,38 @@ func TestMissedNotifications(t *testing.T) {
 	}
 }
 
+// TestRunWakesOnStart 確認 Run 在沒有追蹤中的工作時等待 Start 喚醒，之後送出進度與完成事件；
+// Init 之後建立的工作會出現在第一次 List 中。
+func TestRunWakesOnStart(t *testing.T) {
+	h := newHarness(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	stopped := make(chan struct{})
+	go func() {
+		h.mgr.Run(ctx)
+		close(stopped)
+	}()
+	defer func() {
+		cancel()
+		<-stopped
+	}()
+	time.Sleep(50 * time.Millisecond) // Run 進入等待
+	id := h.download(nil)
+	deadline := time.Now().Add(30 * time.Second)
+	for {
+		evs := h.eventsFor(id)
+		if len(evs) > 0 && evs[len(evs)-1].Event == "done" {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("no done event: %+v", evs)
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	if list := h.mgr.List(); len(list) != 1 || list[0].JobID != id || list[0].State != StateDone {
+		t.Fatalf("first list: %+v", list)
+	}
+}
+
 func TestReconnectPicksUpRunningJob(t *testing.T) {
 	h := newHarness(t)
 	// 模擬前一個連線留下的進行中工作：狀態檔寫入，但執行程序由測試直接啟動。
