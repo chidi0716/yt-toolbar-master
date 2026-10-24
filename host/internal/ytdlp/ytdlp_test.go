@@ -133,7 +133,7 @@ func common(tmp, tmpl string) []string {
 }
 
 func TestDownloadArgs(t *testing.T) {
-	const tmp = "/Users/me/Downloads/.yte-tmp-0123456789abcdef"
+	const tmp = "/Users/me/Downloads/.ytm-tmp-0123456789abcdef"
 	const ff = "/opt/homebrew/bin/ffmpeg"
 	url := []string{"--", "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
 	cases := []struct {
@@ -209,27 +209,27 @@ func TestClipLabel(t *testing.T) {
 
 func TestParseLine(t *testing.T) {
 	// 以下格式取自真正的 yt-dlp（2026.10.21）在本機測試伺服器上的輸出。
-	l := ParseLine(`YTE-PROGRESS {"p":{"status": "downloading", "downloaded_bytes": 3072, "total_bytes": 277808, "eta": 0},"f":"137"}`)
+	l := ParseLine(`YTM-PROGRESS {"p":{"status": "downloading", "downloaded_bytes": 3072, "total_bytes": 277808, "eta": 0},"f":"137"}`)
 	if l.Kind != LineProgress || l.FormatID != "137" || *l.Progress.Downloaded != 3072 || *l.Progress.Total != 277808 || l.Progress.Speed != nil {
 		t.Errorf("progress: %+v", l)
 	}
-	l = ParseLine(`YTE-PROGRESS {"p":{"status": "downloading", "downloaded_bytes": 1024, "total_bytes": 277808},"f":null}`)
+	l = ParseLine(`YTM-PROGRESS {"p":{"status": "downloading", "downloaded_bytes": 1024, "total_bytes": 277808},"f":null}`)
 	if l.Kind != LineProgress || l.FormatID != "" {
 		t.Errorf("null format: %+v", l)
 	}
-	l = ParseLine(`YTE-POST {"pp":"Merger","s":"started"}`)
+	l = ParseLine(`YTM-POST {"pp":"Merger","s":"started"}`)
 	if l.Kind != LinePost || l.PostName != "Merger" || l.PostStat != "started" {
 		t.Errorf("post: %+v", l)
 	}
-	l = ParseLine(`YTE-FILE "/Users/me/Downloads/.yte-tmp-x/\u6e2c\u8a66 [jNQXAC9IVRw].mp4"` + "\r\n")
-	if l.Kind != LineFile || l.Path != "/Users/me/Downloads/.yte-tmp-x/測試 [jNQXAC9IVRw].mp4" {
+	l = ParseLine(`YTM-FILE "/Users/me/Downloads/.ytm-tmp-x/\u6e2c\u8a66 [jNQXAC9IVRw].mp4"` + "\r\n")
+	if l.Kind != LineFile || l.Path != "/Users/me/Downloads/.ytm-tmp-x/測試 [jNQXAC9IVRw].mp4" {
 		t.Errorf("file: %+v", l)
 	}
 	l = ParseLine(`ERROR: [youtube] jNQXAC9IVRw: Video unavailable`)
 	if l.Kind != LineError || l.Message != "Video unavailable" {
 		t.Errorf("error: %+v", l)
 	}
-	for _, s := range []string{"", "[download] 10%", "YTE-PROGRESS not json", "YTE-FILE \"\"", "WARNING: x"} {
+	for _, s := range []string{"", "[download] 10%", "YTM-PROGRESS not json", "YTM-FILE \"\"", "WARNING: x"} {
 		if l := ParseLine(s); l.Kind != LineOther {
 			t.Errorf("%q: %+v", s, l)
 		}

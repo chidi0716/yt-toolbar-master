@@ -1,4 +1,4 @@
-// yte-release 是維護者與發佈流程使用的工具（plan 4.9、4.10），不會發佈給使用者。
+// ytm-release 是維護者與發佈流程使用的工具（plan 4.9、4.10），不會發佈給使用者。
 // 本專案不使用自己的簽章金鑰（008 FR-51），所以這裡沒有任何與金鑰有關的指令。
 //
 //	lock-check [-lock release/components.lock.json] [-online] [-download]
@@ -43,13 +43,13 @@ func main() {
 		os.Exit(2)
 	}
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "yte-release:", err)
+		fmt.Fprintln(os.Stderr, "ytm-release:", err)
 		os.Exit(1)
 	}
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: yte-release lock-check|manifest|check|zip [flags]")
+	fmt.Fprintln(os.Stderr, "usage: ytm-release lock-check|manifest|check|zip [flags]")
 }
 
 func check(args []string) error {
@@ -90,7 +90,7 @@ func lockCheck(args []string) error {
 	if !*online && !*download {
 		return nil
 	}
-	tmp, err := os.MkdirTemp("", "yte-lock-check-")
+	tmp, err := os.MkdirTemp("", "ytm-lock-check-")
 	if err != nil {
 		return err
 	}
@@ -104,7 +104,7 @@ func manifest(args []string) error {
 	lockPath := fl.String("lock", filepath.Join("..", "release", "components.lock.json"), "lock file")
 	version := fl.String("version", "", "release version (x.y.z)")
 	tag := fl.String("tag", "", "release tag (vx.y.z)")
-	helpers := fl.String("helpers", "", "folder with yte-host-darwin-arm64, yte-host-darwin-amd64, yte-host-windows-amd64.exe")
+	helpers := fl.String("helpers", "", "folder with ytm-host-darwin-arm64, ytm-host-darwin-amd64, ytm-host-windows-amd64.exe")
 	out := fl.String("out", "", "components.json to write")
 	fl.Parse(args)
 	if *version == "" || *helpers == "" || *out == "" {

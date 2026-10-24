@@ -16,7 +16,7 @@ The extension's Video and MP3 downloads need a few programs on your computer. Th
 
 | Program | What it does | Where it comes from |
 |---|---|---|
-| **Helper** (`yte-host`) | A small program from this project that lets the browser extension use the programs below. It only accepts a fixed set of commands from this extension, never web addresses or arbitrary commands. | [This project's GitHub releases](https://github.com/chidi0716/yt-toolbar-master/releases) |
+| **Helper** (`ytm-host`) | A small program from this project that lets the browser extension use the programs below. It only accepts a fixed set of commands from this extension, never web addresses or arbitrary commands. | [This project's GitHub releases](https://github.com/chidi0716/yt-toolbar-master/releases) |
 | **yt-dlp** | The open-source program that actually downloads videos and audio from YouTube. | [yt-dlp on GitHub](https://github.com/yt-dlp/yt-dlp/releases) (official releases) |
 | **ffmpeg** and **ffprobe** | Join the video and audio tracks, convert audio to MP3, add covers and chapters. | macOS: [ffmpeg.martin-riedl.de](https://ffmpeg.martin-riedl.de) · Windows: [yt-dlp/FFmpeg-Builds](https://github.com/yt-dlp/FFmpeg-Builds/releases) (maintained by the yt-dlp team) |
 | **deno** | A JavaScript runtime that yt-dlp needs to see all of YouTube's formats. | [deno on GitHub](https://github.com/denoland/deno/releases) (official releases) |
@@ -34,8 +34,8 @@ If ffmpeg and ffprobe are already on your computer, the installer uses them inst
 
 | | macOS | Windows |
 |---|---|---|
-| Helper, tools, settings | `~/Library/Application Support/youtube-extension-host/` | `%LOCALAPPDATA%\youtube-extension-host\` |
-| Log file | `~/Library/Logs/youtube-extension-host/host.log` | `%LOCALAPPDATA%\youtube-extension-host\logs\host.log` |
+| Helper, tools, settings | `~/Library/Application Support/yt-toolbar-master/` | `%LOCALAPPDATA%\yt-toolbar-master\` |
+| Log file | `~/Library/Logs/yt-toolbar-master/host.log` | `%LOCALAPPDATA%\yt-toolbar-master\logs\host.log` |
 | Browser registration | `~/Library/Application Support/Google/Chrome/NativeMessagingHosts/` and `~/Library/Application Support/Mozilla/NativeMessagingHosts/` (one small file each) | Two registry keys under `HKCU\Software\Google\Chrome\NativeMessagingHosts\` and `HKCU\Software\Mozilla\NativeMessagingHosts\` |
 
 The browser registration tells Chrome and Firefox (and Firefox-based browsers such as Zen) where the helper is, and that **only this extension** may start it.

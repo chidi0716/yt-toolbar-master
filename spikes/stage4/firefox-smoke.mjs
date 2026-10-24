@@ -16,7 +16,7 @@ const root = join(here, '..', '..');
 const cache = join(here, '.cache');
 const FF = process.env.FIREFOX ?? join(root, 'spikes', 'T00', '.cache', 'ff', 'firefox', 'firefox');
 const EXT = join(root, '.output', 'firefox-mv3');
-const GECKO_ID = 'youtube-extension@chidi0716';
+const GECKO_ID = 'yt-toolbar-master@chidi0716';
 const UUID = '6f1b8a52-3c2d-4e0f-9a7b-1d2e3f405162';
 const PORT = 9333;
 const { check, skip, summary } = reporter();
@@ -33,8 +33,8 @@ mkdirSync(join(cache, 'ff', 'tmp'), { recursive: true });
 writeFileSync(join(cache, 'e2e', 'scenario'), 'ok');
 writeFileSync(join(cache, 'e2e', 'delay'), '300');
 writeFileSync(
-  join(home, '.mozilla', 'native-messaging-hosts', 'com.chidi0716.youtube_extension.json'),
-  JSON.stringify({ name: 'com.chidi0716.youtube_extension', description: 'test', path: join(cache, 'bin', 'yte-host'), type: 'stdio', allowed_extensions: [GECKO_ID] }),
+  join(home, '.mozilla', 'native-messaging-hosts', 'com.chidi0716.yt_toolbar_master.json'),
+  JSON.stringify({ name: 'com.chidi0716.yt_toolbar_master', description: 'test', path: join(cache, 'bin', 'ytm-host'), type: 'stdio', allowed_extensions: [GECKO_ID] }),
 );
 const prefs = {
   'extensions.webextensions.uuids': JSON.stringify({ [GECKO_ID]: UUID }),
@@ -147,7 +147,7 @@ try {
   check('Firefox：下載完成，工作清單更新為 done，檔案在 ~/Downloads（裁切檔名）', seen?.state === 'done' && files.includes('測試影片： Fake⧸Video？ [jNQXAC9IVRw] 01m00s-01m30s.mp4'), `${seen?.state} ${files.join(', ')}`);
   await sleep(500);
   const notes = await evaluate('browser.notifications.getAll().then((n) => JSON.stringify(n))');
-  if (JSON.parse(notes)[`yte-job:${start.jobId}`] !== undefined) check('Firefox：完成時建立通知', true, notes);
+  if (JSON.parse(notes)[`ytm-job:${start.jobId}`] !== undefined) check('Firefox：完成時建立通知', true, notes);
   else {
     // headless 且沒有 D-Bus 時，Firefox 的系統通知可能立即關閉；以設定頁直接建立一則通知比對環境。
     const probe = await evaluate(
@@ -162,7 +162,7 @@ try {
   await sleep(1500);
   const cancel = await message({ type: 'cancelJob', jobId: slow.jobId });
   const after = (await message({ type: 'getJobs' })).jobs.find((j) => j.jobId === slow.jobId);
-  const leftovers = readdirSync(downloads).filter((f) => f.startsWith('.yte-tmp') || f.endsWith('.part'));
+  const leftovers = readdirSync(downloads).filter((f) => f.startsWith('.ytm-tmp') || f.endsWith('.part'));
   check('Firefox：取消下載，工作為 cancelled，不留下暫存檔', cancel.ok && after?.state === 'cancelled' && leftovers.length === 0, `${after?.state} ${leftovers.join(',')}`);
 
   // 錯誤

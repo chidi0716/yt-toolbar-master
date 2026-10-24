@@ -34,10 +34,10 @@ function ProgressRing({ value }: { value: number | 'indeterminate' }) {
   const c = 2 * Math.PI * r;
   const determinate = value !== 'indeterminate';
   return (
-    <svg class="yte-btn-progress" viewBox="0 0 40 40" aria-hidden="true" data-indeterminate={determinate ? undefined : ''}>
-      <circle class="yte-btn-progress-track" cx="20" cy="20" r={r} />
+    <svg class="ytm-btn-progress" viewBox="0 0 40 40" aria-hidden="true" data-indeterminate={determinate ? undefined : ''}>
+      <circle class="ytm-btn-progress-track" cx="20" cy="20" r={r} />
       <circle
-        class="yte-btn-progress-fill"
+        class="ytm-btn-progress-fill"
         cx="20"
         cy="20"
         r={r}
@@ -67,11 +67,11 @@ export function ToolbarButton(props: ToolbarButtonProps) {
   const shownTooltip = held ?? tooltip;
   const showNotice = !!notice || held !== null;
   return (
-    <div ref={wrapRef} class="yte-btn-wrap" data-tooltip-align={tooltipAlign} onMouseLeave={() => setHeld(null)}>
+    <div ref={wrapRef} class="ytm-btn-wrap" data-tooltip-align={tooltipAlign} onMouseLeave={() => setHeld(null)}>
       <button
         ref={buttonRef}
         type="button"
-        class="yte-btn"
+        class="ytm-btn"
         data-button={def.id}
         data-on={isOn ? '' : undefined}
         data-dot={dot ? '' : undefined}
@@ -87,11 +87,11 @@ export function ToolbarButton(props: ToolbarButtonProps) {
       >
         <Icon name={def.icon} />
         {progress !== null && progress !== undefined && <ProgressRing value={progress} />}
-        {dot && <span class="yte-btn-dot" aria-hidden="true" />}
+        {dot && <span class="ytm-btn-dot" aria-hidden="true" />}
       </button>
       {/* 提示文字只是視覺輔助，按鈕本身已有 aria-label。 */}
       <span
-        class="yte-tooltip"
+        class="ytm-tooltip"
         aria-hidden="true"
         data-notice={showNotice ? '' : undefined}
         data-hidden={expanded && !showNotice ? '' : undefined}

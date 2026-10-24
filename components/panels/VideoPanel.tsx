@@ -29,7 +29,7 @@ function DownloadGate({ videoId, children }: { videoId: string; children: (title
   const host = useHostState({ pollWhileMissing: true });
   if (video.status === 'loading' || host.state === null) return <PanelLoading />;
   if (video.status === 'error') return <PanelError onRetry={() => setAttempt((n) => n + 1)} />;
-  if (isLiveOrUpcoming(video.data)) return <p class="yte-muted yte-live-unavailable">{t('liveUnavailable')}</p>;
+  if (isLiveOrUpcoming(video.data)) return <p class="ytm-muted ytm-live-unavailable">{t('liveUnavailable')}</p>;
   if (!canDownload(host.state)) return <HostSetup state={host.state} checking={host.checking} recheck={host.recheck} />;
   return (
     <>
@@ -97,7 +97,7 @@ function QualityList({ videoId, pageTitle }: { videoId: string; pageTitle: strin
 
   if (info.status === 'loading') return <PanelLoading />;
   if (info.status === 'error') return <ErrorBlock code={info.code} onRetry={() => setAttempt((n) => n + 1)} />;
-  if (isLiveInfo(info.info)) return <p class="yte-muted yte-live-unavailable">{t('liveUnavailable')}</p>;
+  if (isLiveInfo(info.info)) return <p class="ytm-muted ytm-live-unavailable">{t('liveUnavailable')}</p>;
 
   const section = clip.clip.section;
   const download = async (row: QualityRow) => {
@@ -122,37 +122,37 @@ function QualityList({ videoId, pageTitle }: { videoId: string; pageTitle: strin
   const hasMore = rows.some((r) => r.container !== 'mp4');
 
   return (
-    <div class="yte-video">
-      <TimeRange id="yte-video-clip" hook={clip} />
+    <div class="ytm-video">
+      <TimeRange id="ytm-video-clip" hook={clip} />
       {section && !hintSeen && (
-        <p class="yte-hint yte-clip-hint" role="note">
+        <p class="ytm-hint ytm-clip-hint" role="note">
           {t('clipSlowHint')}
         </p>
       )}
       {rows.length === 0 ? (
-        <p class="yte-muted">{t('qualityNone')}</p>
+        <p class="ytm-muted">{t('qualityNone')}</p>
       ) : (
-        <ul class="yte-list yte-quality-list">
+        <ul class="ytm-list ytm-quality-list">
           {shown.map((row) => {
             const { size, approx } = sizeForSection(row, section, duration);
             return (
               <li key={row.key}>
                 <button
                   type="button"
-                  class="yte-list-row yte-quality-row"
+                  class="ytm-list-row ytm-quality-row"
                   data-format={row.formatId}
                   data-limited={row.limited ? '' : undefined}
                   disabled={!clip.clip.valid}
                   onClick={() => void download(row)}
                 >
-                  <span class="yte-quality-container">{row.container.toUpperCase()}</span>
-                  <span class="yte-quality-resolution">
+                  <span class="ytm-quality-container">{row.container.toUpperCase()}</span>
+                  <span class="ytm-quality-resolution">
                     {row.resolution}
                     {row.hdr ? ' HDR' : ''}
                   </span>
-                  <span class="yte-quality-badge">{row.badge && <span class="yte-badge">{row.badge}</span>}</span>
-                  <span class="yte-quality-size">{formatSize(size, approx, t('sizeApprox'))}</span>
-                  {row.limited && <span class="yte-quality-note">{t('qualityLimited')}</span>}
+                  <span class="ytm-quality-badge">{row.badge && <span class="ytm-badge">{row.badge}</span>}</span>
+                  <span class="ytm-quality-size">{formatSize(size, approx, t('sizeApprox'))}</span>
+                  {row.limited && <span class="ytm-quality-note">{t('qualityLimited')}</span>}
                 </button>
               </li>
             );
@@ -160,7 +160,7 @@ function QualityList({ videoId, pageTitle }: { videoId: string; pageTitle: strin
         </ul>
       )}
       {hasMore && (
-        <button type="button" class="yte-link yte-more-formats" aria-expanded={showAll} onClick={() => setShowAll((v) => !v)}>
+        <button type="button" class="ytm-link ytm-more-formats" aria-expanded={showAll} onClick={() => setShowAll((v) => !v)}>
           <Icon name={showAll ? 'expand_less' : 'expand_more'} size={20} />
           <span>{showAll ? t('qualityFewer') : t('qualityMore')}</span>
         </button>
@@ -221,11 +221,11 @@ function Mp3Options({ videoId, pageTitle }: { videoId: string; pageTitle: string
   };
 
   return (
-    <div class="yte-mp3">
-      <label class="yte-field yte-mp3-bitrate">
+    <div class="ytm-mp3">
+      <label class="ytm-field ytm-mp3-bitrate">
         <span>{t('mp3Bitrate')}</span>
         <Select
-          id="yte-mp3-bitrate"
+          id="ytm-mp3-bitrate"
           value={String(bitrate)}
           options={MP3_BITRATES.map((b) => ({ value: String(b), label: `${b} kbps` }))}
           onChange={(v) => {
@@ -236,8 +236,8 @@ function Mp3Options({ videoId, pageTitle }: { videoId: string; pageTitle: string
           }}
         />
       </label>
-      <TimeRange id="yte-mp3-clip" hook={clip} />
-      <div class="yte-mp3-footer">
+      <TimeRange id="ytm-mp3-clip" hook={clip} />
+      <div class="ytm-mp3-footer">
         {pin && (
           <Button variant="secondary" onClick={pin.pinned ? pin.unpin : pin.pin}>
             <Icon name={pin.pinned ? 'keep_off' : 'keep'} size={18} />

@@ -1,4 +1,4 @@
-// yte-host 是本專案的原生訊息橋接程式（plan 第 4 節）。
+// ytm-host 是本專案的原生訊息橋接程式（plan 第 4 節）。
 //
 // 執行模式：
 //   - 由瀏覽器以原生訊息（Native Messaging）啟動：經由 stdin/stdout 交換
@@ -89,7 +89,7 @@ func main() {
 	}
 	client, ok := identifyCaller(args)
 	if !ok {
-		fmt.Fprintln(os.Stderr, "yte-host: this program is started by the browser extension; it does not accept command-line arguments")
+		fmt.Fprintln(os.Stderr, "ytm-host: this program is started by the browser extension; it does not accept command-line arguments")
 		os.Exit(2)
 	}
 	os.Exit(serve(client))

@@ -117,7 +117,7 @@ export function createIconElement(name: IconName, size = 24): SVGSVGElement {
   const NS = 'http://www.w3.org/2000/svg';
   const { viewBox, paths } = PARSED[name];
   const svg = document.createElementNS(NS, 'svg');
-  svg.setAttribute('class', 'yte-icon');
+  svg.setAttribute('class', 'ytm-icon');
   svg.setAttribute('width', String(size));
   svg.setAttribute('height', String(size));
   svg.setAttribute('viewBox', viewBox);

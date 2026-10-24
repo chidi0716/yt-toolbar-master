@@ -22,7 +22,7 @@
    - Firefox／Zen：`about:debugging#/runtime/this-firefox` →「載入暫時附加元件」→ 選 `.output/firefox-mv3/manifest.json`
      （暫時附加元件在瀏覽器重新啟動後會消失，需要重新載入；長期使用請依 README 以簽署過的 `.xpi` 安裝）。
 4. 安裝橋接程式：`sh host/dist/yt-toolbar-master-host-macos/install.sh`（不要 sudo）。輸出中兩個「Registered」路徑存在，
-   `~/Library/Application Support/youtube-extension-host/yte-host --version` 印出版本；未安裝 yt-dlp、ffmpeg 或 deno 時印出 `brew install …`。
+   `~/Library/Application Support/yt-toolbar-master/ytm-host --version` 印出版本；未安裝 yt-dlp、ffmpeg 或 deno 時印出 `brew install …`。
 5. 重新啟動瀏覽器。
 6. 準備測試影片：一部有 4K 的影片、一部最高 720p 的影片、一部很舊的影片（例如 2005 年）、一部有章節的影片、一部有上傳字幕與自動字幕的影片、
    一部有自動配音的影片、一部直播、一個播放清單、幾部 Shorts。
@@ -110,7 +110,7 @@
 | 4.2.14 | 下載 WEBM 不會因為無法嵌入封面而失敗。 | — | ☐ | ☐ | ☐ | ☐ |
 | 4.2.15 | 下載途中關閉 YouTube 分頁，下載仍完成並收到通知。 | ✔ | ☐ | ☐ | ☐ | ☐ |
 | 4.2.16 | 下載途中結束瀏覽器（Cmd+Q），等一兩分鐘再開啟：收到該下載的「下載完成」通知。 | ✔ | ☐ | ☐ | ☐ | ☐ |
-| 4.2.17 | 下載途中按「取消」：下載停止，下載資料夾沒有 `.part` 或 `.yte-tmp-…`，`ps ax \| grep -E 'yt-dlp\|ffmpeg'` 沒有殘留程序；不會收到通知。 | 部分（程序樹） | ☐ | ☐ | ☐ | ☐ |
+| 4.2.17 | 下載途中按「取消」：下載停止，下載資料夾沒有 `.part` 或 `.ytm-tmp-…`，`ps ax \| grep -E 'yt-dlp\|ffmpeg'` 沒有殘留程序；不會收到通知。 | 部分（程序樹） | ☐ | ☐ | ☐ | ☐ |
 | 4.2.18 | 同時下載多個（例如影片與 MP3），面板列出目前影片的所有下載。 | ✔ | ☐ | ☐ | ☐ | ☐ |
 | 4.2.19 | 字幕直接下載失敗時（若遇到），面板顯示「已改用 yt-dlp 下載」，檔案存到設定的下載資料夾。 | ✔ | ☐ | ☐ | ☐ | ☐ |
 | 4.2.20 | 錯誤訊息：拔掉網路後下載顯示「網路連線問題，請重試」與「重試」；會員限定或年齡限制影片顯示需要登入；YouTube 改版時顯示「請更新 yt-dlp」與更新按鈕。 | ✔ | ☐ | ☐ | ☐ | ☐ |
@@ -133,7 +133,7 @@
 | # | 項目 | 自動化 | Chrome | Firefox | macOS | Windows |
 |---|---|---|---|---|---|---|
 | 4.4.1 | 送給橋接程式一個不在白名單的指令、非法影片 ID、含 `../` 的資料夾，全部被拒絕。 | ✔（go test） | — | — | — | — |
-| 4.4.2 | 記錄檔（macOS：`~/Library/Logs/youtube-extension-host/host.log`；Windows：`%LOCALAPPDATA%\youtube-extension-host\logs\host.log`）只有指令名稱、工作狀態與錯誤代碼，家目錄顯示為 `~`。 | ✔ | — | — | ☐ | ☐ |
+| 4.4.2 | 記錄檔（macOS：`~/Library/Logs/yt-toolbar-master/host.log`；Windows：`%LOCALAPPDATA%\yt-toolbar-master\logs\host.log`）只有指令名稱、工作狀態與錯誤代碼，家目錄顯示為 `~`。 | ✔ | — | — | ☐ | ☐ |
 | 4.4.3 | 解除安裝（`sh host/dist/yt-toolbar-master-host-macos/uninstall.sh`／`uninstall.ps1`）後，橋接程式、設定檔（與 Windows 的登錄機碼）、狀態與記錄檔都已刪除，面板回到未安裝狀態；下載的檔案、yt-dlp、ffmpeg 不受影響。 | 部分（模擬） | ☐ | ☐ | ☐ | ☐ |
 | 4.4.4 | 安裝腳本不需要 sudo／系統管理員；Gatekeeper 沒有擋下橋接程式（若出現「無法打開」，請回報）。 | 部分（模擬） | — | — | ☐ | ☐ |
 
@@ -260,10 +260,10 @@
 | 10.1.1 | 依 README「Releases (maintainers)」在 repo 設定開啟不可變更版本（immutable releases）。發佈後試著編輯版本或刪除、替換其中一個檔案，GitHub 拒絕。 | — | ☐ |
 | 10.1.2 | 本機 `npm run release:dry` 成功，`release/dist/upload/` 有 13 個檔案（Firefox 為未簽署的 `-firefox-temporary.zip`，沒有 `updates.json`）。 | ✔ | ☐ |
 | 10.1.3 | 先推送一個預先發行標籤（例如 `v0.2.0-beta.1`，注意 Q58 的版本號問題）：Actions 成功，Release 標示為 Pre-release，`releases/latest` 不指向它。 | — | ☐ |
-| 10.1.4 | 推送正式標籤：Actions 的 `lock-check -download` 對每個第三方檔案印出「matches the official checksum」與「downloaded and verified」；`yte-release check` 印出 components.json 正確。 | — | ☐ |
+| 10.1.4 | 推送正式標籤：Actions 的 `lock-check -download` 對每個第三方檔案印出「matches the official checksum」與「downloaded and verified」；`ytm-release check` 印出 components.json 正確。 | — | ☐ |
 | 10.1.5 | **尚未設定 Mozilla 金鑰**時推送正式標籤：Release 照常建立，附上 `yt-toolbar-master-<版本>-firefox-temporary.zip`、沒有 `updates.json`，說明中註明只能以臨時附加元件載入；該 zip 解壓後可以在 `about:debugging` 載入（008 FR-52）。 | ✔（本機模擬） | ☐ |
 | 10.1.5a | 設定 `AMO_JWT_ISSUER`、`AMO_JWT_SECRET` 後的下一個正式版本：Firefox 版送 Mozilla 簽署成功（manifest 有 `update_url`，不公開頻道應接受，Q57），Release 附有 `.xpi` 與 `updates.json`。 | — | ☐ |
-| 10.1.6 | Release 有：`install.sh`、`install.ps1`、`uninstall.sh`、`uninstall.ps1`、三種 `yte-host-*`、兩個手動安裝 zip、`components.json`、Chrome zip、`.xpi` 與 `updates.json`（或未簽署時的 `-firefox-temporary.zip`）、`SHA256SUMS`；說明文字含各瀏覽器的更新步驟。下載後 `shasum -a 256 -c SHA256SUMS` 全部 OK。 | — | ☐ |
+| 10.1.6 | Release 有：`install.sh`、`install.ps1`、`uninstall.sh`、`uninstall.ps1`、三種 `ytm-host-*`、兩個手動安裝 zip、`components.json`、Chrome zip、`.xpi` 與 `updates.json`（或未簽署時的 `-firefox-temporary.zip`）、`SHA256SUMS`；說明文字含各瀏覽器的更新步驟。下載後 `shasum -a 256 -c SHA256SUMS` 全部 OK。 | — | ☐ |
 | 10.1.7 | `https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.sh` 下載到的腳本中 `TAG=` 是這個版本；`install.ps1` 是純 ASCII（沒有 BOM）。 | ✔（release:dry） | ☐ |
 | 10.1.8 | 預先發行標籤（例如 `v0.2.0-beta.1`）即使已設定 Mozilla 金鑰，Firefox 版也不送簽署（附 `-firefox-temporary.zip`）。 | — | ☐ |
 
@@ -272,7 +272,7 @@
 | # | 項目 | 自動化 | macOS | Windows |
 |---|---|---|---|---|
 | 10.2.1 | 全新的電腦（沒有 Homebrew／winget 的 yt-dlp、ffmpeg、deno）：照面板說明貼上一行指令，逐步印出中英文說明與來源網址，最後「完成！回到瀏覽器即可下載」；全程沒有 Gatekeeper、SmartScreen 或系統管理員提示。 | 部分（模擬） | ☐ | ☐ |
-| 10.2.2 | macOS：Apple Silicon（含在 Rosetta 的終端機中執行）安裝 arm64 版，Intel 安裝 amd64 版（`file ~/Library/Application\ Support/youtube-extension-host/yte-host`）。 | ✔（模擬） | ☐ | — |
+| 10.2.2 | macOS：Apple Silicon（含在 Rosetta 的終端機中執行）安裝 arm64 版，Intel 安裝 amd64 版（`file ~/Library/Application\ Support/yt-toolbar-master/ytm-host`）。 | ✔（模擬） | ☐ | — |
 | 10.2.3 | Windows：在 Windows PowerShell 5.1（不是 PowerShell 7）執行，中文訊息正確顯示，執行完 PowerShell 視窗沒有被關閉。 | ✔（PowerShell for Linux 模擬） | — | ☐ |
 | 10.2.4 | 安裝後面板在幾秒內自動切換成可下載畫面；成功下載 1080p 影片與 MP3。 | — | ☐ | ☐ |
 | 10.2.5 | 設定頁「下載」區顯示五個元件（小幫手、yt-dlp、deno、ffmpeg、ffprobe）的版本與來源，來源為安裝資料夾。 | ✔（假 status） | ☐ | ☐ |
@@ -281,7 +281,7 @@
 | 10.2.8 | 下載途中中斷網路：印出網路錯誤與「再執行一次」的說明；恢復後再執行，從失敗處繼續完成。 | ✔（假伺服器） | ☐ | ☐ |
 | 10.2.9 | 用 `sudo` 執行 macOS 指令：被拒絕並說明原因。 | ✔ | ☐ | — |
 | 10.2.10 | 安裝後使用者資料夾以外沒有新增檔案；PATH 沒有改變（重新開一個終端機，`which yt-dlp` 結果與安裝前相同）。 | — | ☐ | ☐ |
-| 10.2.11 | 竄改測試：把 `components.json` 中一個檔案的網址改成其他網站，或刪掉一個欄位，再以 `yte-host --install --manifest …` 執行，顯示發佈清單無效、不下載任何東西；把清單中一個 SHA256 改掉，顯示檔案與清單不符、保留舊版本；把下載的小幫手改一個位元組後執行引導腳本的核對，顯示 SHA256 不符並停止。 | ✔ | ☐ | ☐ |
+| 10.2.11 | 竄改測試：把 `components.json` 中一個檔案的網址改成其他網站，或刪掉一個欄位，再以 `ytm-host --install --manifest …` 執行，顯示發佈清單無效、不下載任何東西；把清單中一個 SHA256 改掉，顯示檔案與清單不符、保留舊版本；把下載的小幫手改一個位元組後執行引導腳本的核對，顯示 SHA256 不符並停止。 | ✔ | ☐ | ☐ |
 | 10.2.12 | Zen：一行指令安裝後（不另外設定）Zen 找得到小幫手（Q41）。 | — | ☐ | ☐ |
 | 10.2.13 | README 的「手動安裝」：下載 `yt-toolbar-master-host-macos.zip`／`-windows.zip`，以自己安裝的 yt-dlp、ffmpeg、deno 執行 `install.sh`／`install.ps1`，可以下載。 | ✔（Linux e2e） | ☐ | ☐ |
 
@@ -292,7 +292,7 @@
 | 10.3.1 | 發佈新版本後，第一次下載時背景啟動更新（`host.log` 出現 `update` 的紀錄），下載本身沒有變慢；下載結束後小幫手、deno 被替換，設定頁顯示新版本與最近一次檢查。 | ✔（假伺服器） | ☐ | ☐ |
 | 10.3.2 | 一天內多次下載只檢查一次（`host.log` 只有一次 update）；沒有下載的日子不連網（例如以防火牆紀錄確認）。 | ✔ | ☐ | ☐ |
 | 10.3.3 | 把安裝資料夾中的 yt-dlp 換成舊版並觸發 `YTDLP_OUTDATED`：面板顯示「正在更新 yt-dlp…」，之後自動重試成功。 | ✔（假 yt-dlp） | ☐ | ☐ |
-| 10.3.4 | Windows：小幫手自我更新時瀏覽器正在使用舊版本，替換成功（舊檔改名為 `yte-host.exe.old`，下次啟動後消失）。 | — | — | ☐ |
+| 10.3.4 | Windows：小幫手自我更新時瀏覽器正在使用舊版本，替換成功（舊檔改名為 `ytm-host.exe.old`，下次啟動後消失）。 | — | — | ☐ |
 | 10.3.5 | 設定頁關閉自動更新後，超過 24 小時再下載也不檢查；「立即檢查更新」不受 24 小時限制。 | ✔ | ☐ | ☐ |
 | 10.3.6 | 斷網時下載三天（或調整系統時間）：連續失敗 3 次以上後，下載面板出現一行提示；恢復網路並成功更新後提示消失。 | ✔（失敗計數） | ☐ | ☐ |
 
@@ -301,7 +301,7 @@
 | # | 項目 | 自動化 | macOS | Windows |
 |---|---|---|---|---|
 | 10.4.1 | 設定頁「移除下載功能」：有下載進行中時顯示說明、不移除；沒有下載時，幾秒後專屬資料夾、記錄檔、註冊（macOS 的兩個設定檔；Windows 的兩個登錄機碼）都被刪除，已下載的影片還在。 | ✔（Linux e2e） | ☐ | ☐ |
-| 10.4.2 | Windows：移除後 `%TEMP%` 中留下一個 `yte-uninstall-*.exe`（Q59），其餘都已刪除。 | — | — | ☐ |
+| 10.4.2 | Windows：移除後 `%TEMP%` 中留下一個 `ytm-uninstall-*.exe`（Q59），其餘都已刪除。 | — | — | ☐ |
 | 10.4.3 | 擴充功能已移除時，README 的一行移除指令刪除上述所有項目；Windows 版以 `irm … \| iex` 執行，中文正常、視窗沒有被關閉。 | ✔（語法） | ☐ | ☐ |
 
 ### 10.5 擴充功能的自動更新

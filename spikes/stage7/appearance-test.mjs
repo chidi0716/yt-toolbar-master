@@ -72,8 +72,8 @@ try {
   check('外觀設定存在 sync（FR-24）', synced === 'system', String(synced));
   // 工具列關閉後（✕）在 YouTube 切換主題，設定頁仍跟著變（T37a、Q52）
   await choose('youtube');
-  await page.locator('yte-toolbar .yte-btn[data-button="close"]').click();
-  await page.waitForFunction(() => !document.querySelector('yte-toolbar'));
+  await page.locator('ytm-toolbar .ytm-btn[data-button="close"]').click();
+  await page.waitForFunction(() => !document.querySelector('ytm-toolbar'));
   await setYouTubeDark(true);
   const closedDark = await theme(opt);
   await setYouTubeDark(false);

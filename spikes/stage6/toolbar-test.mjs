@@ -36,31 +36,31 @@ async function section(name, fn, { lang = 'en-US', viewport = { width: 1280, hei
 }
 
 const inToolbar = (page, src, arg) =>
-  page.evaluate(([s, a]) => new Function('root', 'arg', s)(document.querySelector('yte-toolbar').shadowRoot, a), [src, arg]);
+  page.evaluate(([s, a]) => new Function('root', 'arg', s)(document.querySelector('ytm-toolbar').shadowRoot, a), [src, arg]);
 /** 工具列上的按鈕（左組、右組）。 */
 const order = (page) =>
   inToolbar(
     page,
-    `return { left: [...root.querySelectorAll('.yte-group[data-group="left"] .yte-btn')].map((b) => b.dataset.button).join(' '),
-              right: [...root.querySelectorAll('.yte-group[data-group="right"] .yte-btn')].map((b) => b.dataset.button).join(' ') }`,
+    `return { left: [...root.querySelectorAll('.ytm-group[data-group="left"] .ytm-btn')].map((b) => b.dataset.button).join(' '),
+              right: [...root.querySelectorAll('.ytm-group[data-group="right"] .ytm-btn')].map((b) => b.dataset.button).join(' ') }`,
   );
 /** 編輯模式中的項目（隱藏的以 - 開頭）。 */
 const editItems = (page) =>
-  inToolbar(page, `return [...root.querySelectorAll('.yte-edit-item')].map((i) => (i.hasAttribute('data-hidden') ? '-' : '') + i.dataset.item).join(' ')`);
-const editing = (page) => inToolbar(page, `return root.querySelector('.yte-toolbar').hasAttribute('data-editing')`);
+  inToolbar(page, `return [...root.querySelectorAll('.ytm-edit-item')].map((i) => (i.hasAttribute('data-hidden') ? '-' : '') + i.dataset.item).join(' ')`);
+const editing = (page) => inToolbar(page, `return root.querySelector('.ytm-toolbar').hasAttribute('data-editing')`);
 const openMore = async (page) => {
   await button(page, 'more').click();
-  await page.waitForSelector('yte-toolbar .yte-more-edit');
+  await page.waitForSelector('ytm-toolbar .ytm-more-edit');
 };
 const enterEdit = async (page) => {
   await openMore(page);
-  await page.locator('yte-toolbar .yte-more-edit').click();
-  await page.waitForSelector('yte-toolbar .yte-toolbar[data-editing]');
+  await page.locator('ytm-toolbar .ytm-more-edit').click();
+  await page.waitForSelector('ytm-toolbar .ytm-toolbar[data-editing]');
 };
-const editButton = (page, label) => page.locator(`yte-toolbar .yte-edit-actions button:has-text("${label}")`);
-const eye = (page, id) => page.locator(`yte-toolbar .yte-edit-item[data-item="${id}"] .yte-edit-eye`);
+const editButton = (page, label) => page.locator(`ytm-toolbar .ytm-edit-actions button:has-text("${label}")`);
+const eye = (page, id) => page.locator(`ytm-toolbar .ytm-edit-item[data-item="${id}"] .ytm-edit-eye`);
 const tile = (page, id) =>
-  page.locator(id === 'separator' ? 'yte-toolbar .yte-edit-sep' : `yte-toolbar .yte-edit-item[data-item="${id}"] .yte-edit-tool`);
+  page.locator(id === 'separator' ? 'ytm-toolbar .ytm-edit-sep' : `ytm-toolbar .ytm-edit-item[data-item="${id}"] .ytm-edit-tool`);
 
 /** 以滑鼠拖曳：把 id 拖到 target 項目的左側（before）或右側（after）。 */
 async function dragTo(page, id, target, side = 'before') {
@@ -71,7 +71,7 @@ async function dragTo(page, id, target, side = 'before') {
   await page.mouse.down();
   await page.mouse.move(a.x + a.width / 2 + (x > a.x ? 8 : -8), a.y + a.height / 2, { steps: 2 });
   await page.mouse.move(x, b.y + b.height / 2, { steps: 8 });
-  const indicator = await inToolbar(page, `return !!root.querySelector('.yte-edit-indicator')`);
+  const indicator = await inToolbar(page, `return !!root.querySelector('.ytm-edit-indicator')`);
   await page.mouse.up();
   await sleep(100);
   return indicator;
@@ -94,16 +94,16 @@ await section('edit', async (page, context) => {
   check('預設：左組六個工具，右組六個工具＋「更多」「關閉」（006 FR-23）', before.left === DEFAULT_LEFT && before.right === DEFAULT_RIGHT, JSON.stringify(before));
 
   await openMore(page);
-  const moreText = await inToolbar(page, `return { other: !!root.querySelector('.yte-other-tools'), last: root.querySelector('.yte-panel-body, .yte-panel').lastElementChild?.textContent ?? '', edit: root.querySelector('.yte-more-edit')?.textContent }`);
+  const moreText = await inToolbar(page, `return { other: !!root.querySelector('.ytm-other-tools'), last: root.querySelector('.ytm-panel-body, .ytm-panel').lastElementChild?.textContent ?? '', edit: root.querySelector('.ytm-more-edit')?.textContent }`);
   check('「更多」面板最下方有「編輯工具列」；沒有隱藏的工具時不顯示「其他工具」（FR-1、FR-16）', moreText.edit === 'Edit toolbar' && !moreText.other, JSON.stringify(moreText));
-  await page.locator('yte-toolbar .yte-more-edit').click();
-  await page.waitForSelector('yte-toolbar .yte-toolbar[data-editing]');
+  await page.locator('ytm-toolbar .ytm-more-edit').click();
+  await page.waitForSelector('ytm-toolbar .ytm-toolbar[data-editing]');
   const state = await inToolbar(
     page,
-    `return { panel: !!root.querySelector('.yte-panel'), actions: [...root.querySelectorAll('.yte-edit-actions button')].map((b) => b.textContent),
-              help: root.querySelector('.yte-edit-help')?.textContent, eyes: root.querySelectorAll('.yte-edit-eye').length,
-              sep: root.querySelectorAll('.yte-edit-sep').length, fixed: !!root.querySelector('.yte-btn[data-button="more"], .yte-btn[data-button="close"]'),
-              focus: root.activeElement?.closest('.yte-edit-item')?.dataset.item }`,
+    `return { panel: !!root.querySelector('.ytm-panel'), actions: [...root.querySelectorAll('.ytm-edit-actions button')].map((b) => b.textContent),
+              help: root.querySelector('.ytm-edit-help')?.textContent, eyes: root.querySelectorAll('.ytm-edit-eye').length,
+              sep: root.querySelectorAll('.ytm-edit-sep').length, fixed: !!root.querySelector('.ytm-btn[data-button="more"], .ytm-btn[data-button="close"]'),
+              focus: root.activeElement?.closest('.ytm-edit-item')?.dataset.item }`,
   );
   check('點「編輯工具列」進入編輯模式，「更多」面板收起（FR-1）', !state.panel, JSON.stringify(state));
   check('右側為「重設為預設」「取消」「完成」，不顯示「更多」「關閉」（FR-3）', state.actions.join('|') === 'Reset to default|Cancel|Done' && !state.fixed, state.actions.join('|'));
@@ -118,7 +118,7 @@ await section('edit', async (page, context) => {
   // 編輯模式中點工具不會執行原本的功能（FR-5）
   await tile(page, 'darkMode').click();
   await tile(page, 'video').click();
-  const noop = await inToolbar(page, `return { panel: !!root.querySelector('.yte-panel'), editing: root.querySelector('.yte-toolbar').hasAttribute('data-editing') }`);
+  const noop = await inToolbar(page, `return { panel: !!root.querySelector('.ytm-panel'), editing: root.querySelector('.ytm-toolbar').hasAttribute('data-editing') }`);
   const dark = await page.evaluate(() => document.documentElement.hasAttribute('dark'));
   check('編輯模式中點工具不會執行功能、不展開面板（FR-5）', !noop.panel && noop.editing, JSON.stringify({ ...noop, dark }));
 
@@ -158,8 +158,8 @@ await section('hidden', async (page) => {
   const items = await editItems(page);
   const hiddenLook = await inToolbar(
     page,
-    `const i = root.querySelector('.yte-edit-item[data-item="loop"]'); return { mark: !!i.querySelector('.yte-edit-hidden-mark'), opacity: getComputedStyle(i.querySelector('.yte-edit-tool > .yte-icon')).opacity,
-       eyeLabel: i.querySelector('.yte-edit-eye').getAttribute('aria-label'), outline: getComputedStyle(root.querySelector('.yte-toolbar')).borderStyle }`,
+    `const i = root.querySelector('.ytm-edit-item[data-item="loop"]'); return { mark: !!i.querySelector('.ytm-edit-hidden-mark'), opacity: getComputedStyle(i.querySelector('.ytm-edit-tool > .ytm-icon')).opacity,
+       eyeLabel: i.querySelector('.ytm-edit-eye').getAttribute('aria-label'), outline: getComputedStyle(root.querySelector('.ytm-toolbar')).borderStyle }`,
   );
   check('隱藏的工具半透明並有「隱藏」標記；眼睛按鈕改為「顯示」；工具列有虛線外框（FR-10、FR-11、外觀）', items.includes('-loop') && items.includes('-floating') && hiddenLook.mark && Number(hiddenLook.opacity) < 0.5 && hiddenLook.eyeLabel === 'Show Loop' && hiddenLook.outline === 'dashed', JSON.stringify({ items, ...hiddenLook }));
   await shot(page, 'T33-edit-mode-en.png');
@@ -172,28 +172,28 @@ await section('hidden', async (page) => {
   await openMore(page);
   const other = await inToolbar(
     page,
-    `return [...root.querySelectorAll('.yte-other-item')].map((li) => li.dataset.tool + ':' + li.querySelector('.yte-other-name').textContent + ':' + (li.querySelector('[role="switch"]')?.getAttribute('aria-checked') ?? 'button'))`,
+    `return [...root.querySelectorAll('.ytm-other-item')].map((li) => li.dataset.tool + ':' + li.querySelector('.ytm-other-name').textContent + ':' + (li.querySelector('[role="switch"]')?.getAttribute('aria-checked') ?? 'button'))`,
   );
   check('「更多」面板出現「其他工具」，列出隱藏的工具（圖示＋名稱，切換類顯示開關狀態）（FR-15）', other.join('|') === 'floating:Floating player:false|loop:Loop:button', other.join('|'));
   await shot(page, 'T32-more-other-tools-en.png');
   // 切換類：開關浮動播放器
-  await page.locator('yte-toolbar .yte-other-item[data-tool="floating"] [role="switch"]').click();
+  await page.locator('ytm-toolbar .ytm-other-item[data-tool="floating"] [role="switch"]').click();
   await sleep(300);
-  const floatingOn = await inToolbar(page, `return root.querySelector('.yte-other-item[data-tool="floating"] [role="switch"]').getAttribute('aria-checked')`);
+  const floatingOn = await inToolbar(page, `return root.querySelector('.ytm-other-item[data-tool="floating"] [role="switch"]').getAttribute('aria-checked')`);
   check('從「其他工具」開啟浮動播放器，列上的開關變為開啟（FR-15、驗收 2）', floatingOn === 'true');
-  const dotFloating = await inToolbar(page, `return root.querySelector('.yte-btn[data-button="more"]').hasAttribute('data-dot')`);
+  const dotFloating = await inToolbar(page, `return root.querySelector('.ytm-btn[data-button="more"]').hasAttribute('data-dot')`);
   check('隱藏的浮動播放器開啟中，「更多」按鈕顯示提示圓點（FR-17）', dotFloating);
-  await page.locator('yte-toolbar .yte-other-item[data-tool="floating"] [role="switch"]').click();
+  await page.locator('ytm-toolbar .ytm-other-item[data-tool="floating"] [role="switch"]').click();
   await sleep(300);
-  check('關閉後提示圓點消失', !(await inToolbar(page, `return root.querySelector('.yte-btn[data-button="more"]').hasAttribute('data-dot')`)));
+  check('關閉後提示圓點消失', !(await inToolbar(page, `return root.querySelector('.ytm-btn[data-button="more"]').hasAttribute('data-dot')`)));
 
   // 面板類：展開循環播放面板，對齊「更多」按鈕
-  await page.locator('yte-toolbar .yte-other-item[data-tool="loop"] button').click();
-  await page.waitForSelector('yte-toolbar .yte-panel #yte-loop-times');
+  await page.locator('ytm-toolbar .ytm-other-item[data-tool="loop"] button').click();
+  await page.waitForSelector('ytm-toolbar .ytm-panel #ytm-loop-times');
   const align = await inToolbar(
     page,
-    `const p = root.querySelector('.yte-panel').getBoundingClientRect(); const m = root.querySelector('.yte-btn[data-button="more"]').getBoundingClientRect();
-     return { panelLeft: p.left, panelRight: p.right, moreLeft: m.left, moreRight: m.right, title: root.querySelector('.yte-panel-title')?.textContent, more: !!root.querySelector('.yte-more') }`,
+    `const p = root.querySelector('.ytm-panel').getBoundingClientRect(); const m = root.querySelector('.ytm-btn[data-button="more"]').getBoundingClientRect();
+     return { panelLeft: p.left, panelRight: p.right, moreLeft: m.left, moreRight: m.right, title: root.querySelector('.ytm-panel-title')?.textContent, more: !!root.querySelector('.ytm-more') }`,
   );
   check(
     '點「循環播放」：收起「更多」，展開循環播放面板，對齊「更多」按鈕（FR-15、驗收 2）',
@@ -202,26 +202,26 @@ await section('hidden', async (page) => {
   );
   await shot(page, 'T32-hidden-loop-panel.png');
   // 循環中
-  await page.locator('yte-toolbar .yte-panel #yte-loop-times').fill('99');
-  await page.locator('yte-toolbar .yte-panel .yte-button-primary').click();
+  await page.locator('ytm-toolbar .ytm-panel #ytm-loop-times').fill('99');
+  await page.locator('ytm-toolbar .ytm-panel .ytm-button-primary').click();
   await sleep(300);
   await page.keyboard.press('Escape');
   await sleep(300);
-  const dotLoop = await inToolbar(page, `const b = root.querySelector('.yte-btn[data-button="more"]'); return { dot: b.hasAttribute('data-dot'), label: b.getAttribute('aria-label'), focus: root.activeElement?.dataset.button }`);
+  const dotLoop = await inToolbar(page, `const b = root.querySelector('.ytm-btn[data-button="more"]'); return { dot: b.hasAttribute('data-dot'), label: b.getAttribute('aria-label'), focus: root.activeElement?.dataset.button }`);
   check('隱藏的循環播放進行中，「更多」按鈕顯示提示圓點與說明（FR-17、驗收 7）', dotLoop.dot && dotLoop.label === 'More (a hidden tool is in use)', JSON.stringify(dotLoop));
   check('從「更多」開啟的面板收起後焦點回到「更多」', dotLoop.focus === 'more', dotLoop.focus);
   await shot(page, 'T32-more-dot.png');
 
   // 執行類：截圖
   await openMore(page);
-  await page.waitForSelector('yte-toolbar .yte-other-item[data-tool="loop"] .yte-other-dot');
+  await page.waitForSelector('ytm-toolbar .ytm-other-item[data-tool="loop"] .ytm-other-dot');
   check('「其他工具」中進行中的工具有圓點', true);
   await page.keyboard.press('Escape');
 
   // 說明面板
   await button(page, 'help').click();
-  await page.waitForSelector('yte-toolbar .yte-help');
-  const help = await inToolbar(page, `return { items: [...root.querySelectorAll('.yte-help-item')].map((i) => i.dataset.button).join(' '), note: root.querySelector('.yte-help-hidden')?.textContent ?? null }`);
+  await page.waitForSelector('ytm-toolbar .ytm-help');
+  const help = await inToolbar(page, `return { items: [...root.querySelectorAll('.ytm-help-item')].map((i) => i.dataset.button).join(' '), note: root.querySelector('.ytm-help-hidden')?.textContent ?? null }`);
   check(
     '說明面板只列出顯示中的工具，最後一行說明隱藏的工具可以從「更多」使用（FR-25、驗收 9）',
     help.items === `${DEFAULT_LEFT} darkMode cinema pip help more close` && help.note === 'Hidden tools are available from the “More” menu.',
@@ -240,9 +240,9 @@ await section('hidden', async (page) => {
     v.currentTime = 1;
   });
   await openMore(page);
-  await page.locator('yte-toolbar .yte-other-item[data-tool="screenshot"] button').click();
+  await page.locator('ytm-toolbar .ytm-other-item[data-tool="screenshot"] button').click();
   await sleep(800);
-  const shotStatus = await inToolbar(page, `return root.querySelector('.yte-other-item[data-tool="screenshot"] .yte-other-desc')?.textContent ?? null`);
+  const shotStatus = await inToolbar(page, `return root.querySelector('.ytm-other-item[data-tool="screenshot"] .ytm-other-desc')?.textContent ?? null`);
   check('執行類（截圖）：從「其他工具」點擊即執行，列上顯示結果（FR-15）', !!shotStatus, String(shotStatus));
 });
 
@@ -270,14 +270,14 @@ await section('drag', async (page, context) => {
   check('按「完成」：順序正確（驗收 3）', JSON.stringify(o) === JSON.stringify(want), JSON.stringify(o));
   const geo = await inToolbar(
     page,
-    `const t = root.querySelector('.yte-toolbar').getBoundingClientRect(); const l = root.querySelector('.yte-group[data-group="left"]').getBoundingClientRect(); const r = root.querySelector('.yte-group[data-group="right"]').getBoundingClientRect();
+    `const t = root.querySelector('.ytm-toolbar').getBoundingClientRect(); const l = root.querySelector('.ytm-group[data-group="left"]').getBoundingClientRect(); const r = root.querySelector('.ytm-group[data-group="right"]').getBoundingClientRect();
      return { left: Math.round(l.left - t.left), right: Math.round(t.right - r.right), gap: Math.round(r.left - l.right) }`,
   );
   check('左組靠左、右組（含截圖）靠右對齊（驗收 3）', geo.left === 0 && geo.right === 0 && geo.gap > 0, JSON.stringify(geo));
   const otherOrder = await order(other);
   check('其他已開啟的 YouTube 分頁立即套用（FR-21、驗收 3）', JSON.stringify(otherOrder) === JSON.stringify(want), JSON.stringify(otherOrder));
   await page.reload();
-  await page.waitForSelector('yte-toolbar', { state: 'attached' });
+  await page.waitForSelector('ytm-toolbar', { state: 'attached' });
   await sleep(500);
   check('重新整理後維持（驗收 3）', JSON.stringify(await order(page)) === JSON.stringify(want), JSON.stringify(await order(page)));
   await shot(page, 'T33-custom-toolbar.png');
@@ -313,22 +313,22 @@ await section('keyboard', async (page) => {
   // 以鍵盤打開「更多」並進入編輯模式
   await button(page, 'more').focus();
   await page.keyboard.press('Enter');
-  await page.waitForSelector('yte-toolbar .yte-more-edit');
-  await page.locator('yte-toolbar .yte-more-edit').focus();
+  await page.waitForSelector('ytm-toolbar .ytm-more-edit');
+  await page.locator('ytm-toolbar .ytm-more-edit').focus();
   await page.keyboard.press('Enter');
-  await page.waitForSelector('yte-toolbar .yte-toolbar[data-editing]');
+  await page.waitForSelector('ytm-toolbar .ytm-toolbar[data-editing]');
   // 焦點在「影片」：Tab 到 MP3，← 移到最左邊
   await page.keyboard.press('Tab');
-  const focused = await inToolbar(page, `return root.activeElement?.closest('.yte-edit-item')?.dataset.item`);
+  const focused = await inToolbar(page, `return root.activeElement?.closest('.ytm-edit-item')?.dataset.item`);
   await page.keyboard.press('ArrowLeft');
   const afterMove = await editItems(page);
-  const stillFocused = await inToolbar(page, `return root.activeElement?.closest('.yte-edit-item')?.dataset.item`);
+  const stillFocused = await inToolbar(page, `return root.activeElement?.closest('.ytm-edit-item')?.dataset.item`);
   // 空白鍵隱藏 MP3
   await page.keyboard.press(' ');
   const afterHide = await editItems(page);
   // Tab 到分隔點（MP3、影片、縮圖、字幕、截圖、連結、分隔點），→ 移一格
   for (let i = 0; i < 6; i++) await page.keyboard.press('Tab');
-  const sepFocus = await inToolbar(page, `return root.activeElement?.closest('.yte-edit-item')?.dataset.item`);
+  const sepFocus = await inToolbar(page, `return root.activeElement?.closest('.ytm-edit-item')?.dataset.item`);
   await page.keyboard.press('ArrowLeft');
   const afterSep = await editItems(page);
   await page.keyboard.press('Enter');
@@ -432,13 +432,13 @@ await section(
     await enterEdit(page);
     await eye(page, 'loop').click();
     await eye(page, 'floating').click();
-    const zh = await inToolbar(page, `return { actions: [...root.querySelectorAll('.yte-edit-actions button')].map((b) => b.textContent).join('|'), help: root.querySelector('.yte-edit-help').textContent }`);
+    const zh = await inToolbar(page, `return { actions: [...root.querySelectorAll('.ytm-edit-actions button')].map((b) => b.textContent).join('|'), help: root.querySelector('.ytm-edit-help').textContent }`);
     check('繁體中文的編輯模式', zh.actions === '重設為預設|取消|完成' && zh.help === '拖曳調整順序，點眼睛圖示顯示或隱藏。隱藏的工具可以從「更多」選單使用。', JSON.stringify(zh));
     await shot(page, 'T33-edit-mode-zh-TW.png');
     await editButton(page, '完成').click();
     await sleep(300);
     await openMore(page);
-    const title = await inToolbar(page, `return root.querySelector('.yte-other-title').textContent + '|' + root.querySelector('.yte-more-edit').textContent`);
+    const title = await inToolbar(page, `return root.querySelector('.ytm-other-title').textContent + '|' + root.querySelector('.ytm-more-edit').textContent`);
     check('繁體中文的「其他工具」與「編輯工具列」', title === '其他工具|編輯工具列', title);
     await shot(page, 'T32-more-other-tools-zh-TW.png');
     const opt = await context.newPage();

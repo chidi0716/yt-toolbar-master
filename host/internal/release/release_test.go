@@ -104,7 +104,7 @@ func TestManifestValidation(t *testing.T) {
 		{"helper url missing", func(m *Manifest) { a := m.Helper[DarwinARM64]; a.URL = ""; m.Helper[DarwinARM64] = a }},
 		{"helper url other host", func(m *Manifest) {
 			a := m.Helper[DarwinARM64]
-			a.URL = "https://example.com/yte-host"
+			a.URL = "https://example.com/ytm-host"
 			m.Helper[DarwinARM64] = a
 		}},
 		{"helper url http", func(m *Manifest) {
@@ -114,7 +114,7 @@ func TestManifestValidation(t *testing.T) {
 		}},
 		{"helper url other repo", func(m *Manifest) {
 			a := m.Helper[DarwinARM64]
-			a.URL = "https://github.com/someone/else/releases/download/v1/yte-host"
+			a.URL = "https://github.com/someone/else/releases/download/v1/ytm-host"
 			m.Helper[DarwinARM64] = a
 		}},
 		{"tool missing", func(m *Manifest) { delete(m.Tools, ToolDeno) }},
@@ -392,7 +392,7 @@ func TestBuildManifest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if m2.Helper[WindowsAMD64].URL != "https://github.com/chidi0716/yt-toolbar-master/releases/download/v0.2.0/yte-host-windows-amd64.exe" ||
+	if m2.Helper[WindowsAMD64].URL != "https://github.com/chidi0716/yt-toolbar-master/releases/download/v0.2.0/ytm-host-windows-amd64.exe" ||
 		m2.Helper[DarwinAMD64].SHA256 != HashBytes([]byte{1}) {
 		t.Fatalf("helper entries: %+v", m2.Helper)
 	}

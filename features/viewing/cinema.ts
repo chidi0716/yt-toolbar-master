@@ -9,7 +9,7 @@ import { CINEMA_CLASS, ensurePageStyles } from './page-styles';
 import { createStore, type ToggleState, type ViewingFeature } from './store';
 
 /** 劇院模式時加在工具列宿主元素上的 class：工具列維持在調暗區域之上，按鈕改用深色背景上的顏色。 */
-export const CINEMA_HOST_CLASS = 'yte-cinema-raised';
+export const CINEMA_HOST_CLASS = 'ytm-cinema-raised';
 
 /**
  * 在調暗區域上攔截的滑鼠事件：全部阻止，讓 YouTube 的連結、按鈕與滑鼠移入效果都不會被觸發；
@@ -38,7 +38,7 @@ export function createCinema(): CinemaFeature {
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key !== 'Escape') return;
     // 有未釘選的面板展開時，Esc 先收起面板（001 FR-12），不關閉劇院模式。
-    if (toolbarHost?.shadowRoot?.querySelector('.yte-panel:not([data-pinned])')) return;
+    if (toolbarHost?.shadowRoot?.querySelector('.ytm-panel:not([data-pinned])')) return;
     off();
   };
 

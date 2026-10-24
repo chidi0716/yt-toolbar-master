@@ -29,7 +29,7 @@ type nopLogger struct{}
 
 func (nopLogger) Printf(string, ...any) {}
 
-// Updater 是一次 yte-host --update。
+// Updater 是一次 ytm-host --update。
 type Updater struct {
 	Layout   platform.Layout
 	Platform string // darwin-arm64、darwin-amd64、windows-amd64

@@ -71,10 +71,10 @@ function imageSize(buf) {
   return null;
 }
 
-const panelText = (page) => page.evaluate(() => document.querySelector('yte-toolbar').shadowRoot.querySelector('.yte-panel')?.innerText ?? '');
+const panelText = (page) => page.evaluate(() => document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-panel')?.innerText ?? '');
 const tooltipOf = (page, id) =>
   page.evaluate((id) => {
-    const tip = document.querySelector('yte-toolbar').shadowRoot.querySelector(`.yte-btn[data-button="${id}"] + .yte-tooltip`);
+    const tip = document.querySelector('ytm-toolbar').shadowRoot.querySelector(`.ytm-btn[data-button="${id}"] + .ytm-tooltip`);
     return { text: tip?.textContent, notice: tip?.hasAttribute('data-notice') };
   }, id);
 
@@ -84,11 +84,11 @@ const tooltipOf = (page, id) =>
 await section('T17', async (page, context, dl) => {
   // ---- 縮圖 ----
   await button(page, 'thumbnail').click();
-  await page.waitForSelector('yte-toolbar .yte-thumb-row', { timeout: 8000 });
+  await page.waitForSelector('ytm-toolbar .ytm-thumb-row', { timeout: 8000 });
   const rows = await page.evaluate(() =>
-    [...document.querySelector('yte-toolbar').shadowRoot.querySelectorAll('.yte-thumb-row')].map((r) => ({
+    [...document.querySelector('ytm-toolbar').shadowRoot.querySelectorAll('.ytm-thumb-row')].map((r) => ({
       key: r.dataset.key,
-      size: r.querySelector('.yte-thumb-size').textContent.replace(/\s+/g, ' '),
+      size: r.querySelector('.ytm-thumb-size').textContent.replace(/\s+/g, ' '),
       preview: r.querySelector('img').complete && r.querySelector('img').naturalWidth > 0,
     })),
   );
@@ -101,7 +101,7 @@ await section('T17', async (page, context, dl) => {
   check('每個尺寸有預覽小圖（FR-30）', rows.every((r) => r.preview));
   await shot(page, 'T17-thumbnail-panel.png');
 
-  await page.locator('yte-toolbar .yte-thumb-row[data-key="hqdefault"]').click();
+  await page.locator('ytm-toolbar .ytm-thumb-row[data-key="hqdefault"]').click();
   const thumbFile = await waitForFile(dl, 'Fixture video [jNQXAC9IVRw].jpg');
   const thumbSize = thumbFile && imageSize(thumbFile);
   check(
@@ -116,18 +116,18 @@ await section('T17', async (page, context, dl) => {
   await page.keyboard.press('Escape');
   await spaNavigate(page, 'next');
   await button(page, 'thumbnail').click();
-  await page.waitForSelector('yte-toolbar .yte-thumb-row');
-  const all = await page.evaluate(() => [...document.querySelector('yte-toolbar').shadowRoot.querySelectorAll('.yte-thumb-row')].map((r) => r.querySelector('.yte-thumb-size').textContent.replace(/\s+/g, '')));
+  await page.waitForSelector('ytm-toolbar .ytm-thumb-row');
+  const all = await page.evaluate(() => [...document.querySelector('ytm-toolbar').shadowRoot.querySelectorAll('.ytm-thumb-row')].map((r) => r.querySelector('.ytm-thumb-size').textContent.replace(/\s+/g, '')));
   check('有全部尺寸的影片列出 1280×720、640×480、480×360、320×180（FR-30）', all.join() === '1280×720,640×480,480×360,320×180', all.join());
-  await page.locator('yte-toolbar .yte-thumb-row').first().click();
+  await page.locator('ytm-toolbar .ytm-thumb-row').first().click();
   const maxFile = await waitForFile(dl, 'Fixture video aaaaaaaaaaa [aaaaaaaaaaa].jpg');
   check('下載的最高畫質縮圖為 1280×720', JSON.stringify(maxFile && imageSize(maxFile)) === '{"type":"jpg","width":1280,"height":720}');
   await page.keyboard.press('Escape');
   await page.evaluate(() => window.__fixtureNavigate('bbbbbbbbbbb'));
   await page.waitForTimeout(300);
   await button(page, 'thumbnail').click();
-  await page.waitForSelector('yte-toolbar .yte-thumb-row');
-  const keysB = await page.evaluate(() => [...document.querySelector('yte-toolbar').shadowRoot.querySelectorAll('.yte-thumb-row')].map((r) => r.dataset.key));
+  await page.waitForSelector('ytm-toolbar .ytm-thumb-row');
+  const keysB = await page.evaluate(() => [...document.querySelector('ytm-toolbar').shadowRoot.querySelectorAll('.ytm-thumb-row')].map((r) => r.dataset.key));
   check('回應 200 但內容是 120×90 預設圖的尺寸不列出（plan 3.8）', !keysB.includes('maxresdefault') && keysB.length === 3, keysB.join());
   await page.keyboard.press('Escape');
 
@@ -194,31 +194,31 @@ await section('T17', async (page, context, dl) => {
 // ---------------------------------------------------------------------------
 const subsState = (page) =>
   page.evaluate(() => {
-    const root = document.querySelector('yte-toolbar').shadowRoot;
+    const root = document.querySelector('ytm-toolbar').shadowRoot;
     const group = (key) =>
-      [...root.querySelectorAll(`.yte-subs-group[data-group="${key}"] .yte-subs-track`)].map((l) => ({
+      [...root.querySelectorAll(`.ytm-subs-group[data-group="${key}"] .ytm-subs-track`)].map((l) => ({
         name: l.textContent.trim(),
         lang: l.dataset.lang,
         checked: l.querySelector('input').checked,
-        icon: !!l.querySelector('.yte-subs-auto svg'),
+        icon: !!l.querySelector('.ytm-subs-auto svg'),
       }));
     return {
-      legends: [...root.querySelectorAll('.yte-subs-legend')].map((l) => l.textContent),
+      legends: [...root.querySelectorAll('.ytm-subs-legend')].map((l) => l.textContent),
       uploaded: group('uploaded'),
       auto: group('auto'),
-      formats: [...root.querySelectorAll('#yte-subs-format option')].map((o) => `${o.value}:${o.textContent}`),
-      format: root.querySelector('#yte-subs-format')?.value,
+      formats: [...root.querySelectorAll('#ytm-subs-format option')].map((o) => `${o.value}:${o.textContent}`),
+      format: root.querySelector('#ytm-subs-format')?.value,
     };
   });
 const openSubs = async (page) => {
   await button(page, 'subtitles').click();
   await page.waitForFunction(() => {
-    const panel = document.querySelector('yte-toolbar').shadowRoot.querySelector('.yte-panel');
-    return panel && !panel.querySelector('.yte-spinner');
+    const panel = document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-panel');
+    return panel && !panel.querySelector('.ytm-spinner');
   });
 };
-const chooseTrack = (page, group, lang) => page.locator(`yte-toolbar .yte-subs-group[data-group="${group}"] .yte-subs-track[data-lang="${lang}"] input`).check();
-const downloadSubs = (page) => page.locator('yte-toolbar .yte-subs .yte-button-primary').click();
+const chooseTrack = (page, group, lang) => page.locator(`ytm-toolbar .ytm-subs-group[data-group="${group}"] .ytm-subs-track[data-lang="${lang}"] input`).check();
+const downloadSubs = (page) => page.locator('ytm-toolbar .ytm-subs .ytm-button-primary').click();
 
 await section('T21a', async (page, context, dl) => {
   await openSubs(page);
@@ -251,14 +251,14 @@ await section('T21a', async (page, context, dl) => {
 
   // TXT（自動產生的字幕）
   await chooseTrack(page, 'auto', 'en');
-  await page.locator('yte-toolbar #yte-subs-format').selectOption('txt');
+  await page.locator('ytm-toolbar #ytm-subs-format').selectOption('txt');
   await downloadSubs(page);
   const txt = (await waitForFile(dl, 'Fixture video [jNQXAC9IVRw].en.txt'))?.toString('utf8');
   check('選 TXT 時沒有時間碼，自動字幕的重複行只保留一次（FR-41）', txt === 'so today we\nare testing\n', JSON.stringify(txt));
 
   // VTT（中文）
   await chooseTrack(page, 'uploaded', 'zh-TW');
-  await page.locator('yte-toolbar #yte-subs-format').selectOption('vtt');
+  await page.locator('ytm-toolbar #ytm-subs-format').selectOption('vtt');
   await downloadSubs(page);
   const vtt = (await waitForFile(dl, 'Fixture video [jNQXAC9IVRw].zh-TW.vtt'))?.toString('utf8');
   check('VTT 原樣保留，中文正確（FR-41）', !!vtt && vtt.startsWith('WEBVTT') && vtt.includes('你好，歡迎') && vtt.includes('00:01:02.250 --> 00:01:05.000'), JSON.stringify(vtt?.slice(0, 80)));
@@ -283,9 +283,9 @@ await section('T21a', async (page, context, dl) => {
   await page.waitForTimeout(300);
   await openSubs(page);
   await downloadSubs(page);
-  await page.waitForSelector('yte-toolbar .yte-subs-error', { timeout: 5000 });
+  await page.waitForSelector('ytm-toolbar .ytm-subs-error', { timeout: 5000 });
   const err = await page.evaluate(() => {
-    const e = document.querySelector('yte-toolbar').shadowRoot.querySelector('.yte-subs-error');
+    const e = document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-subs-error');
     return { text: e.textContent, retry: !!e.querySelector('button') };
   });
   check('直接下載失敗時顯示錯誤，說明安裝橋接程式可改善，並可重試（FR-44）', /helper program/.test(err.text) && /yt-dlp/.test(err.text) && err.retry, err.text);
@@ -324,25 +324,25 @@ const MAC_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.
 const WIN_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
 const setupState = (page) =>
   page.evaluate(() => {
-    const root = document.querySelector('yte-toolbar').shadowRoot;
-    const setup = root.querySelector('.yte-setup');
+    const root = document.querySelector('ytm-toolbar').shadowRoot;
+    const setup = root.querySelector('.ytm-setup');
     if (!setup) return null;
-    const link = setup.querySelector('a.yte-link');
+    const link = setup.querySelector('a.ytm-link');
     return {
-      title: setup.querySelector('.yte-setup-title')?.textContent,
-      components: [...setup.querySelectorAll('.yte-setup-components li')].map((li) => `${li.dataset.component}:${li.querySelector('.yte-setup-state').textContent}`),
-      os: setup.querySelector('.yte-install')?.dataset.os ?? 'other',
-      osTitle: setup.querySelector('.yte-setup-os-title')?.textContent,
-      commands: [...setup.querySelectorAll('.yte-command-text')].map((c) => c.textContent),
+      title: setup.querySelector('.ytm-setup-title')?.textContent,
+      components: [...setup.querySelectorAll('.ytm-setup-components li')].map((li) => `${li.dataset.component}:${li.querySelector('.ytm-setup-state').textContent}`),
+      os: setup.querySelector('.ytm-install')?.dataset.os ?? 'other',
+      osTitle: setup.querySelector('.ytm-setup-os-title')?.textContent,
+      commands: [...setup.querySelectorAll('.ytm-command-text')].map((c) => c.textContent),
       link: link ? { href: link.getAttribute('href'), target: link.getAttribute('target'), rel: link.getAttribute('rel') } : null,
-      recheck: setup.querySelector('.yte-setup-actions .yte-button-primary')?.textContent,
+      recheck: setup.querySelector('.ytm-setup-actions .ytm-button-primary')?.textContent,
     };
   });
 const openPanel = async (page, id) => {
   await button(page, id).click();
   await page.waitForFunction(() => {
-    const panel = document.querySelector('yte-toolbar').shadowRoot.querySelector('.yte-panel');
-    return panel && !panel.querySelector('.yte-spinner');
+    const panel = document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-panel');
+    return panel && !panel.querySelector('.ytm-spinner');
   });
 };
 
@@ -359,7 +359,7 @@ for (const [task, ua, os] of [
       }, os === 'mac' ? 'mac' : 'win');
       await openPanel(page, 'video');
       // 作業系統（runtime.getPlatformInfo）取得後才顯示安裝指令。
-      await page.waitForSelector('yte-toolbar .yte-setup-os-title');
+      await page.waitForSelector('ytm-toolbar .ytm-setup-os-title');
       const s = await setupState(page);
       check(
         `${os}：影片面板列出需要的元件（小幫手未安裝、yt-dlp、ffmpeg 與 deno 無法確認）（FR-2、T15a）`,
@@ -384,9 +384,9 @@ for (const [task, ua, os] of [
       await shot(page, `T22a-video-panel-${os}.png`);
       if (os === 'mac') {
         // 重新檢查
-        await page.locator('yte-toolbar .yte-setup-actions .yte-button-primary').click();
+        await page.locator('ytm-toolbar .ytm-setup-actions .ytm-button-primary').click();
         const during = await page
-          .waitForFunction(() => document.querySelector('yte-toolbar').shadowRoot.querySelector('.yte-setup-actions .yte-button-primary').textContent === 'Checking…', null, { timeout: 1000 })
+          .waitForFunction(() => document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-setup-actions .ytm-button-primary').textContent === 'Checking…', null, { timeout: 1000 })
           .then(() => 'Checking…', () => 'not shown');
         await page.waitForTimeout(700);
         const after = await setupState(page);
@@ -399,7 +399,7 @@ for (const [task, ua, os] of [
         await page.keyboard.press('Escape');
         // 縮圖仍可使用（未連線狀態下）
         await openPanel(page, 'thumbnail');
-        check('未連線時縮圖面板仍可使用（FR-32）', (await page.locator('yte-toolbar .yte-thumb-row').count()) === 2);
+        check('未連線時縮圖面板仍可使用（FR-32）', (await page.locator('ytm-toolbar .ytm-thumb-row').count()) === 2);
         await page.keyboard.press('Escape');
         // 直播、尚未開始的影片
         for (const id of ['liveliveliv', 'upcomingvid']) {
@@ -431,7 +431,7 @@ await section(
       chrome.runtime.getPlatformInfo = async () => ({ os: 'win', arch: 'x86-64', nacl_arch: 'x86-64' });
     });
     await openPanel(page, 'video');
-    await page.waitForSelector('yte-toolbar .yte-setup-os-title');
+    await page.waitForSelector('ytm-toolbar .ytm-setup-os-title');
     const s = await setupState(page);
     check('繁體中文的未連線說明（NFR-4）', s?.title === '尚未安裝下載功能' && s.osTitle === '在 Windows 上安裝' && s.recheck === '重新檢查', JSON.stringify(s));
     await shot(page, 'T22a-video-panel-zh-TW.png');

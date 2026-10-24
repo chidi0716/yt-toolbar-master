@@ -37,7 +37,7 @@ export function ThumbnailPanel({ videoId }: { videoId: string }) {
 
   if (list.status === 'loading') return <PanelLoading />;
   if (list.status === 'error') return <PanelError onRetry={() => setAttempt((n) => n + 1)} />;
-  if (list.thumbnails.length === 0) return <p class="yte-muted">{t('thumbnailNone')}</p>;
+  if (list.thumbnails.length === 0) return <p class="ytm-muted">{t('thumbnailNone')}</p>;
 
   const download = async (thumb: ThumbnailInfo) => {
     setRow({ key: thumb.key, state: 'saving' });
@@ -47,24 +47,24 @@ export function ThumbnailPanel({ videoId }: { videoId: string }) {
   };
 
   return (
-    <ul class="yte-list yte-thumbs">
+    <ul class="ytm-list ytm-thumbs">
       {list.thumbnails.map((thumb) => {
         const status = row?.key === thumb.key ? row : null;
         return (
           <li key={thumb.key}>
             <button
               type="button"
-              class="yte-list-row yte-thumb-row"
+              class="ytm-list-row ytm-thumb-row"
               data-key={thumb.key}
               disabled={status?.state === 'saving'}
               onClick={() => void download(thumb)}
             >
-              <img class="yte-thumb-preview" src={thumb.url} alt="" width={96} height={Math.round((96 * thumb.height) / thumb.width)} />
-              <span class="yte-thumb-size">
+              <img class="ytm-thumb-preview" src={thumb.url} alt="" width={96} height={Math.round((96 * thumb.height) / thumb.width)} />
+              <span class="ytm-thumb-size">
                 {thumb.width} × {thumb.height}
               </span>
-              <span class="yte-badge">JPG</span>
-              <span class="yte-row-status" aria-live="polite" data-state={status?.state}>
+              <span class="ytm-badge">JPG</span>
+              <span class="ytm-row-status" aria-live="polite" data-state={status?.state}>
                 {status?.state === 'saved' ? (
                   <>
                     <Icon name="check" size={20} />

@@ -48,7 +48,7 @@ const link = page.locator('ytd-video-renderer a#thumbnail[href^="/watch"]').firs
 if (!(await link.count())) await stop('no video in search results');
 await link.click();
 try {
-  await page.waitForSelector('yte-toolbar', { state: 'attached', timeout: 20_000 });
+  await page.waitForSelector('ytm-toolbar', { state: 'attached', timeout: 20_000 });
 } catch {
   await stop('toolbar did not appear');
 }
@@ -119,7 +119,7 @@ console.log('container children:\n  ' + children.join('\n  '));
 
 const toolbarButton = async (id) =>
   page.evaluate((id) => {
-    const b = document.querySelector('yte-toolbar').shadowRoot.querySelector(`.yte-btn[data-button="${id}"]`);
+    const b = document.querySelector('ytm-toolbar').shadowRoot.querySelector(`.ytm-btn[data-button="${id}"]`);
     const r = b.getBoundingClientRect();
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   }, id);
@@ -130,7 +130,7 @@ const hit = (x, y) =>
     ({ x, y }) => {
       const el = document.elementFromPoint(x, y);
       if (!el) return null;
-      if (el.closest('yte-toolbar')) return 'toolbar';
+      if (el.closest('ytm-toolbar')) return 'toolbar';
       if (el.closest('#movie_player')) return 'player';
       return `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}${typeof el.className === 'string' && el.className ? '.' + el.className.split(' ')[0] : ''}`;
     },
@@ -167,7 +167,7 @@ const thumbLuminance = async () => {
 };
 const luminanceBefore = await thumbLuminance();
 
-await page.locator('yte-toolbar .yte-btn[data-button="cinema"]').click();
+await page.locator('ytm-toolbar .ytm-btn[data-button="cinema"]').click();
 await page.waitForTimeout(800);
 console.log('sidebar thumbnail mean luminance', JSON.stringify({ before: luminanceBefore, cinema: await thumbLuminance(), rect: thumbRect }));
 const player = await page.locator('#movie_player').boundingBox();
@@ -191,8 +191,8 @@ const hits = {
 };
 console.log('cinema on, elementFromPoint:', JSON.stringify(hits, null, 1));
 const state = await page.evaluate(() => ({
-  pressed: document.querySelector('yte-toolbar').shadowRoot.querySelector('.yte-btn[data-button="cinema"]').getAttribute('aria-pressed'),
-  overlay: !!document.querySelector('.yte-cinema-overlay'),
+  pressed: document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-btn[data-button="cinema"]').getAttribute('aria-pressed'),
+  overlay: !!document.querySelector('.ytm-cinema-overlay'),
   htmlClass: document.documentElement.className,
 }));
 console.log('state', JSON.stringify(state));
@@ -214,7 +214,7 @@ const undimmed = await page.evaluate(() => {
   for (let y = 4; y < innerHeight; y += 40) {
     for (let x = 4; x < innerWidth; x += 40) {
       const el = document.elementFromPoint(x, y);
-      if (!el || el.closest('#movie_player, yte-toolbar') || el === document.documentElement || el === document.body) continue;
+      if (!el || el.closest('#movie_player, ytm-toolbar') || el === document.documentElement || el === document.body) continue;
       const o = effective(el);
       if (o <= 0.1) continue;
       // 本身不畫任何東西的容器（背景透明、沒有直接的文字、不是圖片或影片）不算
@@ -244,8 +244,8 @@ if (thumbRect) {
   await page.mouse.click(thumbRect.x + thumbRect.width / 2, thumbRect.y + thumbRect.height / 2);
   await page.waitForTimeout(2500);
   const after = await page.evaluate(() => ({
-    cinema: document.documentElement.classList.contains('yte-cinema'),
-    pressed: document.querySelector('yte-toolbar')?.shadowRoot.querySelector('.yte-btn[data-button="cinema"]').getAttribute('aria-pressed'),
+    cinema: document.documentElement.classList.contains('ytm-cinema'),
+    pressed: document.querySelector('ytm-toolbar')?.shadowRoot.querySelector('.ytm-btn[data-button="cinema"]').getAttribute('aria-pressed'),
   }));
   console.log('click on a dimmed sidebar thumbnail', JSON.stringify({ ...after, sameUrl: page.url() === urlBefore, url: page.url() }));
 }

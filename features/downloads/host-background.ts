@@ -22,7 +22,7 @@ import { applyEvent, errorInfo, isActive, isFinal, markMissing, mergeHostJobs, n
 const LOG_PREFIX = '[yt-toolbar-master]';
 const INFO_TTL_MS = 30 * 60_000;
 const STATUS_TTL_MS = 60_000;
-const NOTIFICATION_PREFIX = 'yte-job:';
+const NOTIFICATION_PREFIX = 'ytm-job:';
 /** 沒有進行中的下載、也沒有等待中的指令這麼久之後關閉連線（橋接程式隨之結束，也不讓 service worker 一直執行）。 */
 const IDLE_CLOSE_MS = 60_000;
 

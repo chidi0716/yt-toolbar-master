@@ -1,7 +1,7 @@
 [silent] start 2026-10-21T05:20:02Z, duration 400s, firefox: Mozilla Firefox 158.0.1
 [silent] end 2026-10-21T05:26:43Z
-{"t": 1792560007.104, "pid": 1977, "event": "start", "data": {"argv": ["/home/user/youtube-extension/.claude/worktrees/agent-ad531fd3da91a0e2c/spikes/T00/.cache/home-silent/.mozilla/native-messaging-hosts/com.chidi0716.t00_spike.json", "t00-spike@chidi0716"]}}
+{"t": 1792560007.104, "pid": 1977, "event": "start", "data": {"argv": ["/home/user/yt-toolbar-master/.claude/worktrees/agent-ad531fd3da91a0e2c/spikes/T00/.cache/home-silent/.mozilla/native-messaging-hosts/com.chidi0716.t00_spike.json", "t00-spike@chidi0716"]}}
 {"t": 1792560007.104, "pid": 1977, "event": "msg", "data": {"type": "hello", "mode": "silent", "t0": 1792560006215}}
-{"t": 1792560126.491, "pid": 2838, "event": "start", "data": {"argv": ["/home/user/youtube-extension/.claude/worktrees/agent-ad531fd3da91a0e2c/spikes/T00/.cache/home-silent/.mozilla/native-messaging-hosts/com.chidi0716.t00_spike.json", "t00-spike@chidi0716"]}}
+{"t": 1792560126.491, "pid": 2838, "event": "start", "data": {"argv": ["/home/user/yt-toolbar-master/.claude/worktrees/agent-ad531fd3da91a0e2c/spikes/T00/.cache/home-silent/.mozilla/native-messaging-hosts/com.chidi0716.t00_spike.json", "t00-spike@chidi0716"]}}
 {"t": 1792560126.491, "pid": 2838, "event": "msg", "data": {"type": "report", "mode": "silent", "starts": 1, "firstStart": 1792560006215, "lastSuspendAt": null, "suspendAfterSec": null, "portDisconnectedAt": null, "thisInstanceStartedAt": 1792560006215, "thisInstanceUptimeSec": 120.211, "portStillOpen": true}}
 {"t": 1792560126.493, "pid": 2838, "event": "eof"}

@@ -56,8 +56,8 @@ async function launch(lang) {
 
 const shotToolbar = async (page, name) => {
   const clip = await page.evaluate(() => {
-    const t = document.querySelector('yte-toolbar').getBoundingClientRect();
-    const panel = document.querySelector('yte-toolbar').shadowRoot.querySelector('.yte-panel')?.getBoundingClientRect();
+    const t = document.querySelector('ytm-toolbar').getBoundingClientRect();
+    const panel = document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-panel')?.getBoundingClientRect();
     const y = Math.max(0, t.top - 60);
     return { x: 0, y, width: Math.ceil(t.right + 24), height: Math.ceil((panel ? panel.bottom : t.bottom + 40) + 24 - y) };
   });
@@ -66,15 +66,15 @@ const shotToolbar = async (page, name) => {
 
 const toolbarState = (page) =>
   page.evaluate(() => {
-    const root = document.querySelector('yte-toolbar')?.shadowRoot;
+    const root = document.querySelector('ytm-toolbar')?.shadowRoot;
     return {
-      count: document.querySelectorAll('yte-toolbar').length,
-      labels: root ? [...root.querySelectorAll('.yte-btn')].map((b) => b.getAttribute('aria-label')) : [],
+      count: document.querySelectorAll('ytm-toolbar').length,
+      labels: root ? [...root.querySelectorAll('.ytm-btn')].map((b) => b.getAttribute('aria-label')) : [],
       help: root
-        ? [...root.querySelectorAll('.yte-help-item')].map((li) => ({
+        ? [...root.querySelectorAll('.ytm-help-item')].map((li) => ({
             id: li.dataset.button,
-            name: li.querySelector('.yte-help-name')?.textContent,
-            desc: li.querySelector('.yte-help-desc')?.textContent,
+            name: li.querySelector('.ytm-help-name')?.textContent,
+            desc: li.querySelector('.ytm-help-desc')?.textContent,
             icon: !!li.querySelector('svg path'),
           }))
         : [],
@@ -87,29 +87,29 @@ const toolbarState = (page) =>
   const page = context.pages()[0] ?? (await context.newPage());
   try {
     await page.goto(WATCH);
-    await page.waitForSelector('yte-toolbar', { state: 'attached', timeout: 10_000 });
+    await page.waitForSelector('ytm-toolbar', { state: 'attached', timeout: 10_000 });
 
     // 滑鼠停留時顯示提示文字（FR-7）
-    await page.locator('yte-toolbar .yte-btn[data-button="mp3"]').hover();
+    await page.locator('ytm-toolbar .ytm-btn[data-button="mp3"]').hover();
     await page.waitForTimeout(600);
     const tip = await page.evaluate(() => {
-      const el = document.querySelector('yte-toolbar').shadowRoot.querySelector('.yte-btn[data-button="mp3"] + .yte-tooltip');
+      const el = document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-btn[data-button="mp3"] + .ytm-tooltip');
       return { text: el.textContent, opacity: getComputedStyle(el).opacity };
     });
     check('滑鼠停留時顯示提示文字（FR-7）', tip.text === 'MP3' && tip.opacity === '1', JSON.stringify(tip));
     await shotToolbar(page, 'T03-tooltip.png');
 
     // 直接執行的按鈕（截圖，T17）：點了在提示文字中顯示結果（002 FR-52）
-    await page.locator('yte-toolbar .yte-btn[data-button="screenshot"]').click();
+    await page.locator('ytm-toolbar .ytm-btn[data-button="screenshot"]').click();
     await page.waitForTimeout(300);
     const soon = await page.evaluate(() => {
-      const tip = document.querySelector('yte-toolbar').shadowRoot.querySelector('.yte-btn[data-button="screenshot"] + .yte-tooltip');
+      const tip = document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-btn[data-button="screenshot"] + .ytm-tooltip');
       return { text: tip.textContent, notice: tip.hasAttribute('data-notice') };
     });
     check('直接執行的按鈕（截圖）在提示文字中顯示結果', soon.notice && soon.text !== 'Screenshot', JSON.stringify(soon));
     await page.mouse.move(5, 5);
 
-    await page.locator('yte-toolbar .yte-btn[data-button="help"]').click();
+    await page.locator('ytm-toolbar .ytm-btn[data-button="help"]').click();
     await page.waitForTimeout(300);
     let s = await toolbarState(page);
     check(
@@ -120,7 +120,7 @@ const toolbarState = (page) =>
     await shotToolbar(page, 'T05-help-panel-en.png');
 
     const optionsPage = context.waitForEvent('page', { timeout: 10_000 });
-    await page.locator('yte-toolbar .yte-help .yte-link').click();
+    await page.locator('ytm-toolbar .ytm-help .ytm-link').click();
     const opened = await optionsPage.catch(() => null);
     if (opened) await opened.waitForLoadState();
     check('說明面板的連結開啟擴充功能的設定頁', opened?.url() === `chrome-extension://${EXT_ID}/options.html`, opened?.url());
@@ -134,8 +134,8 @@ const toolbarState = (page) =>
     check('站內換頁後工具列只有一條', s.count === 1 && s.help.length === 0);
 
     // ✕
-    await page.locator('yte-toolbar .yte-btn[data-button="close"]').click();
-    await page.waitForFunction(() => !document.querySelector('yte-toolbar'), null, { timeout: 5000 });
+    await page.locator('ytm-toolbar .ytm-btn[data-button="close"]').click();
+    await page.waitForFunction(() => !document.querySelector('ytm-toolbar'), null, { timeout: 5000 });
     await page.reload();
     await page.waitForTimeout(1500);
     check('按 ✕ 後工具列隱藏，重新整理後仍隱藏（FR-15）', (await toolbarState(page)).count === 0);
@@ -152,7 +152,7 @@ const toolbarState = (page) =>
     await checkbox.check();
     await page.bringToFront();
     const back = await page
-      .waitForFunction(() => !!document.querySelector('yte-toolbar'), null, { timeout: 5000 })
+      .waitForFunction(() => !!document.querySelector('ytm-toolbar'), null, { timeout: 5000 })
       .then(() => true)
       .catch(() => false);
     check('彈出視窗的「啟用」反映 ✕，打開後工具列重新出現（FR-16）', unchecked && back, `unchecked=${unchecked} back=${back}`);
@@ -170,8 +170,8 @@ const toolbarState = (page) =>
   const page = context.pages()[0] ?? (await context.newPage());
   try {
     await page.goto(WATCH);
-    await page.waitForSelector('yte-toolbar', { state: 'attached', timeout: 10_000 });
-    await page.locator('yte-toolbar .yte-btn[data-button="help"]').click();
+    await page.waitForSelector('ytm-toolbar', { state: 'attached', timeout: 10_000 });
+    await page.locator('ytm-toolbar .ytm-btn[data-button="help"]').click();
     await page.waitForTimeout(300);
     const s = await toolbarState(page);
     check('繁體中文的按鈕名稱與說明（NFR-4）', s.labels[0] === '影片' && s.labels[5] === '連結' && s.labels[13] === '關閉' && s.help[0]?.name === '影片', s.labels.join('、'));

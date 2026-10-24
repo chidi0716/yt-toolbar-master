@@ -98,11 +98,11 @@ export function TimeRange({ id, hook }: { id: string; hook: ClipRangeHook }) {
     const error = which === 0 ? check.startError : check.endError;
     const fieldId = `${id}-${which === 0 ? 'start' : 'end'}`;
     return (
-      <label class="yte-field">
-        <span class="yte-clip-label">
+      <label class="ytm-field">
+        <span class="ytm-clip-label">
           {t(which === 0 ? 'timeStart' : 'timeEnd')}
           {state.sync && (
-            <button type="button" class="yte-clip-now" data-which={which === 0 ? 'start' : 'end'} title={t('clipSetNow')} aria-label={t('clipSetNow')} onClick={() => setNow(which)}>
+            <button type="button" class="ytm-clip-now" data-which={which === 0 ? 'start' : 'end'} title={t('clipSetNow')} aria-label={t('clipSetNow')} onClick={() => setNow(which)}>
               <Icon name="my_location" size={16} />
             </button>
           )}
@@ -122,7 +122,7 @@ export function TimeRange({ id, hook }: { id: string; hook: ClipRangeHook }) {
           }
         />
         {error && (
-          <span id={`${fieldId}-error`} class="yte-field-error">
+          <span id={`${fieldId}-error`} class="ytm-field-error">
             {t(ERROR_KEYS[error])}
           </span>
         )}
@@ -131,8 +131,8 @@ export function TimeRange({ id, hook }: { id: string; hook: ClipRangeHook }) {
   };
 
   return (
-    <div class="yte-clip" id={id}>
-      <div class="yte-clip-title">{t('clipTitle')}</div>
+    <div class="ytm-clip" id={id}>
+      <div class="ytm-clip-title">{t('clipTitle')}</div>
       <RangeSlider
         min={0}
         max={Math.max(limit, 1)}
@@ -147,15 +147,15 @@ export function TimeRange({ id, hook }: { id: string; hook: ClipRangeHook }) {
           if (state.sync) seek(value[thumb]);
         }}
       />
-      <div class="yte-range-labels">
+      <div class="ytm-range-labels">
         <span>{formatTime(0)}</span>
         <span>{known ? formatTime(limit) : '—'}</span>
       </div>
-      <div class="yte-time-fields">
+      <div class="ytm-time-fields">
         {field(0)}
         {field(1)}
       </div>
-      <div class="yte-clip-sync">
+      <div class="ytm-clip-sync">
         <span id={`${id}-sync-label`}>{t('clipSync')}</span>
         <Switch checked={state.sync} labelledBy={`${id}-sync-label`} onChange={(sync) => setState((prev) => ({ ...prev, sync }))} />
       </div>

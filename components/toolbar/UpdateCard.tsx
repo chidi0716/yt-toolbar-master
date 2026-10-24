@@ -14,15 +14,15 @@ interface ReminderProps {
 
 function Actions({ reminder }: { reminder: UpdateReminder }) {
   return (
-    <div class="yte-update-actions">
-      <button type="button" class="yte-button yte-button-primary" data-action="open" onClick={() => reminder.open()}>
+    <div class="ytm-update-actions">
+      <button type="button" class="ytm-button ytm-button-primary" data-action="open" onClick={() => reminder.open()}>
         <Icon name="open_in_new" size={18} />
         <span>{t('updateReminderOpen')}</span>
       </button>
-      <button type="button" class="yte-button yte-button-secondary" data-action="skip" onClick={() => reminder.skip()}>
+      <button type="button" class="ytm-button ytm-button-secondary" data-action="skip" onClick={() => reminder.skip()}>
         {t('updateReminderSkip')}
       </button>
-      <button type="button" class="yte-button yte-button-secondary" data-action="disable" onClick={() => reminder.disable()}>
+      <button type="button" class="ytm-button ytm-button-secondary" data-action="disable" onClick={() => reminder.disable()}>
         {t('updateReminderDisable')}
       </button>
     </div>
@@ -32,11 +32,11 @@ function Actions({ reminder }: { reminder: UpdateReminder }) {
 function Text({ view, headingId }: { view: ReminderView; headingId: string }) {
   const latest = view.latest!;
   return (
-    <div class="yte-update-text">
-      <p id={headingId} class="yte-update-heading">
+    <div class="ytm-update-text">
+      <p id={headingId} class="ytm-update-heading">
         {t('updateReminderTitle', latest.version)}
       </p>
-      <p class="yte-update-release" title={latest.title}>
+      <p class="ytm-update-release" title={latest.title}>
         {latest.title}
       </p>
     </div>
@@ -47,22 +47,22 @@ export function UpdateCard({ view, reminder }: ReminderProps) {
   if (!view.latest) return null;
   return (
     <section
-      class="yte-update-card"
-      aria-labelledby="yte-update-card-heading"
+      class="ytm-update-card"
+      aria-labelledby="ytm-update-card-heading"
       data-version={view.latest.version}
       onMouseEnter={() => reminder.controller.hover(true)}
       onMouseLeave={() => reminder.controller.hover(false)}
     >
-      <span class="yte-update-icon">
+      <span class="ytm-update-icon">
         <Icon name="upgrade" />
       </span>
-      <div class="yte-update-body">
-        <Text view={view} headingId="yte-update-card-heading" />
+      <div class="ytm-update-body">
+        <Text view={view} headingId="ytm-update-card-heading" />
         <Actions reminder={reminder} />
       </div>
       <button
         type="button"
-        class="yte-icon-btn yte-update-close"
+        class="ytm-icon-btn ytm-update-close"
         aria-label={t('updateReminderClose')}
         title={t('updateReminderClose')}
         onClick={() => reminder.dismiss()}
@@ -76,12 +76,12 @@ export function UpdateCard({ view, reminder }: ReminderProps) {
 export function UpdateNotice({ view, reminder }: ReminderProps) {
   if (!view.latest) return null;
   return (
-    <section class="yte-update-notice" aria-labelledby="yte-update-notice-heading" data-version={view.latest.version}>
-      <span class="yte-update-icon">
+    <section class="ytm-update-notice" aria-labelledby="ytm-update-notice-heading" data-version={view.latest.version}>
+      <span class="ytm-update-icon">
         <Icon name="upgrade" />
       </span>
-      <div class="yte-update-body">
-        <Text view={view} headingId="yte-update-notice-heading" />
+      <div class="ytm-update-body">
+        <Text view={view} headingId="ytm-update-notice-heading" />
         <Actions reminder={reminder} />
       </div>
     </section>

@@ -43,27 +43,27 @@ export function UpdateYtDlp() {
     const r = state.result;
     if (!r.ran && r.command) {
       return (
-        <div class="yte-update" data-state="command">
+        <div class="ytm-update" data-state="command">
           <span>{t('updateRunCommand')}</span>
-          <code class="yte-code">{r.command}</code>
+          <code class="ytm-code">{r.command}</code>
         </div>
       );
     }
     return (
-      <div class="yte-update" data-state="done" role="status">
+      <div class="ytm-update" data-state="done" role="status">
         <Icon name="check" size={18} />
         <span>{r.updated ? t('updateDone', r.version ?? '') : t('updateUpToDate')}</span>
       </div>
     );
   }
   return (
-    <div class="yte-update" data-state={state.status}>
+    <div class="ytm-update" data-state={state.status}>
       <Button variant="secondary" disabled={state.status === 'running'} onClick={() => void run()}>
         <Icon name="refresh" size={18} />
         <span>{state.status === 'running' ? t('updateRunning') : t('updateYtDlp')}</span>
       </Button>
       {state.status === 'error' && (
-        <span class="yte-field-error" role="alert">
+        <span class="ytm-field-error" role="alert">
           {t('updateFailed')}
         </span>
       )}
@@ -75,9 +75,9 @@ export function UpdateYtDlp() {
 export function ErrorBlock({ code, onRetry }: { code: JobRecord['error']; onRetry: (() => void) | null }) {
   const info = errorInfo(code);
   return (
-    <div class="yte-job-error" role="alert" data-code={code ?? 'UNKNOWN'}>
-      <span class="yte-job-error-text">{t(info.message)}</span>
-      <span class="yte-job-error-actions">
+    <div class="ytm-job-error" role="alert" data-code={code ?? 'UNKNOWN'}>
+      <span class="ytm-job-error-text">{t(info.message)}</span>
+      <span class="ytm-job-error-actions">
         {info.action === 'settings' && (
           <Button variant="secondary" onClick={openSettings}>
             <Icon name="settings" size={18} />
@@ -85,7 +85,7 @@ export function ErrorBlock({ code, onRetry }: { code: JobRecord['error']; onRetr
           </Button>
         )}
         {info.action === 'install' && (
-          <a class="yte-link" href={INSTALL_GUIDE_URL} target="_blank" rel="noopener noreferrer">
+          <a class="ytm-link" href={INSTALL_GUIDE_URL} target="_blank" rel="noopener noreferrer">
             <Icon name="open_in_new" size={18} />
             <span>{t('hostInstallGuide')}</span>
           </a>
@@ -105,7 +105,7 @@ export function ErrorBlock({ code, onRetry }: { code: JobRecord['error']; onRetr
 function ProgressBar({ percent }: { percent: number | null }) {
   return (
     <div
-      class="yte-progress"
+      class="ytm-progress"
       role="progressbar"
       aria-valuemin={0}
       aria-valuemax={100}
@@ -113,7 +113,7 @@ function ProgressBar({ percent }: { percent: number | null }) {
       data-indeterminate={percent === null ? '' : undefined}
     >
       {/* 不確定與確定進度用不同的元素，切換時寬度不會從動畫中的位置漸變。 */}
-      <div key={percent === null ? 'indeterminate' : 'determinate'} class="yte-progress-fill" style={percent === null ? undefined : { width: `${percent}%` }} />
+      <div key={percent === null ? 'indeterminate' : 'determinate'} class="ytm-progress-fill" style={percent === null ? undefined : { width: `${percent}%` }} />
     </div>
   );
 }
@@ -141,19 +141,19 @@ function JobRow({ job }: { job: JobRecord }) {
       }
     : null;
   return (
-    <li class="yte-job" data-state={job.state} data-job={job.jobId}>
-      <div class="yte-job-head">
-        <span class="yte-job-label">{job.label || job.fileName || job.kind}</span>
+    <li class="ytm-job" data-state={job.state} data-job={job.jobId}>
+      <div class="ytm-job-head">
+        <span class="ytm-job-label">{job.label || job.fileName || job.kind}</span>
         {/* 遇到 yt-dlp 過舊等錯誤時，小幫手先更新 yt-dlp 再重試（008 FR-22）。 */}
-        <span class="yte-job-state" data-stage={active && job.stage ? job.stage : undefined}>
+        <span class="ytm-job-state" data-stage={active && job.stage ? job.stage : undefined}>
           {active && job.stage === 'updating-ytdlp' ? t('jobUpdatingYtDlp') : t(STATE_LABELS[job.state])}
         </span>
       </div>
       {active && (
         <>
           <ProgressBar percent={job.stage || (job.state === 'processing' && job.percent === 100) ? null : job.percent} />
-          <div class="yte-job-foot">
-            <span class="yte-job-details">{details.join(' · ')}</span>
+          <div class="ytm-job-foot">
+            <span class="ytm-job-details">{details.join(' · ')}</span>
             <Button
               variant="secondary"
               disabled={busy}
@@ -171,8 +171,8 @@ function JobRow({ job }: { job: JobRecord }) {
         </>
       )}
       {job.state === 'done' && (
-        <div class="yte-job-foot">
-          <span class="yte-job-file" title={job.fileName ?? ''}>
+        <div class="ytm-job-foot">
+          <span class="ytm-job-file" title={job.fileName ?? ''}>
             {job.fileName}
           </span>
           <Button variant="secondary" onClick={() => void revealJob(job.jobId).catch(() => {})}>
@@ -191,7 +191,7 @@ export function JobList({ videoId, kind }: { videoId: string; kind: JobKind }) {
   const jobs = useStore(downloadJobs()).filter((j) => j.videoId === videoId && j.kind === kind && j.state !== 'cancelled');
   if (jobs.length === 0) return null;
   return (
-    <ul class="yte-jobs" aria-label={t('jobsLabel')}>
+    <ul class="ytm-jobs" aria-label={t('jobsLabel')}>
       {jobs.map((job) => (
         <JobRow key={job.jobId} job={job} />
       ))}

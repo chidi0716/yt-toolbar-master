@@ -6,7 +6,7 @@
 
 按下深色模式按鈕時，擴充功能代替使用者操作 YouTube 自己的「外觀」選單：
 
-1. 在 `<html>` 加上暫時的 `yte-theme-menu-busy`，CSS 讓 `ytd-popup-container tp-yt-iron-dropdown`（YouTube 的彈出選單）`opacity: 0`、不接受滑鼠。
+1. 在 `<html>` 加上暫時的 `ytm-theme-menu-busy`，CSS 讓 `ytd-popup-container tp-yt-iron-dropdown`（YouTube 的彈出選單）`opacity: 0`、不接受滑鼠。
 2. 點頂端列的帳號選單按鈕（已登入：頭像；未登入：設定）。
 3. 等「外觀」項目出現後點它。
 4. 透過頁面橋接請 main world 在外觀子選單的選項上標記主題，再點目標選項。
@@ -29,7 +29,7 @@
 
 data 是頁面 JavaScript 的屬性，只有 main world 讀得到（isolated world 的內容腳本看不到），所以頁面橋接新增 `markThemeOptions` 請求：
 
-- 不帶參數，在目前子選單中依動作代號替選項加上 `data-yte-theme-option="dark|light"`；
+- 不帶參數，在目前子選單中依動作代號替選項加上 `data-ytm-theme-option="dark|light"`；
 - 先清除舊的標記，不點擊、不修改其他東西；
 - 由內容腳本點擊標記的選項中的 `a#endpoint`。
 

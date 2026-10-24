@@ -32,7 +32,7 @@ container children:
   ytd-watch-flexy #columns > div#primary[has player], div#secondary
   ytd-watch-flexy #full-bleed-container > div#player-full-bleed-container, div#panels-full-bleed-container
   ytd-watch-flexy #primary-inner > div#player[has player], div#below
-  ytd-watch-flexy #below > div#shopping-timely-shelf, yte-toolbar, div, div
+  ytd-watch-flexy #below > div#shopping-timely-shelf, ytm-toolbar, div, div
 sidebar thumbnail mean luminance {"before":151.4,"cinema":10.1,"rect":{"x":1003,"y":72,"width":233,"height":127}}
 cinema on, elementFromPoint: {
  "playerCenter": "player",
@@ -42,9 +42,9 @@ cinema on, elementFromPoint: {
  "masthead": "input.ytSearchboxComponentInput",
  "secondary": "img.ytCoreImageHost"
 }
-state {"pressed":"true","overlay":false,"htmlClass":"yte-cinema"}
+state {"pressed":"true","overlay":false,"htmlClass":"ytm-cinema"}
 visible elements not dimmed (outside the player and toolbar): 0
 sidebar thumbnail mean luminance before the full screenshot 10.1
-screenshot /home/user/youtube-extension/.claude/worktrees/agent-a093306d044012db1/specs/notes/screenshots/T07a-real-cinema-light.png
+screenshot /home/user/yt-toolbar-master/.claude/worktrees/agent-a093306d044012db1/specs/notes/screenshots/T07a-real-cinema-light.png
 sidebar thumbnail mean luminance after the full screenshot 10.1
 click on a dimmed sidebar thumbnail {"cinema":false,"pressed":"false","sameUrl":true,"url":"https://www.youtube.com/watch?v=jNQXAC9IVRw"}

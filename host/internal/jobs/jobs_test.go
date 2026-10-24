@@ -199,7 +199,7 @@ func TestDownloadKinds(t *testing.T) {
 		}
 	}
 	for _, f := range h.files() {
-		if strings.HasPrefix(f, ".yte-tmp-") {
+		if strings.HasPrefix(f, ".ytm-tmp-") {
 			t.Errorf("temporary folder left: %s", f)
 		}
 	}

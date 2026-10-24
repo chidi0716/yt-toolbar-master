@@ -7,7 +7,7 @@ export function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
   const { viewBox, paths } = PARSED[name];
   return (
     <svg
-      class="yte-icon"
+      class="ytm-icon"
       width={size}
       height={size}
       viewBox={viewBox}

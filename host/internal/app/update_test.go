@@ -219,7 +219,7 @@ func TestStatusComponents(t *testing.T) {
 	}
 	// 找不到的元件：found false。
 	a.Env = envWithPath(t.TempDir())
-	a.SelfPath = filepath.Join(t.TempDir(), "yte-host")
+	a.SelfPath = filepath.Join(t.TempDir(), "ytm-host")
 	v, _ = a.Status(context.Background())
 	for _, c := range v.(*StatusResult).Components {
 		if c.Name == "helper" {

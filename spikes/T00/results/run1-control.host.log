@@ -1,6 +1,6 @@
-{"t": 1792560007.579, "pid": 2000, "event": "start", "data": {"argv": ["/home/user/youtube-extension/.claude/worktrees/agent-ad531fd3da91a0e2c/spikes/T00/.cache/home-control/.mozilla/native-messaging-hosts/com.chidi0716.t00_spike.json", "t00-spike@chidi0716"]}}
+{"t": 1792560007.579, "pid": 2000, "event": "start", "data": {"argv": ["/home/user/yt-toolbar-master/.claude/worktrees/agent-ad531fd3da91a0e2c/spikes/T00/.cache/home-control/.mozilla/native-messaging-hosts/com.chidi0716.t00_spike.json", "t00-spike@chidi0716"]}}
 {"t": 1792560007.58, "pid": 2000, "event": "msg", "data": {"type": "hello", "mode": "control", "t0": 1792560006813}}
 {"t": 1792560008.914, "pid": 2000, "event": "eof"}
-{"t": 1792560127.241, "pid": 2840, "event": "start", "data": {"argv": ["/home/user/youtube-extension/.claude/worktrees/agent-ad531fd3da91a0e2c/spikes/T00/.cache/home-control/.mozilla/native-messaging-hosts/com.chidi0716.t00_spike.json", "t00-spike@chidi0716"]}}
+{"t": 1792560127.241, "pid": 2840, "event": "start", "data": {"argv": ["/home/user/yt-toolbar-master/.claude/worktrees/agent-ad531fd3da91a0e2c/spikes/T00/.cache/home-control/.mozilla/native-messaging-hosts/com.chidi0716.t00_spike.json", "t00-spike@chidi0716"]}}
 {"t": 1792560127.241, "pid": 2840, "event": "msg", "data": {"type": "report", "mode": "control", "starts": 1, "firstStart": 1792560006813, "lastSuspendAt": 1792560037263, "suspendAfterSec": 30.45, "portDisconnectedAt": null, "thisInstanceStartedAt": 1792560127164, "thisInstanceUptimeSec": 0.015, "portStillOpen": false}}
 {"t": 1792560127.243, "pid": 2840, "event": "eof"}

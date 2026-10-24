@@ -39,7 +39,7 @@ export const SELECTORS = {
 /**
  * 劇院模式（003 FR-20、plan 3.7）調暗的頁面區域：播放器容器與工具列以外的各個區塊。
  * 依 2026-10-21 從站內換頁進入的真實觀看頁確認（spikes/T07a/results-real-*.txt）。
- * 工具列（yte-toolbar）插在 #below 的最前面，所以 #below 只調暗工具列以外的子元素。
+ * 工具列（ytm-toolbar）插在 #below 的最前面，所以 #below 只調暗工具列以外的子元素。
  * 播放器容器與它的祖先都不在這個清單中（播放器位於多層堆疊脈絡內，不能靠提高 z-index）。
  */
 export const CINEMA_DIMMED_REGIONS: readonly string[] = [
@@ -51,7 +51,7 @@ export const CINEMA_DIMMED_REGIONS: readonly string[] = [
   // 播放器欄位（#primary）以外的欄位：右側欄（推薦影片、播放清單、聊天室、資訊面板）等
   'ytd-watch-flexy #columns > :not(#primary)',
   // 播放器下方：標題、頻道、說明、留言（視窗較窄時推薦影片也在這裡）
-  'ytd-watch-flexy #below > :not(yte-toolbar)',
+  'ytd-watch-flexy #below > :not(ytm-toolbar)',
   // 播放器欄位中播放器與 #below 以外的區塊
   'ytd-watch-flexy #primary-inner > :not(#player):not(#below)',
   // YouTube 劇院模式（加寬播放器）時的全寬區：播放器以外的資訊面板
@@ -65,7 +65,7 @@ export const CINEMA_DIMMED_REGIONS: readonly string[] = [
 
 /** 元素是否位於劇院模式調暗的區域中（不含播放器與工具列）。 */
 export function isInCinemaDimmedRegion(el: Element): boolean {
-  if (el.closest(`${SELECTORS.player}, yte-toolbar`)) return false;
+  if (el.closest(`${SELECTORS.player}, ytm-toolbar`)) return false;
   return el.closest(CINEMA_DIMMED_REGIONS.join(', ')) !== null;
 }
 
@@ -173,7 +173,7 @@ export const APPEARANCE_MENU = {
 } as const;
 
 /** 頁面橋接腳本在外觀選項上加的屬性，值為 dark 或 light。 */
-export const THEME_OPTION_ATTRIBUTE = 'data-yte-theme-option';
+export const THEME_OPTION_ATTRIBUTE = 'data-ytm-theme-option';
 
 /** 外觀選項的動作代號與對應的主題。 */
 export const THEME_OPTION_SIGNALS: Readonly<Record<string, 'dark' | 'light'>> = {

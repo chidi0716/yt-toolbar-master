@@ -1,7 +1,7 @@
 // 交叉編譯橋接程式（plan 4.8）：npm run build:host
 //
 // 產出 host/dist/ 下的單一執行檔：
-//   yte-host-darwin-arm64、yte-host-darwin-amd64、yte-host-windows-amd64.exe
+//   ytm-host-darwin-arm64、ytm-host-darwin-amd64、ytm-host-windows-amd64.exe
 // 並組出「手動安裝」用的資料夾（008 FR-16；執行檔＋安裝／解除安裝腳本，
 // 原生訊息設定檔由小幫手的 --install --offline 寫入）：
 //   yt-toolbar-master-host-macos/、yt-toolbar-master-host-windows/
@@ -26,7 +26,7 @@ const targets = [
 rmSync(distDir, { recursive: true, force: true });
 mkdirSync(distDir, { recursive: true });
 
-const binaryName = ({ goos, goarch }) => `yte-host-${goos}-${goarch}${goos === 'windows' ? '.exe' : ''}`;
+const binaryName = ({ goos, goarch }) => `ytm-host-${goos}-${goarch}${goos === 'windows' ? '.exe' : ''}`;
 
 const ldflags = `-s -w -X main.version=${version}`;
 
@@ -35,7 +35,7 @@ for (const target of targets) {
   console.log(`building ${target.goos}/${target.goarch} -> ${out}`);
   execFileSync(
     'go',
-    ['build', '-trimpath', '-ldflags', ldflags, '-o', out, './cmd/yte-host'],
+    ['build', '-trimpath', '-ldflags', ldflags, '-o', out, './cmd/ytm-host'],
     {
       cwd: hostDir,
       stdio: 'inherit',

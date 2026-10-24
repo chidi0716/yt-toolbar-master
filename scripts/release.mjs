@@ -41,7 +41,7 @@ const uploadDir = join(distDir, 'upload');
 const toolsDir = join(distDir, '.tools');
 
 const REPO = 'chidi0716/yt-toolbar-master';
-const GECKO_ID = 'youtube-extension@chidi0716';
+const GECKO_ID = 'yt-toolbar-master@chidi0716';
 
 // ---- 參數 ----
 const argv = process.argv.slice(2);
@@ -98,32 +98,32 @@ if (!skipTests) {
   run('go', ['test', './...'], { cwd: hostDir });
 }
 
-const yteRelease = join(toolsDir, isWindows ? 'yte-release.exe' : 'yte-release');
-run('go', ['build', '-o', yteRelease, './cmd/yte-release'], { cwd: hostDir });
+const ytmRelease = join(toolsDir, isWindows ? 'ytm-release.exe' : 'ytm-release');
+run('go', ['build', '-o', ytmRelease, './cmd/ytm-release'], { cwd: hostDir });
 const lockPath = join(root, 'release', 'components.lock.json');
 
 // lock 檔：正式發佈時下載每個檔案，與 lock 記錄的 SHA256 及官方檢查碼比對。
 step('2. third-party components (release/components.lock.json)');
-run(yteRelease, ['lock-check', '-lock', lockPath, ...(dry ? [] : ['-download'])]);
+run(ytmRelease, ['lock-check', '-lock', lockPath, ...(dry ? [] : ['-download'])]);
 if (dry) console.log('(dry run: not comparing with the official checksum files; the release workflow does)');
 
 // 第 3 步：三種小幫手與手動安裝的資料夾
 step('3. helper builds');
 run('node', [join(hostDir, 'build.mjs')]);
 const hostDist = join(hostDir, 'dist');
-for (const name of ['yte-host-darwin-arm64', 'yte-host-darwin-amd64', 'yte-host-windows-amd64.exe']) {
+for (const name of ['ytm-host-darwin-arm64', 'ytm-host-darwin-amd64', 'ytm-host-windows-amd64.exe']) {
   copyFileSync(join(hostDist, name), join(uploadDir, name));
   chmodSync(join(uploadDir, name), 0o755);
 }
 for (const pkg of ['yt-toolbar-master-host-macos', 'yt-toolbar-master-host-windows']) {
-  run(yteRelease, ['zip', '-dir', join(hostDist, pkg), '-out', join(uploadDir, `${pkg}.zip`)]);
+  run(ytmRelease, ['zip', '-dir', join(hostDist, pkg), '-out', join(uploadDir, `${pkg}.zip`)]);
 }
 
 // 第 4 步：components.json（每個檔案的網址與 SHA256）
 step('4. components.json');
 const manifestPath = join(uploadDir, 'components.json');
-run(yteRelease, ['manifest', '-lock', lockPath, '-version', version, '-tag', tag, '-helpers', uploadDir, '-out', manifestPath]);
-run(yteRelease, ['check', '-in', manifestPath]);
+run(ytmRelease, ['manifest', '-lock', lockPath, '-version', version, '-tag', tag, '-helpers', uploadDir, '-out', manifestPath]);
+run(ytmRelease, ['check', '-in', manifestPath]);
 
 // 引導腳本與移除腳本
 step('5. install and uninstall scripts');

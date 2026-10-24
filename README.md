@@ -89,7 +89,7 @@ The same command and steps are shown in the extension's Video and MP3 panels and
    - yt-dlp from the [official yt-dlp releases](https://github.com/yt-dlp/yt-dlp/releases), checked against the official checksums;
    - deno from the [official deno releases](https://github.com/denoland/deno/releases), checked against the official checksums;
    - ffmpeg and ffprobe from [Martin Riedl's FFmpeg build server](https://ffmpeg.martin-riedl.de) (macOS) or [yt-dlp/FFmpeg-Builds](https://github.com/yt-dlp/FFmpeg-Builds) (Windows), checked against the checksums recorded when the release was made. If ffmpeg and ffprobe are already on your computer (for example from Homebrew), they are used instead.
-3. Puts everything in `~/Library/Application Support/youtube-extension-host/` (macOS) or `%LOCALAPPDATA%\youtube-extension-host\` (Windows) and registers the helper for Chrome and Firefox (including Zen).
+3. Puts everything in `~/Library/Application Support/yt-toolbar-master/` (macOS) or `%LOCALAPPDATA%\yt-toolbar-master\` (Windows) and registers the helper for Chrome and Firefox (including Zen).
 
 Every downloaded file must match the SHA-256 in the release list, or it is deleted and nothing is replaced. The project's releases are immutable on GitHub: once published, their files cannot be changed.
 
@@ -143,7 +143,7 @@ If you prefer to install yt-dlp, ffmpeg and deno yourself, or to build the helpe
    ```powershell
    powershell -ExecutionPolicy Bypass -File install.ps1
    ```
-   It runs `yte-host --install --offline`: the helper copies itself to the folder above and registers itself for Chrome and Firefox, without downloading anything, and lists which of yt-dlp, ffmpeg and deno it found.
+   It runs `ytm-host --install --offline`: the helper copies itself to the folder above and registers itself for Chrome and Firefox, without downloading anything, and lists which of yt-dlp, ffmpeg and deno it found.
 4. Restart the browser and click **Check again** in the Video or MP3 panel.
 
 To remove a manual install, run `uninstall.sh` or `uninstall.ps1` from the same folder (or the one-line commands above).
@@ -153,8 +153,8 @@ To remove a manual install, run `uninstall.sh` or `uninstall.ps1` from the same 
 - **The panel still says the helper is missing:** restart the browser after installing. Firefox-based browsers such as Zen use the Firefox registration.
 - **The command stops with “Failed”:** read the reason it prints (network, disk space, a file that did not match its checksum). Fix it if needed and run the same command again; it continues where it stopped.
 - **“yt-dlp is out of date” or some qualities are missing:** the helper updates yt-dlp automatically; you can also click **Check for updates now** in the settings page. If you use your own yt-dlp (Homebrew or winget), update it with `brew upgrade yt-dlp` or `winget upgrade --id yt-dlp.yt-dlp`.
-- **Logs:** `~/Library/Logs/youtube-extension-host/host.log` (macOS) or `%LOCALAPPDATA%\youtube-extension-host\logs\host.log` (Windows). They contain command names and error messages only, never cookies or account data.
-- Downloads keep running if you close the YouTube tab or the browser. Unfinished files are kept in a hidden `.yte-tmp-…` folder inside the download folder and are removed when the download finishes, fails or is cancelled.
+- **Logs:** `~/Library/Logs/yt-toolbar-master/host.log` (macOS) or `%LOCALAPPDATA%\yt-toolbar-master\logs\host.log` (Windows). They contain command names and error messages only, never cookies or account data.
+- Downloads keep running if you close the YouTube tab or the browser. Unfinished files are kept in a hidden `.ytm-tmp-…` folder inside the download folder and are removed when the download finishes, fails or is cancelled.
 
 **What the helper can do:** only the fixed commands the extension needs (check status, read video info, download, cancel, list downloads, show a file, choose a folder, update, uninstall). Only this extension may start it (`allowed_origins` / `allowed_extensions` in the registration). It accepts a YouTube video ID, never a URL or command-line options, and opens no network ports. yt-dlp talks to YouTube; the helper itself only connects to GitHub and the ffmpeg build site listed above, to install and update.
 
@@ -170,7 +170,7 @@ Yes. Without deno, yt-dlp may not see some YouTube formats (often the highest qu
 Files downloaded by `curl` in Terminal are not marked as coming from the internet, so the one-line install does not trigger this. If you installed manually from a zip downloaded in the browser, run `sh install.sh` from that folder again (it removes the quarantine attribute), or use the one-line install. Do not use `sudo`.
 
 **Zen (or another Firefox-based browser) cannot find the helper.**
-The installer registers the helper for Firefox, which Zen normally reads. Restart Zen completely after installing and click **Check again**. If it still says the helper isn't connected, please open an issue with your Zen version, your macOS or Windows version, and whether `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.youtube_extension.json` (macOS) exists. Messages starting with `[yt-toolbar-master]` in the extension's console (open `about:debugging`, find the extension, click **Inspect**) also help.
+The installer registers the helper for Firefox, which Zen normally reads. Restart Zen completely after installing and click **Check again**. If it still says the helper isn't connected, please open an issue with your Zen version, your macOS or Windows version, and whether `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.yt_toolbar_master.json` (macOS) exists. Messages starting with `[yt-toolbar-master]` in the extension's console (open `about:debugging`, find the extension, click **Inspect**) also help.
 
 **Downloads fail with “Couldn't write to the download folder.”**
 The folder chosen in the settings page was moved or deleted, the disk is full, or the folder isn't writable. Choose another folder or click **Use default** in the settings page. On macOS, folders such as Desktop or Documents may need permission: if a prompt asks to allow access, allow it.
@@ -235,7 +235,7 @@ This project does not use a signing key of its own. The helper only accepts `com
 #### Making a release
 
 1. Update `version` in `package.json` (for example `0.2.0`) and commit.
-2. Optionally update the pinned third-party versions in `release/components.lock.json` (see [`specs/notes/ffmpeg-source.md`](./specs/notes/ffmpeg-source.md)) and check them with `cd host && go run ./cmd/yte-release lock-check -download`.
+2. Optionally update the pinned third-party versions in `release/components.lock.json` (see [`specs/notes/ffmpeg-source.md`](./specs/notes/ffmpeg-source.md)) and check them with `cd host && go run ./cmd/ytm-release lock-check -download`.
 3. Tag and push: `git tag v0.2.0 && git push origin v0.2.0`. The tag must match `package.json`.
 4. After the workflow finishes, check the release page. Signed Firefox/Zen installs get the new version automatically; Chrome users (and temporary Firefox add-ons) get a reminder in the extension with a link to the release.
 

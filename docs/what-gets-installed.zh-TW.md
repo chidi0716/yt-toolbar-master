@@ -16,7 +16,7 @@
 
 | 程式 | 用途 | 來源 |
 |---|---|---|
-| **小幫手**（`yte-host`） | 本專案的小程式，讓瀏覽器擴充功能能使用下面的程式。只接受本擴充功能的固定指令，不接受網址或任意命令。 | [本專案的 GitHub 正式版本](https://github.com/chidi0716/yt-toolbar-master/releases) |
+| **小幫手**（`ytm-host`） | 本專案的小程式，讓瀏覽器擴充功能能使用下面的程式。只接受本擴充功能的固定指令，不接受網址或任意命令。 | [本專案的 GitHub 正式版本](https://github.com/chidi0716/yt-toolbar-master/releases) |
 | **yt-dlp** | 實際從 YouTube 下載影片與音訊的開源程式。 | [yt-dlp 的 GitHub](https://github.com/yt-dlp/yt-dlp/releases)（官方正式版本） |
 | **ffmpeg** 與 **ffprobe** | 合併影像與聲音、把聲音轉成 MP3、嵌入封面與章節。 | macOS：[ffmpeg.martin-riedl.de](https://ffmpeg.martin-riedl.de)；Windows：[yt-dlp/FFmpeg-Builds](https://github.com/yt-dlp/FFmpeg-Builds/releases)（yt-dlp 團隊維護） |
 | **deno** | yt-dlp 需要的 JavaScript 執行環境，讓它看得到 YouTube 的全部格式。 | [deno 的 GitHub](https://github.com/denoland/deno/releases)（官方正式版本） |
@@ -34,8 +34,8 @@
 
 | | macOS | Windows |
 |---|---|---|
-| 小幫手、工具、設定 | `~/Library/Application Support/youtube-extension-host/` | `%LOCALAPPDATA%\youtube-extension-host\` |
-| 記錄檔 | `~/Library/Logs/youtube-extension-host/host.log` | `%LOCALAPPDATA%\youtube-extension-host\logs\host.log` |
+| 小幫手、工具、設定 | `~/Library/Application Support/yt-toolbar-master/` | `%LOCALAPPDATA%\yt-toolbar-master\` |
+| 記錄檔 | `~/Library/Logs/yt-toolbar-master/host.log` | `%LOCALAPPDATA%\yt-toolbar-master\logs\host.log` |
 | 瀏覽器註冊 | `~/Library/Application Support/Google/Chrome/NativeMessagingHosts/` 與 `~/Library/Application Support/Mozilla/NativeMessagingHosts/`（各一個小檔案） | `HKCU\Software\Google\Chrome\NativeMessagingHosts\` 與 `HKCU\Software\Mozilla\NativeMessagingHosts\` 下的兩個登錄機碼 |
 
 瀏覽器註冊告訴 Chrome 與 Firefox（以及 Zen 等以 Firefox 為基礎的瀏覽器）小幫手在哪裡，並限定**只有本擴充功能**能啟動它。

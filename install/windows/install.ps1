@@ -2,13 +2,13 @@
 #
 # 一般使用者請改用 README 的一行指令（會一併下載 yt-dlp、ffmpeg、deno）。這個腳本給
 # 「自己建置小幫手」或「已經自己裝好 yt-dlp、ffmpeg、deno」的人使用：執行
-# yte-host --install --offline，小幫手把自己複製到 %LOCALAPPDATA%\youtube-extension-host\，
+# ytm-host --install --offline，小幫手把自己複製到 %LOCALAPPDATA%\yt-toolbar-master\，
 # 寫入原生訊息設定檔與 HKCU 的 Chrome、Firefox 登錄機碼，並檢查 yt-dlp、ffmpeg、deno（不下載任何東西）。
 #
 # 用法（PowerShell 預設不允許執行腳本，所以以 -ExecutionPolicy Bypass 執行這一次）：
 #   powershell -ExecutionPolicy Bypass -File install.ps1 [-Binary <小幫手的路徑>]
 # 沒有指定 -Binary 時，依序尋找與本腳本同一個資料夾、以及 repo 的 host\dist\ 中的
-# yte-host-windows-amd64.exe。
+# ytm-host-windows-amd64.exe。
 [CmdletBinding()]
 param(
     [string]$Binary
@@ -26,7 +26,7 @@ if (-not $env:LOCALAPPDATA) {
     Fail 'LOCALAPPDATA is not set.'
 }
 
-$BinName = 'yte-host-windows-amd64.exe'
+$BinName = 'ytm-host-windows-amd64.exe'
 if (-not $Binary) {
     foreach ($candidate in @((Join-Path $PSScriptRoot $BinName), (Join-Path $PSScriptRoot "..\..\host\dist\$BinName"))) {
         if (Test-Path -LiteralPath $candidate -PathType Leaf) {

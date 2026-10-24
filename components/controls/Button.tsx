@@ -8,7 +8,7 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
 
 export function Button({ variant = 'secondary', children, ...rest }: ButtonProps) {
   return (
-    <button type="button" class={`yte-button yte-button-${variant}`} {...rest}>
+    <button type="button" class={`ytm-button ytm-button-${variant}`} {...rest}>
       {children}
     </button>
   );

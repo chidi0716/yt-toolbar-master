@@ -158,16 +158,16 @@ export function ToolbarEditor({ draft, onChange, onDone, onCancel, onReset }: To
     };
     if (id === SEPARATOR) {
       return (
-        <div key={id} ref={itemRef} class="yte-edit-item yte-edit-sep-item" data-item={id} data-dragging={draggingId === id ? '' : undefined}>
+        <div key={id} ref={itemRef} class="ytm-edit-item ytm-edit-sep-item" data-item={id} data-dragging={draggingId === id ? '' : undefined}>
           <button
             type="button"
-            class="yte-edit-sep"
+            class="ytm-edit-sep"
             aria-label={t('editSeparator')}
-            aria-describedby="yte-edit-keys"
+            aria-describedby="ytm-edit-keys"
             title={t('editSeparator')}
             {...handlers}
           >
-            <span class="yte-edit-sep-line" aria-hidden="true" />
+            <span class="ytm-edit-sep-line" aria-hidden="true" />
           </button>
         </div>
       );
@@ -178,14 +178,14 @@ export function ToolbarEditor({ draft, onChange, onDone, onCancel, onReset }: To
       <div
         key={id}
         ref={itemRef}
-        class="yte-edit-item"
+        class="ytm-edit-item"
         data-item={id}
         data-hidden={visible ? undefined : ''}
         data-dragging={draggingId === id ? '' : undefined}
       >
         <button
           type="button"
-          class="yte-edit-eye"
+          class="ytm-edit-eye"
           tabIndex={-1}
           aria-label={visible ? t('editHideTool', name) : t('editShowTool', name)}
           title={visible ? t('editHideTool', name) : t('editShowTool', name)}
@@ -195,15 +195,15 @@ export function ToolbarEditor({ draft, onChange, onDone, onCancel, onReset }: To
         </button>
         <button
           type="button"
-          class="yte-edit-tool"
+          class="ytm-edit-tool"
           aria-label={`${name}, ${visible ? t('editShown') : t('editHidden')}`}
-          aria-describedby="yte-edit-keys"
+          aria-describedby="ytm-edit-keys"
           title={name}
           {...handlers}
         >
           <Icon name={def.icon} />
           {!visible && (
-            <span class="yte-edit-hidden-mark" aria-hidden="true">
+            <span class="ytm-edit-hidden-mark" aria-hidden="true">
               <Icon name="visibility_off" size={12} />
             </span>
           )}
@@ -214,13 +214,13 @@ export function ToolbarEditor({ draft, onChange, onDone, onCancel, onReset }: To
 
   return (
     <>
-      <div ref={rowRef} class="yte-edit-row">
+      <div ref={rowRef} class="ytm-edit-row">
         {draft.items.slice(0, sepIndex + 1).map((item, i) => renderItem(item.id, i))}
-        <span class="yte-edit-spacer" aria-hidden="true" />
+        <span class="ytm-edit-spacer" aria-hidden="true" />
         {draft.items.slice(sepIndex + 1).map((item, i) => renderItem(item.id, sepIndex + 1 + i))}
-        {indicator !== null && <span class="yte-edit-indicator" style={{ left: `${indicator}px` }} aria-hidden="true" />}
+        {indicator !== null && <span class="ytm-edit-indicator" style={{ left: `${indicator}px` }} aria-hidden="true" />}
       </div>
-      <div class="yte-edit-actions">
+      <div class="ytm-edit-actions">
         <Button variant="secondary" onClick={onReset}>
           <Icon name="restart_alt" size={18} />
           <span>{t('editReset')}</span>
@@ -233,11 +233,11 @@ export function ToolbarEditor({ draft, onChange, onDone, onCancel, onReset }: To
           <span>{t('editDone')}</span>
         </Button>
       </div>
-      <p class="yte-edit-help">{t('editHelp')}</p>
-      <span id="yte-edit-keys" class="yte-visually-hidden">
+      <p class="ytm-edit-help">{t('editHelp')}</p>
+      <span id="ytm-edit-keys" class="ytm-visually-hidden">
         {t('editKeys')}
       </span>
-      <span class="yte-visually-hidden" role="status" aria-live="polite">
+      <span class="ytm-visually-hidden" role="status" aria-live="polite">
         {announce}
       </span>
     </>

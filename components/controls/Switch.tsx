@@ -16,7 +16,7 @@ export function Switch({ checked, onChange, label, labelledBy, describedBy, disa
       id={id}
       type="button"
       role="switch"
-      class="yte-switch"
+      class="ytm-switch"
       aria-checked={checked}
       aria-label={labelledBy ? undefined : label}
       aria-labelledby={labelledBy}
@@ -24,7 +24,7 @@ export function Switch({ checked, onChange, label, labelledBy, describedBy, disa
       disabled={disabled}
       onClick={() => onChange(!checked)}
     >
-      <span class="yte-switch-thumb" aria-hidden="true" />
+      <span class="ytm-switch-thumb" aria-hidden="true" />
     </button>
   );
 }

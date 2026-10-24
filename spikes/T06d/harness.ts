@@ -9,8 +9,8 @@ import { findPlayer, type YtPlayerApi } from '@/utils/youtube/dom';
 // 擴充功能外沒有 browser.i18n：提示文字以訊息名稱代替。
 (globalThis as unknown as { browser: unknown }).browser = { i18n: { getMessage: (key: string) => key } };
 
-// window.__yteNoBridge = true 時不處理橋接請求：選項無法被標記，用來測試找不到選項時的處理（FR-15）。
-if (!(window as unknown as { __yteNoBridge?: boolean }).__yteNoBridge) {
+// window.__ytmNoBridge = true 時不處理橋接請求：選項無法被標記，用來測試找不到選項時的處理（FR-15）。
+if (!(window as unknown as { __ytmNoBridge?: boolean }).__ytmNoBridge) {
   document.addEventListener(BRIDGE_REQUEST_EVENT, (event) => {
     const req = parseBridgeRequest((event as CustomEvent<unknown>).detail);
     if (!req) return;
@@ -21,4 +21,4 @@ if (!(window as unknown as { __yteNoBridge?: boolean }).__yteNoBridge) {
 
 const dark = createDarkMode();
 dark.start();
-(window as unknown as { __yteDark: typeof dark }).__yteDark = dark;
+(window as unknown as { __ytmDark: typeof dark }).__ytmDark = dark;

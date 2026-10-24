@@ -25,7 +25,7 @@ const check = (name, ok, detail = '') => {
 async function open(context, hl) {
   const page = await context.newPage();
   page.on('console', (m) => {
-    if (m.text().includes('[youtube-extension]')) console.log('  console:', m.text());
+    if (m.text().includes('[yt-toolbar-master]')) console.log('  console:', m.text());
   });
   await page.goto(`https://www.youtube.com/?hl=${hl}`, { waitUntil: 'domcontentloaded', timeout: 90_000 });
   if (new URL(page.url()).hostname !== 'www.youtube.com' || (await page.locator('ytd-app').count()) === 0) {
@@ -92,7 +92,7 @@ for (const [label, locale, hl, startPref, target] of [
     window.__probeMarker = 1;
   });
   const t0 = Date.now();
-  await page.evaluate(() => window.__yteDark.toggle());
+  await page.evaluate(() => window.__ytmDark.toggle());
   await page.waitForTimeout(8000);
   const frames = await page.evaluate(() => JSON.parse(sessionStorage.getItem('__frames') ?? '[]'));
   const alive = await page.evaluate(() => window.__probeMarker === 1);
@@ -119,7 +119,7 @@ for (const [label, locale, hl, startPref, target] of [
   const prefBefore = (await context.cookies('https://www.youtube.com/')).find((c) => c.name === 'PREF')?.value;
   const logs = [];
   page.on('console', (m) => logs.push(m.text()));
-  await page.evaluate(() => (window.__yteNoBridge = true));
+  await page.evaluate(() => (window.__ytmNoBridge = true));
   await page.evaluate(harness);
   await page.evaluate(() => {
     window.__frames = { open: 0, visible: 0, total: 0 };
@@ -136,21 +136,21 @@ for (const [label, locale, hl, startPref, target] of [
       if (performance.now() - t0 < 9000) requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
-    window.__yteDark.toggle();
+    window.__ytmDark.toggle();
   });
   await page.waitForTimeout(9500);
   const after = await page.evaluate(() => ({
     frames: window.__frames,
     dark: document.documentElement.hasAttribute('dark'),
-    busyClass: document.documentElement.classList.contains('yte-theme-menu-busy'),
+    busyClass: document.documentElement.classList.contains('ytm-theme-menu-busy'),
     menuOpen: [...document.querySelectorAll('ytd-popup-container tp-yt-iron-dropdown')].some((d) => d.getAttribute('aria-hidden') !== 'true' && d.getClientRects().length > 0),
-    notice: window.__yteDark.state.get().notice ?? null,
+    notice: window.__ytmDark.state.get().notice ?? null,
   }));
   const prefAfter = (await context.cookies('https://www.youtube.com/')).find((c) => c.name === 'PREF')?.value;
   console.log('  ', JSON.stringify(after), `pref ${prefBefore} -> ${prefAfter}`);
   check('找不到選項：主題與偏好不變', !after.dark && prefAfter === prefBefore);
   check('找不到選項：選單曾打開但沒有被看見，結束後已關閉、暫時的 class 已移除', after.frames.open > 0 && after.frames.visible === 0 && !after.menuOpen && !after.busyClass, JSON.stringify(after.frames));
-  check('找不到選項：在 console 記錄原因', logs.some((l) => l.includes('NO_THEME_OPTION')), logs.filter((l) => l.includes('youtube-extension')).join(' | '));
+  check('找不到選項：在 console 記錄原因', logs.some((l) => l.includes('NO_THEME_OPTION')), logs.filter((l) => l.includes('yt-toolbar-master')).join(' | '));
   await context.close();
 }
 

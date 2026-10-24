@@ -30,8 +30,8 @@ import {
   type YtQualityApi,
 } from './dom';
 
-export const BRIDGE_REQUEST_EVENT = 'yte-bridge:request';
-export const BRIDGE_RESPONSE_EVENT = 'yte-bridge:response';
+export const BRIDGE_REQUEST_EVENT = 'ytm-bridge:request';
+export const BRIDGE_RESPONSE_EVENT = 'ytm-bridge:response';
 
 export type BridgeRequest =
   | { id: string; type: 'getVideoData' }

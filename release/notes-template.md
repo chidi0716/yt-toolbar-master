@@ -25,7 +25,7 @@ See [what gets installed](https://github.com/chidi0716/yt-toolbar-master/blob/{{
 {{firefoxFiles}}
 | `install.sh`, `install.ps1` | One-line installers for the download helper |
 | `uninstall.sh`, `uninstall.ps1` | Remove the download helper |
-| `yte-host-*` | The helper itself (the installers download it for you) |
+| `ytm-host-*` | The helper itself (the installers download it for you) |
 | `yt-toolbar-master-host-macos.zip`, `yt-toolbar-master-host-windows.zip` | Manual install (uses yt-dlp, ffmpeg and deno you installed yourself) |
 | `components.json` | List of component versions, download addresses and SHA-256 checksums (the helper checks every file against it) |
 | `SHA256SUMS` | SHA-256 of every file in this release |

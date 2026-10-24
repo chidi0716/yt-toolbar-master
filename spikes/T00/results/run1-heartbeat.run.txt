@@ -1,6 +1,6 @@
 [heartbeat] start 2026-10-21T05:20:02Z, duration 160s, firefox: Mozilla Firefox 158.0.1
 [heartbeat] end 2026-10-21T05:22:43Z
-{"t": 1792560007.582, "pid": 1999, "event": "start", "data": {"argv": ["/home/user/youtube-extension/.claude/worktrees/agent-ad531fd3da91a0e2c/spikes/T00/.cache/home-heartbeat/.mozilla/native-messaging-hosts/com.chidi0716.t00_spike.json", "t00-spike@chidi0716"]}}
+{"t": 1792560007.582, "pid": 1999, "event": "start", "data": {"argv": ["/home/user/yt-toolbar-master/.claude/worktrees/agent-ad531fd3da91a0e2c/spikes/T00/.cache/home-heartbeat/.mozilla/native-messaging-hosts/com.chidi0716.t00_spike.json", "t00-spike@chidi0716"]}}
 {"t": 1792560007.583, "pid": 1999, "event": "msg", "data": {"type": "hello", "mode": "heartbeat", "t0": 1792560006227}}
 {"t": 1792560016.387, "pid": 1999, "event": "msg", "data": {"type": "tick", "uptimeSec": 10.158}}
 {"t": 1792560026.387, "pid": 1999, "event": "msg", "data": {"type": "tick", "uptimeSec": 20.159}}
@@ -14,7 +14,7 @@
 {"t": 1792560106.392, "pid": 1999, "event": "msg", "data": {"type": "tick", "uptimeSec": 100.163}}
 {"t": 1792560116.392, "pid": 1999, "event": "msg", "data": {"type": "tick", "uptimeSec": 110.163}}
 {"t": 1792560126.392, "pid": 1999, "event": "msg", "data": {"type": "tick", "uptimeSec": 120.164}}
-{"t": 1792560126.464, "pid": 2837, "event": "start", "data": {"argv": ["/home/user/youtube-extension/.claude/worktrees/agent-ad531fd3da91a0e2c/spikes/T00/.cache/home-heartbeat/.mozilla/native-messaging-hosts/com.chidi0716.t00_spike.json", "t00-spike@chidi0716"]}}
+{"t": 1792560126.464, "pid": 2837, "event": "start", "data": {"argv": ["/home/user/yt-toolbar-master/.claude/worktrees/agent-ad531fd3da91a0e2c/spikes/T00/.cache/home-heartbeat/.mozilla/native-messaging-hosts/com.chidi0716.t00_spike.json", "t00-spike@chidi0716"]}}
 {"t": 1792560126.464, "pid": 2837, "event": "msg", "data": {"type": "report", "mode": "heartbeat", "starts": 1, "firstStart": 1792560006227, "lastSuspendAt": null, "suspendAfterSec": null, "portDisconnectedAt": null, "thisInstanceStartedAt": 1792560006227, "thisInstanceUptimeSec": 120.171, "portStillOpen": true}}
 {"t": 1792560126.466, "pid": 2837, "event": "eof"}
 {"t": 1792560136.393, "pid": 1999, "event": "msg", "data": {"type": "tick", "uptimeSec": 130.164}}

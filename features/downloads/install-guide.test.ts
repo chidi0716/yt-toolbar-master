@@ -46,11 +46,11 @@ describe('一行安裝指令（008 FR-1、FR-10，plan 3.10）', () => {
       'github.com/yt-dlp/yt-dlp',
       'github.com/denoland/deno',
       'ffmpeg.martin-riedl.de',
-      '~/Library/Application Support/youtube-extension-host/',
+      '~/Library/Application Support/yt-toolbar-master/',
       null,
     ]);
     expect(detailSource(INSTALL_DETAILS[3]!, 'windows')).toBe('github.com/yt-dlp/FFmpeg-Builds');
-    expect(detailSource(INSTALL_DETAILS[4]!, 'windows')).toBe('%LOCALAPPDATA%\\youtube-extension-host\\');
+    expect(detailSource(INSTALL_DETAILS[4]!, 'windows')).toBe('%LOCALAPPDATA%\\yt-toolbar-master\\');
   });
 
   it('自動偵測的間隔為 3 秒', () => {

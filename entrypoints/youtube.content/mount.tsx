@@ -65,7 +65,7 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
   };
 
   const ui = await createShadowRootUi<HTMLElement>(ctx, {
-    name: 'yte-toolbar',
+    name: 'ytm-toolbar',
     position: 'inline',
     anchor: () => findToolbarAnchor()?.before ?? null,
     append: 'before',
@@ -73,9 +73,9 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
     // 工具列內的按鍵不要冒泡到 YouTube，避免觸發 YouTube 的鍵盤快捷鍵（FR-19）。
     isolateEvents: true,
     onMount(container, _shadow, host) {
-      container.classList.add('yte-root');
+      container.classList.add('ytm-root');
       const anchor = findToolbarAnchor();
-      if (anchor) host.style.setProperty('--yte-font-family', getComputedStyle(anchor.parent).fontFamily);
+      if (anchor) host.style.setProperty('--ytm-font-family', getComputedStyle(anchor.parent).fontFamily);
       renderInto(container, host);
       return container;
     },

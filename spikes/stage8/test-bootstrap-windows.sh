@@ -17,9 +17,9 @@ rm -rf -- "$cache"
 mkdir -p "$cache/release"
 tag="v0.2.0"
 
-for p in darwin-arm64 darwin-amd64; do echo "$p" >"$cache/release/yte-host-$p"; done
-printf '#!/bin/sh\necho "$(basename "$0") $*" >> "%s/helper.log"\necho "fake helper ran"\n' "$cache" >"$cache/release/yte-host-windows-amd64.exe"
-manifest() { (cd "$repo/host" && GOTOOLCHAIN=local go run ./cmd/yte-release manifest -version 0.2.0 -helpers "$cache/release" -out "$cache/release/components.json"); }
+for p in darwin-arm64 darwin-amd64; do echo "$p" >"$cache/release/ytm-host-$p"; done
+printf '#!/bin/sh\necho "$(basename "$0") $*" >> "%s/helper.log"\necho "fake helper ran"\n' "$cache" >"$cache/release/ytm-host-windows-amd64.exe"
+manifest() { (cd "$repo/host" && GOTOOLCHAIN=local go run ./cmd/ytm-release manifest -version 0.2.0 -helpers "$cache/release" -out "$cache/release/components.json"); }
 manifest
 
 sed "s/@RELEASE_TAG@/$tag/" "$repo/install/bootstrap/install.ps1" >"$cache/tagged.ps1"
@@ -36,14 +36,14 @@ fail() { echo "FAIL: $*" >&2; cat "$cache/out.txt" >&2; exit 1; }
 
 echo "== install"
 run "$cache/install.ps1"
-grep -q "^yte-host-windows-amd64.exe --install --manifest [^ ]*components.json$" "$cache/helper.log" || fail "helper not run correctly"
+grep -q "^ytm-host-windows-amd64.exe --install --manifest [^ ]*components.json$" "$cache/helper.log" || fail "helper not run correctly"
 grep -q "下載功能安裝程式 $tag" "$cache/out.txt" || fail "Chinese text was not restored"
 grep -q "Helper SHA256 verified" "$cache/out.txt" || fail "no SHA256 message"
 grep -q "STILL-RUNNING" "$cache/out.txt" || fail "the script ended the PowerShell session"
 
 echo "== tampered helper"
 rm -f "$cache/helper.log"
-echo "echo evil" >>"$cache/release/yte-host-windows-amd64.exe"
+echo "echo evil" >>"$cache/release/ytm-host-windows-amd64.exe"
 run "$cache/install.ps1"
 grep -q "does not match the release list" "$cache/out.txt" || fail "no mismatch message"
 [ ! -f "$cache/helper.log" ] || fail "tampered helper was executed"
@@ -51,11 +51,11 @@ grep -q "STILL-RUNNING" "$cache/out.txt" || fail "exit after a failure"
 manifest
 
 echo "== download failure"
-mv "$cache/release/yte-host-windows-amd64.exe" "$cache/release/helper.bak"
+mv "$cache/release/ytm-host-windows-amd64.exe" "$cache/release/helper.bak"
 run "$cache/install.ps1"
-grep -q "Could not download yte-host-windows-amd64.exe" "$cache/out.txt" || fail "no download message"
+grep -q "Could not download ytm-host-windows-amd64.exe" "$cache/out.txt" || fail "no download message"
 grep -q "STILL-RUNNING" "$cache/out.txt" || fail "exit after a download failure"
-mv "$cache/release/helper.bak" "$cache/release/yte-host-windows-amd64.exe"
+mv "$cache/release/helper.bak" "$cache/release/ytm-host-windows-amd64.exe"
 
 echo "== untagged script"
 node "$repo/scripts/ps1-ascii.mjs" "$repo/install/bootstrap/install.ps1" "$cache/untagged.ps1"

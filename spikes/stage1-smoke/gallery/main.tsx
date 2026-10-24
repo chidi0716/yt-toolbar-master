@@ -27,11 +27,11 @@ function Demo() {
   const [sync, setSync] = useState(true);
   const check = validateRange(startText, endText, DURATION);
   return (
-    <div class="yte-panel" style={{ position: 'static', width: '420px' }}>
-      <div class="yte-panel-header">
-        <h2 class="yte-panel-title">Controls</h2>
+    <div class="ytm-panel" style={{ position: 'static', width: '420px' }}>
+      <div class="ytm-panel-header">
+        <h2 class="ytm-panel-title">Controls</h2>
       </div>
-      <div class="yte-panel-body" style={{ display: 'grid', gap: '16px' }}>
+      <div class="ytm-panel-body" style={{ display: 'grid', gap: '16px' }}>
         <label style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <span>MP3 bitrate</span>
           <Select
@@ -55,7 +55,7 @@ function Demo() {
               setEndText(formatTime(v[1], true));
             }}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--yte-text-secondary)', fontSize: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--ytm-text-secondary)', fontSize: '12px' }}>
             <span>{formatTime(0)}</span>
             <span>{formatTime(DURATION)}</span>
           </div>
@@ -86,7 +86,7 @@ function Demo() {
               }}
             />
             {check.endError && (
-              <p id="end-error" class="yte-field-error">
+              <p id="end-error" class="ytm-field-error">
                 {check.endError}
               </p>
             )}

@@ -45,7 +45,7 @@ export const INSTALL_DETAILS: readonly InstallDetail[] = [
   { text: 'installDetailFfmpeg', source: { mac: 'ffmpeg.martin-riedl.de', windows: 'github.com/yt-dlp/FFmpeg-Builds' } },
   {
     text: 'installDetailFolder',
-    source: { mac: '~/Library/Application Support/youtube-extension-host/', windows: '%LOCALAPPDATA%\\youtube-extension-host\\' },
+    source: { mac: '~/Library/Application Support/yt-toolbar-master/', windows: '%LOCALAPPDATA%\\yt-toolbar-master\\' },
   },
   { text: 'installDetailDone' },
 ];

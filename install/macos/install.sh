@@ -4,13 +4,13 @@
 # 一般使用者請改用 README 的一行指令（會一併下載 yt-dlp、ffmpeg、deno）。這個腳本給
 # 「自己建置小幫手」或「已經自己裝好 yt-dlp、ffmpeg、deno」的人使用：
 #   1. 移除小幫手的隔離屬性，確認可以執行；
-#   2. 執行 yte-host --install --offline：小幫手把自己複製到
-#      ~/Library/Application Support/youtube-extension-host/，寫入 Chrome 與 Firefox 的
+#   2. 執行 ytm-host --install --offline：小幫手把自己複製到
+#      ~/Library/Application Support/yt-toolbar-master/，寫入 Chrome 與 Firefox 的
 #      原生訊息設定檔，並檢查 yt-dlp、ffmpeg、deno（不下載任何東西）。
 #
 # 用法：sh install.sh [小幫手的路徑]
 # 沒有指定路徑時，依序尋找與本腳本同一個資料夾、以及 repo 的 host/dist/ 中
-# 符合這台 Mac 架構的 yte-host-darwin-arm64 或 yte-host-darwin-amd64。
+# 符合這台 Mac 架構的 ytm-host-darwin-arm64 或 ytm-host-darwin-amd64。
 set -eu
 
 SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
@@ -33,7 +33,7 @@ if [ "$(sysctl -n hw.optional.arm64 2>/dev/null || echo 0)" = "1" ]; then
 else
   ARCH="amd64"
 fi
-BIN_NAME="yte-host-darwin-$ARCH"
+BIN_NAME="ytm-host-darwin-$ARCH"
 
 if [ $# -ge 1 ]; then
   SRC="$1"

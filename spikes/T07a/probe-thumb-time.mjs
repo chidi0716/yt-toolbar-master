@@ -40,7 +40,7 @@ await box.press('Enter');
 await page.waitForTimeout(5000);
 await page.locator('ytd-video-renderer a#thumbnail[href^="/watch"]').first().click();
 try {
-  await page.waitForSelector('yte-toolbar', { state: 'attached', timeout: 20_000 });
+  await page.waitForSelector('ytm-toolbar', { state: 'attached', timeout: 20_000 });
 } catch {
   await stop('toolbar did not appear');
 }
@@ -86,7 +86,7 @@ const state = () =>
   });
 
 console.log('before cinema: full-shot sidebar luminance', await luminance(null), JSON.stringify(await state()));
-await page.locator('yte-toolbar .yte-btn[data-button="cinema"]').click();
+await page.locator('ytm-toolbar .ytm-btn[data-button="cinema"]').click();
 for (const t of [300, 1000, 2000, 4000, 8000]) {
   await page.waitForTimeout(t === 300 ? 300 : t - [300, 1000, 2000, 4000, 8000][[300, 1000, 2000, 4000, 8000].indexOf(t) - 1]);
   const clip = { x: 1050, y: 70, width: 200, height: 600 };

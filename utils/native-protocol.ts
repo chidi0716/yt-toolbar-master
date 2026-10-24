@@ -1,7 +1,7 @@
-// 與橋接程式（yte-host）之間的原生訊息協定（plan 4.2、specs/notes/T11-T15-host.md）。純函式與型別。
+// 與橋接程式（ytm-host）之間的原生訊息協定（plan 4.2、specs/notes/T11-T15-host.md）。純函式與型別。
 // 橋接程式的回應與事件一律先經過這裡驗證，欄位型別不對時視為無效（不信任外部程式的輸出）。
 
-export const HOST_NAME = 'com.chidi0716.youtube_extension';
+export const HOST_NAME = 'com.chidi0716.yt_toolbar_master';
 
 /** 橋接程式的錯誤代碼（筆記中的錯誤代碼表）；另加擴充功能端的 HOST_UNREACHABLE（找不到或無法啟動橋接程式）。 */
 export const HOST_ERROR_CODES = [

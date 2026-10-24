@@ -16,7 +16,7 @@ cache="$root/spikes/stage4/.cache"
 mkdir -p "$cache/go/mod" "$cache/go/build" "$cache/bin" "$cache/e2e"
 export GOTOOLCHAIN=local GOMODCACHE="$cache/go/mod" GOCACHE="$cache/go/build" GOFLAGS=-modcacherw
 cd "$root/host"
-go build -o "$cache/bin/yte-host" ./cmd/yte-host
+go build -o "$cache/bin/ytm-host" ./cmd/ytm-host
 go build -o "$cache/bin/fake-yt-dlp" ./testdata/fake-yt-dlp
 
 rm -rf "$cache/bin/tools" "$cache/bin/tools-nodeno" "$cache/bin/tools-noytdlp"
@@ -32,4 +32,4 @@ cp "$cache/bin/fake-yt-dlp" "$cache/bin/tools/ffmpeg"
 cp "$cache/bin/fake-yt-dlp" "$cache/bin/tools/deno"
 cp "$cache/bin/tools/yt-dlp" "$cache/bin/tools/ffmpeg" "$cache/bin/tools-nodeno/"
 cp "$cache/bin/tools/ffmpeg" "$cache/bin/tools/deno" "$cache/bin/tools-noytdlp/"
-"$cache/bin/yte-host" --version
+"$cache/bin/ytm-host" --version

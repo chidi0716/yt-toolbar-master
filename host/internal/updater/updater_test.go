@@ -356,7 +356,7 @@ func TestRunSkipsWhatIsNotOurs(t *testing.T) {
 	}
 	// 不是從安裝資料夾執行的小幫手：不更新小幫手。
 	u.Version = "0.1.0"
-	u.SelfPath = filepath.Join(t.TempDir(), "yte-host")
+	u.SelfPath = filepath.Join(t.TempDir(), "ytm-host")
 	if _, err := u.Run(context.Background()); err != nil || f.hit("/helper") != 0 {
 		t.Fatalf("not installed helper was updated: %v", err)
 	}

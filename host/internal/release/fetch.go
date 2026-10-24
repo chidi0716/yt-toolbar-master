@@ -45,7 +45,7 @@ func NewFetcher(version string) *Fetcher {
 		IdleConnTimeout:       60 * time.Second,
 		ForceAttemptHTTP2:     true,
 	}
-	return &Fetcher{Client: &http.Client{Transport: tr}, Allow: AllowedURL, UserAgent: "yte-host/" + version}
+	return &Fetcher{Client: &http.Client{Transport: tr}, Allow: AllowedURL, UserAgent: "ytm-host/" + version}
 }
 
 // WithAllow 回傳只允許 allow 的網址的 Fetcher（共用同一個 HTTP client）。

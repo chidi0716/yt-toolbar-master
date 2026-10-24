@@ -1,5 +1,5 @@
 home, options off: {"html":"","shortsLinksVisible":0,"shortsShelvesVisible":0,"guideShortsVisible":1,"titles":0,"truncatedTitles":0,"maxTitleHeight":0}
-home, options on : {"html":"yte-no-thumbnail-preview yte-hide-shorts yte-full-titles","shortsLinksVisible":0,"shortsShelvesVisible":0,"guideShortsVisible":0,"titles":0,"truncatedTitles":0,"maxTitleHeight":0}
-search, options on : {"html":"yte-no-thumbnail-preview yte-hide-shorts yte-full-titles","shortsLinksVisible":0,"shortsShelvesVisible":0,"guideShortsVisible":0,"titles":20,"truncatedTitles":0,"maxTitleHeight":52}
+home, options on : {"html":"ytm-no-thumbnail-preview ytm-hide-shorts ytm-full-titles","shortsLinksVisible":0,"shortsShelvesVisible":0,"guideShortsVisible":0,"titles":0,"truncatedTitles":0,"maxTitleHeight":0}
+search, options on : {"html":"ytm-no-thumbnail-preview ytm-hide-shorts ytm-full-titles","shortsLinksVisible":0,"shortsShelvesVisible":0,"guideShortsVisible":0,"titles":20,"truncatedTitles":0,"maxTitleHeight":52}
 search, options off: {"html":"","shortsLinksVisible":40,"shortsShelvesVisible":3,"guideShortsVisible":1,"titles":20,"truncatedTitles":0,"maxTitleHeight":52}
 search hover with preview off: {"previewExists":true,"previewVisible":false,"display":"none"}

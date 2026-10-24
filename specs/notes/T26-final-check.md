@@ -54,7 +54,7 @@
 | `npm run build`、`npm run build:firefox` | 通過 |
 | `npm run build:host` | 通過（`host/dist/yt-toolbar-master-host-macos`、`…-windows`） |
 | `cd host && GOTOOLCHAIN=local go vet ./...` | 通過 |
-| `cd host && GOTOOLCHAIN=local go test ./...` | 通過（app、commands、e2e、jobs、logx、platform、protocol、validate、ytdlp、cmd/yte-host） |
+| `cd host && GOTOOLCHAIN=local go test ./...` | 通過（app、commands、e2e、jobs、logx、platform、protocol、validate、ytdlp、cmd/ytm-host） |
 | `npx web-ext lint -s .output/firefox-mv3` | 0 個錯誤、0 個 notice、2 個警告（皆為 `lint-exceptions.md` 的既有例外） |
 | `spikes/stage1-smoke/viewing-test.mjs` | 110/110 |
 | `spikes/stage1-smoke/convenience-test.mjs` | 72/72 |

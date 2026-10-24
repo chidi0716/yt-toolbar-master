@@ -21,31 +21,31 @@ export interface OtherToolsProps {
 export function OtherTools({ hidden, toggles, activePanels, progress, onOpen }: OtherToolsProps) {
   if (hidden.length === 0) return null;
   return (
-    <section class="yte-other-tools" aria-labelledby="yte-other-tools-title">
-      <h3 id="yte-other-tools-title" class="yte-other-title">
+    <section class="ytm-other-tools" aria-labelledby="ytm-other-tools-title">
+      <h3 id="ytm-other-tools-title" class="ytm-other-title">
         {t('moreOtherTools')}
       </h3>
-      <ul class="yte-other-list">
+      <ul class="ytm-other-list">
         {hidden.map((id) => {
           const def = TOOLS[id];
           const feature = toggles[id];
           const name = t(def.label);
           const busy = isToolOngoing(id, { progress, activePanels, toggles });
           if (def.kind === 'toggle') {
-            const labelId = `yte-other-${id}-label`;
-            const descId = `yte-other-${id}-desc`;
+            const labelId = `ytm-other-${id}-label`;
+            const descId = `ytm-other-${id}-desc`;
             const desc = feature?.notice ?? feature?.disabledReason;
             return (
-              <li key={id} class="yte-other-item" data-tool={id} data-busy={busy ? '' : undefined}>
-                <span class="yte-other-icon">
+              <li key={id} class="ytm-other-item" data-tool={id} data-busy={busy ? '' : undefined}>
+                <span class="ytm-other-icon">
                   <Icon name={def.icon} />
                 </span>
-                <span class="yte-other-text">
-                  <span id={labelId} class="yte-other-name">
+                <span class="ytm-other-text">
+                  <span id={labelId} class="ytm-other-name">
                     {name}
                   </span>
                   {desc && (
-                    <span id={descId} class="yte-other-desc">
+                    <span id={descId} class="ytm-other-desc">
                       {desc}
                     </span>
                   )}
@@ -62,20 +62,20 @@ export function OtherTools({ hidden, toggles, activePanels, progress, onOpen }: 
           }
           const status = feature?.notice;
           return (
-            <li key={id} class="yte-other-item" data-tool={id} data-busy={busy ? '' : undefined}>
-              <button type="button" class="yte-other-btn" aria-haspopup={def.kind === 'panel' ? 'dialog' : undefined} onClick={() => onOpen(id)}>
-                <span class="yte-other-icon">
+            <li key={id} class="ytm-other-item" data-tool={id} data-busy={busy ? '' : undefined}>
+              <button type="button" class="ytm-other-btn" aria-haspopup={def.kind === 'panel' ? 'dialog' : undefined} onClick={() => onOpen(id)}>
+                <span class="ytm-other-icon">
                   <Icon name={def.icon} />
                 </span>
-                <span class="yte-other-text">
-                  <span class="yte-other-name">{name}</span>
+                <span class="ytm-other-text">
+                  <span class="ytm-other-name">{name}</span>
                   {status && (
-                    <span class="yte-other-desc" role="status">
+                    <span class="ytm-other-desc" role="status">
                       {status}
                     </span>
                   )}
                 </span>
-                {busy && <span class="yte-other-dot" role="img" aria-label={t('moreHiddenActive')} />}
+                {busy && <span class="ytm-other-dot" role="img" aria-label={t('moreHiddenActive')} />}
               </button>
             </li>
           );

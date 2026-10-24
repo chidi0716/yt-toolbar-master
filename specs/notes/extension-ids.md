@@ -2,13 +2,13 @@
 
 依 plan 3.3 固定。原生訊息設定檔（T15 的安裝腳本與範本）必須使用以下值。
 
-專案改名為 YT Toolbar Master（T52）後，這些值**維持不變**，否則已安裝的版本與小幫手會失聯（plan 3.3）。
+專案改名為 YT Toolbar Master（T52）時，Firefox 附加元件 ID 與原生訊息名稱改為新名稱；Chrome 的金鑰與擴充功能 ID 不變（plan 3.3）。
 
 | 項目 | 值 | 用在哪裡 |
 |---|---|---|
 | Chrome 擴充功能 ID | `bkjlangdjfpllnkcpfpdlajchbginjdj` | Chrome 原生訊息設定檔的 `allowed_origins`：`chrome-extension://bkjlangdjfpllnkcpfpdlajchbginjdj/` |
-| Firefox 附加元件 ID | `youtube-extension@chidi0716` | `browser_specific_settings.gecko.id`；Firefox 原生訊息設定檔的 `allowed_extensions` |
-| 原生訊息名稱 | `com.chidi0716.youtube_extension` | `runtime.connectNative()` 的參數、設定檔的 `name` 與檔名、Windows 登錄機碼名稱 |
+| Firefox 附加元件 ID | `yt-toolbar-master@chidi0716` | `browser_specific_settings.gecko.id`；Firefox 原生訊息設定檔的 `allowed_extensions` |
+| 原生訊息名稱 | `com.chidi0716.yt_toolbar_master` | `runtime.connectNative()` 的參數、設定檔的 `name` 與檔名、Windows 登錄機碼名稱 |
 
 ## Chrome ID 的來源
 

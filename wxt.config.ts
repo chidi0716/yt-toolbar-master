@@ -6,7 +6,7 @@ const CHROME_PUBLIC_KEY =
   'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnS+lCUvqBBGgNYybmUV8UIN1ouvn806lrte+WCYPOHr0A2q0cjGqDnmWRgizBxPjC72dl0cPYuDIU72d567E/vEB1LK3x16PXv+RYSnsOglIN3n4/a4uuyhs5NI+XDaas9KRC1zA275TO2rQPRqBH+fOmKtAgivD0RlYceYxVmc8mKWzbTe0boZqk/uJA/qsRv7YIwb9GXyIddvR5Y6PobfHCp+XfaP3CXChKHjrprca+XIt+4K2FscNimY3KZ0vzEbZV6WQ+k/dnx7yF56feeWuaxEvP+vHhxw7yx3ogiZBN4omc42Wvt6baORZF+Un27V8vCvjF07UTsnOFe07cQIDAQAB';
 
 // Firefox：固定的附加元件 ID（plan 3.3）。
-const GECKO_ID = 'youtube-extension@chidi0716';
+const GECKO_ID = 'yt-toolbar-master@chidi0716';
 
 // Firefox：簽署版由瀏覽器依這個網址自動更新（plan 4.10、008 FR-23）。網址會轉址到最新正式版本
 // （不含預先發行版本）的 updates.json，由發佈流程產生。

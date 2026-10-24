@@ -5,7 +5,7 @@
 ## 結論
 
 - 舊做法（整頁固定遮罩 `z-index: 2200`，播放器容器與工具列提高到 `2201`）只在播放器與工具列的祖先都不形成堆疊脈絡時有效。只要祖先中有一層 `position` ＋ `z-index`，提高的 `z-index` 就只在那一層裡比較，整頁遮罩會連播放器與工具列一起蓋住（專案擁有者回報的症狀）。
-- 新做法（plan 3.7）：在 `<html>` 加上 `yte-cinema`，以 CSS 把播放器容器與工具列**以外**的區域設為 `opacity: 0.07`（變暗約 93%），`<html>`、`<body>`、`ytd-app` 背景改為黑色。播放器與它的祖先完全不被改動，所以不受堆疊脈絡影響。
+- 新做法（plan 3.7）：在 `<html>` 加上 `ytm-cinema`，以 CSS 把播放器容器與工具列**以外**的區域設為 `opacity: 0.07`（變暗約 93%），`<html>`、`<body>`、`ytd-app` 背景改為黑色。播放器與它的祖先完全不被改動，所以不受堆疊脈絡影響。
 - 點被調暗的區域：在 `window` 上以捕獲階段攔截 `pointerdown`、`mousedown`、`pointerup`、`mouseup`、`click`、`auxclick`、`dblclick`，阻止預設動作與傳遞（連結、按鈕、中鍵開新分頁都不會被觸發），`click` 時關閉。Esc 關閉（有未釘選的面板時先收起面板）。
 - 工具列宿主在劇院模式中維持 `position: relative; z-index: 2201`（展開的面板不會被同一層中變暗的兄弟元素蓋住），按鈕改用深色背景上的白色。
 
@@ -18,7 +18,7 @@
 | `#masthead-container` | 頂端列 |
 | `tp-yt-app-drawer#guide`、`ytd-mini-guide-renderer` | 左側導覽 |
 | `ytd-watch-flexy #columns > :not(#primary)` | 播放器欄位以外的欄位（右側欄：推薦影片、播放清單、聊天室、資訊面板） |
-| `ytd-watch-flexy #below > :not(yte-toolbar)` | 播放器下方：標題、頻道、說明、留言（工具列也在 `#below` 中，所以只調暗其他子元素） |
+| `ytd-watch-flexy #below > :not(ytm-toolbar)` | 播放器下方：標題、頻道、說明、留言（工具列也在 `#below` 中，所以只調暗其他子元素） |
 | `ytd-watch-flexy #primary-inner > :not(#player):not(#below)` | 播放器欄位中的其他區塊 |
 | `ytd-watch-flexy #full-bleed-container > :not(#player-full-bleed-container)` | YouTube 劇院模式時全寬區中播放器以外的面板 |
 | `ytd-watch-flexy #fixed-side-menu`、`ytd-watch-flexy #survey` | 部分版面右側的固定選單（說明、留言按鈕）、問卷 |
@@ -45,7 +45,7 @@
 
 觀看頁直接載入會被驗證頁擋住；從首頁以站內換頁（頂端列搜尋 → 點影片）可以進入，載入擴充功能的建置。影片本身在本環境無法播放（Video unavailable），播放器的元素與控制列仍在。
 
-- **舊做法**（`results-real-before.txt`）：本環境的真實頁面中，播放器的祖先沒有形成堆疊脈絡（只有 `#movie_player` 本身是 `position: relative; z-index: 0`），所以播放器沒有被蓋住；但工具列的按鈕位置都是遮罩（`toolbarCinema`、`toolbarHelp` → `div.yte-cinema-overlay`），工具列無法使用。專案擁有者的環境中播放器也被蓋住，表示該環境的祖先有形成堆疊脈絡（YouTube 版面實驗或瀏覽器差異），假觀看頁依此重現。
+- **舊做法**（`results-real-before.txt`）：本環境的真實頁面中，播放器的祖先沒有形成堆疊脈絡（只有 `#movie_player` 本身是 `position: relative; z-index: 0`），所以播放器沒有被蓋住；但工具列的按鈕位置都是遮罩（`toolbarCinema`、`toolbarHelp` → `div.ytm-cinema-overlay`），工具列無法使用。專案擁有者的環境中播放器也被蓋住，表示該環境的祖先有形成堆疊脈絡（YouTube 版面實驗或瀏覽器差異），假觀看頁依此重現。
 - **新做法**（`results-real-after-light.txt`、`results-real-after-dark.txt`、`results-real-after-theater.txt`）：
   - 淺色、深色、與 YouTube 劇院模式同時使用（FR-23）三種情況下，播放器中央、控制列、工具列「劇院模式」「說明」按鈕的 `elementFromPoint` 都是播放器或工具列。
   - 整個畫面每 40px 取一點，播放器與工具列以外、實際不透明度大於 0.1 且有畫出內容的元素：0 個。

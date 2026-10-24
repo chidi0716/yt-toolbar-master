@@ -209,7 +209,7 @@ export function Toolbar({
 
   if (draft) {
     return (
-      <div ref={containerRef} class="yte-toolbar" data-editing="" role="group" aria-label={t('editToolbarLabel')}>
+      <div ref={containerRef} class="ytm-toolbar" data-editing="" role="group" aria-label={t('editToolbarLabel')}>
         <ToolbarEditor
           draft={draft}
           onChange={setDraft}
@@ -236,7 +236,7 @@ export function Toolbar({
           onOpen={(tool: ToolId) => handleClick(TOOLS[tool])}
         />
         {content}
-        <button type="button" class="yte-more-edit" onClick={startEditing}>
+        <button type="button" class="ytm-more-edit" onClick={startEditing}>
           <Icon name="edit" size={20} />
           <span>{t('moreEditToolbar')}</span>
         </button>
@@ -245,11 +245,11 @@ export function Toolbar({
   };
 
   return (
-    <div ref={containerRef} class="yte-toolbar" role="group" aria-label={t('toolbarLabel')}>
-      <div class="yte-group" data-group="left">
+    <div ref={containerRef} class="ytm-toolbar" role="group" aria-label={t('toolbarLabel')}>
+      <div class="ytm-group" data-group="left">
         {left.map((id, i) => renderButton(TOOLS[id], i === 0 ? 'start' : 'center'))}
       </div>
-      <div class="yte-group" data-group="right">
+      <div class="ytm-group" data-group="right">
         {rightDefs.map((def, i) => renderButton(def, i === rightDefs.length - 1 ? 'end' : 'center'))}
       </div>
       {reminder && reminderState.cardVisible && reminderState.view && <UpdateCard view={reminderState.view} reminder={reminder} />}
@@ -276,5 +276,5 @@ export function Toolbar({
 }
 
 function panelDomId(id: ButtonId): string {
-  return `yte-panel-${id}`;
+  return `ytm-panel-${id}`;
 }

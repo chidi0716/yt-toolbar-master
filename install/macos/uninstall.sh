@@ -9,9 +9,9 @@
 # 不會移除已經下載的影片，也不會動到你自己安裝的 yt-dlp、ffmpeg、deno（例如 Homebrew）。
 set -eu
 
-NAME="com.chidi0716.youtube_extension"
-APP_DIR="$HOME/Library/Application Support/youtube-extension-host"
-LOG_DIR="$HOME/Library/Logs/youtube-extension-host"
+NAME="com.chidi0716.yt_toolbar_master"
+APP_DIR="$HOME/Library/Application Support/yt-toolbar-master"
+LOG_DIR="$HOME/Library/Logs/yt-toolbar-master"
 CHROME_MANIFEST="$HOME/Library/Application Support/Google/Chrome/NativeMessagingHosts/$NAME.json"
 FIREFOX_MANIFEST="$HOME/Library/Application Support/Mozilla/NativeMessagingHosts/$NAME.json"
 

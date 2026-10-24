@@ -35,18 +35,18 @@ export type MoreItem = MoreSwitchItem | MoreSelectItem;
 
 function MoreSwitchRow({ item }: { item: MoreSwitchItem }) {
   const state = useStore(item.state);
-  const labelId = `yte-more-${item.id}-label`;
-  const descId = `yte-more-${item.id}-desc`;
+  const labelId = `ytm-more-${item.id}-label`;
+  const descId = `ytm-more-${item.id}-desc`;
   return (
-    <li class="yte-more-item" data-item={item.id} data-disabled={state.disabledReason ? '' : undefined}>
-      <span class="yte-more-icon">
+    <li class="ytm-more-item" data-item={item.id} data-disabled={state.disabledReason ? '' : undefined}>
+      <span class="ytm-more-icon">
         <Icon name={item.icon} />
       </span>
-      <span class="yte-more-text">
-        <span id={labelId} class="yte-more-name">
+      <span class="ytm-more-text">
+        <span id={labelId} class="ytm-more-name">
           {t(item.label)}
         </span>
-        <span id={descId} class="yte-more-desc">
+        <span id={descId} class="ytm-more-desc">
           {state.disabledReason ?? t(item.description)}
         </span>
       </span>
@@ -63,17 +63,17 @@ function MoreSwitchRow({ item }: { item: MoreSwitchItem }) {
 
 function MoreSelectRow({ item }: { item: MoreSelectItem }) {
   const { value } = useStore(item.state);
-  const selectId = `yte-more-${item.id}-select`;
+  const selectId = `ytm-more-${item.id}-select`;
   return (
-    <li class="yte-more-item" data-item={item.id}>
-      <span class="yte-more-icon">
+    <li class="ytm-more-item" data-item={item.id}>
+      <span class="ytm-more-icon">
         <Icon name={item.icon} />
       </span>
-      <span class="yte-more-text">
-        <label for={selectId} class="yte-more-name">
+      <span class="ytm-more-text">
+        <label for={selectId} class="ytm-more-name">
           {t(item.label)}
         </label>
-        <span class="yte-more-desc">{t(item.description)}</span>
+        <span class="ytm-more-desc">{t(item.description)}</span>
       </span>
       <Select id={selectId} value={value} options={item.options} onChange={item.onChange} />
     </li>
@@ -84,7 +84,7 @@ export function MorePanel({ items, onOpen }: { items: readonly MoreItem[]; onOpe
   // 面板打開時讓功能重新檢查 YouTube 的狀態（例如自動播放開關）。
   useEffect(() => onOpen?.(), [onOpen]);
   return (
-    <ul class="yte-more">
+    <ul class="ytm-more">
       {items.map((item) =>
         item.kind === 'select' ? <MoreSelectRow key={item.id} item={item} /> : <MoreSwitchRow key={item.id} item={item} />,
       )}

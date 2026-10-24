@@ -6,7 +6,7 @@
 
 ```
 host/
-  cmd/yte-host/main.go       進入點：瀏覽器模式、--run-job 執行程序模式、--version
+  cmd/ytm-host/main.go       進入點：瀏覽器模式、--run-job 執行程序模式、--version
   internal/protocol/         原生訊息讀寫（4 位元組本機位元組順序長度＋JSON）
   internal/errs/             固定錯誤代碼
   internal/validate/         參數驗證（plan 4.4）
@@ -16,7 +16,7 @@ host/
   internal/jobs/             下載工作：狀態資料夾、執行程序、取消、子程序樹（build tag 分檔）
   internal/platform/         路徑、預設下載資料夾、reveal、pickFolder（build tag 分檔）
   internal/logx/             記錄檔（5MB 輪替、遮蔽家目錄與帳號資訊）
-  internal/e2e/              端到端測試（編譯真正的 yte-host，經 stdin/stdout 交談）
+  internal/e2e/              端到端測試（編譯真正的 ytm-host，經 stdin/stdout 交談）
   internal/testenv/          測試用：暫存檔放在 host/.testtmp/、編譯假 yt-dlp
   testdata/fake-yt-dlp/      假 yt-dlp（Go，測試時編譯；檔名為 ffmpeg 時模擬 ffmpeg -version）
 install/
@@ -26,7 +26,7 @@ install/
 spikes/stage3/                冒煙測試與安裝腳本的模擬測試（.cache/ 不進版控）
 ```
 
-`npm run build:host` 產出 `host/dist/yte-host-darwin-arm64`、`yte-host-darwin-amd64`、`yte-host-windows-amd64.exe`，並組出 `host/dist/yt-toolbar-master-host-macos/` 與 `-windows/` 兩個安裝資料夾。`npm run test:host` 執行 `go vet` 與 `go test`。
+`npm run build:host` 產出 `host/dist/ytm-host-darwin-arm64`、`ytm-host-darwin-amd64`、`ytm-host-windows-amd64.exe`，並組出 `host/dist/yt-toolbar-master-host-macos/` 與 `-windows/` 兩個安裝資料夾。`npm run test:host` 執行 `go vet` 與 `go test`。
 
 依賴：只有 `golang.org/x/sys`（v0.30.0，Windows 的 Job Object 與已知資料夾）。`go.mod` 維持 `go 1.24`；建置時設定 `GOTOOLCHAIN=local`，不自動下載其他版本的 Go。
 
@@ -99,9 +99,9 @@ spikes/stage3/                冒煙測試與安裝腳本的模擬測試（.cach
 
 ## 工作與生命週期（plan 4.6 的實作方式）
 
-- 瀏覽器在關閉連線後可能結束橋接程式（Chrome 與 Firefox 都會在連線關閉一段時間後結束原生程式），所以下載**不在**瀏覽器啟動的程序中執行：`download` 驗證參數後寫入 `<資料夾>/state/jobs/<jobId>/spec.json`，再以 `yte-host --run-job <jobId>` 啟動一個脫離瀏覽器的執行程序（macOS：`setsid`；Windows：`DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP`，並嘗試 `CREATE_BREAKAWAY_FROM_JOB`，瀏覽器不允許時改為不脫離）。執行程序只接受合法的工作 ID，從固定的狀態資料夾讀參數並再驗證一次。
+- 瀏覽器在關閉連線後可能結束橋接程式（Chrome 與 Firefox 都會在連線關閉一段時間後結束原生程式），所以下載**不在**瀏覽器啟動的程序中執行：`download` 驗證參數後寫入 `<資料夾>/state/jobs/<jobId>/spec.json`，再以 `ytm-host --run-job <jobId>` 啟動一個脫離瀏覽器的執行程序（macOS：`setsid`；Windows：`DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP`，並嘗試 `CREATE_BREAKAWAY_FROM_JOB`，瀏覽器不允許時改為不脫離）。執行程序只接受合法的工作 ID，從固定的狀態資料夾讀參數並再驗證一次。
 - 執行程序把 yt-dlp 放進可以整組結束的範圍：macOS 為新的程序群組（取消時先 SIGTERM，3 秒後 SIGKILL 整個群組）；Windows 以 `CREATE_SUSPENDED` 建立 yt-dlp、加入設定了 `KILL_ON_JOB_CLOSE` 的 Job Object 後再恢復執行，取消時 `TerminateJobObject`。yt-dlp 結束後也會清掉群組中殘留的程序。
-- yt-dlp 的所有輸出先寫到下載資料夾中的 `.yte-tmp-<jobId>`（`-P`），完成後把結果搬到下載資料夾（同名時加「 (2)」），最後刪除暫存資料夾；取消或失敗時直接刪除整個暫存資料夾，不會留下 `.part`、`.ytdl` 或合併前的檔案。
+- yt-dlp 的所有輸出先寫到下載資料夾中的 `.ytm-tmp-<jobId>`（`-P`），完成後把結果搬到下載資料夾（同名時加「 (2)」），最後刪除暫存資料夾；取消或失敗時直接刪除整個暫存資料夾，不會留下 `.part`、`.ytdl` 或合併前的檔案。
 - 執行程序每 5 秒（有進度時最多每 250 毫秒）更新 `status.json`；橋接程式每 300 毫秒讀取並推送事件。超過 2 分鐘沒有更新且程序已不在的工作標記為 `INTERRUPTED`。
 - 瀏覽器重新連線時，新的橋接程式會接手追蹤進行中的工作，繼續推送進度與完成事件。擴充功能沒有連線時結束的工作，下一次 `jobs` 會以 `missed: true` 回報一次（之後為 false），供背景腳本補發通知。
 - stdin 結束後，橋接程式等這次連線開始的下載全部結束才離開，最長 6 小時（下載本身不受這個時限影響，單一下載上限 24 小時）。
@@ -109,7 +109,7 @@ spikes/stage3/                冒煙測試與安裝腳本的模擬測試（.cach
 
 ## yt-dlp 參數
 
-共通：`--ignore-config --no-playlist --newline --no-colors --progress --progress-template "download:YTE-PROGRESS {...}" --progress-template "postprocess:YTE-POST {...}" --print "after_move:YTE-FILE %(filepath)j" --windows-filenames --match-filters "!is_live & live_status!=?is_live & live_status!=?is_upcoming" -P <暫存資料夾> -o <範本> [--ffmpeg-location <ffmpeg>] ... -- https://www.youtube.com/watch?v=<id>`
+共通：`--ignore-config --no-playlist --newline --no-colors --progress --progress-template "download:YTM-PROGRESS {...}" --progress-template "postprocess:YTM-POST {...}" --print "after_move:YTM-FILE %(filepath)j" --windows-filenames --match-filters "!is_live & live_status!=?is_live & live_status!=?is_upcoming" -P <暫存資料夾> -o <範本> [--ffmpeg-location <ffmpeg>] ... -- https://www.youtube.com/watch?v=<id>`
 
 - `%(...)j` 會把非 ASCII 字元跳脫，Windows 主控台編碼下路徑也能完整傳回；另外設定 `PYTHONUTF8=1`、`PYTHONIOENCODING=utf-8`。
 - deno 的找法與 yt-dlp、ffmpeg 相同（PATH、`/opt/homebrew/bin`、`/usr/local/bin`、WinGet Links 與 `Packages\DenoLand.Deno_*\deno.exe`）。
@@ -122,32 +122,32 @@ spikes/stage3/                冒煙測試與安裝腳本的模擬測試（.cach
 
 - `cd host && go vet ./... && go test ./...`：全部通過；`go test -race ./...` 也通過。另以 `GOOS=windows`、`GOOS=darwin` 執行 `go vet ./...`，確認各平台的程式可以編譯。
 - 真正的 yt-dlp（官方 release 2026.10.21，放在 `spikes/stage3/.cache/bin/`）：
-  - 以 `YTE_REAL_YTDLP=... go test ./internal/ytdlp -run Real -v` 對本機測試伺服器（`httptest`）上的 20 秒測試影片執行 `DownloadArgs` 組出的完整參數：影片、影片裁切（3–8 秒，檔名 `test [test] 00m03s-00m08s.mp4`）、MP3 裁切都成功，yt-dlp 接受全部選項，進度、後處理與 `YTE-FILE` 都能解析。進度與 `YTE-FILE` 寫到 stdout，後處理進度寫到 stderr（兩者都會讀）。裁切下載由 ffmpeg 執行時只有一行完成進度，擴充功能要能處理沒有百分比的情況。
+  - 以 `YTM_REAL_YTDLP=... go test ./internal/ytdlp -run Real -v` 對本機測試伺服器（`httptest`）上的 20 秒測試影片執行 `DownloadArgs` 組出的完整參數：影片、影片裁切（3–8 秒，檔名 `test [test] 00m03s-00m08s.mp4`）、MP3 裁切都成功，yt-dlp 接受全部選項，進度、後處理與 `YTM-FILE` 都能解析。進度與 `YTM-FILE` 寫到 stdout，後處理進度寫到 stderr（兩者都會讀）。裁切下載由 ffmpeg 執行時只有一行完成進度，擴充功能要能處理沒有百分比的情況。
   - `spikes/stage3/smoke-info.sh jNQXAC9IVRw`：對一部 19 秒的公開影片執行一次 `-J`（沒有被阻擋），確認欄位名稱（`format_id` 可能含「-drc」、`subtitles` 項目有 `name`、`automatic_captions` 的 `name` 可能是 null、`chapters`、`live_status`）。yt-dlp 警告沒有 JavaScript 執行環境時部分格式可能缺少；依 Q39 的回答，deno 列為必要元件（T15a）。
-- 端到端（`go test ./internal/e2e -v`）：編譯真正的 `yte-host` 與假 yt-dlp，以 Chrome 的來源參數啟動，經 stdin/stdout 送出 `status`、`getInfo`、非法指令與參數、`download`（影片、MP3 裁切）、`jobs`、`reveal`、`download`（慢速）＋`cancel`；另外測試強制結束橋接程式後下載仍完成、重新連線以 `missed` 補報、Firefox 看不到 Chrome 的工作、stdin 結束後立即離開、記錄檔不含家目錄。
+- 端到端（`go test ./internal/e2e -v`）：編譯真正的 `ytm-host` 與假 yt-dlp，以 Chrome 的來源參數啟動，經 stdin/stdout 送出 `status`、`getInfo`、非法指令與參數、`download`（影片、MP3 裁切）、`jobs`、`reveal`、`download`（慢速）＋`cancel`；另外測試強制結束橋接程式後下載仍完成、重新連線以 `missed` 補報、Firefox 看不到 Chrome 的工作、stdin 結束後立即離開、記錄檔不含家目錄。
 - 安裝腳本：`shellcheck`（0.11.0）檢查 `install/macos/*.sh` 無警告；`spikes/stage3/test-install-macos.sh` 在 Linux 上以假的 `uname`、`sysctl`、`xattr`、`id` 模擬執行安裝與解除安裝，確認設定檔 JSON、路徑、ID 正確、重複安裝可覆蓋、解除安裝後沒有留下檔案、以 root 執行會被拒絕。PowerShell 腳本以官方 PowerShell 7.4.6（Linux 版）只做語法解析（`spikes/stage3/check-ps1.sh`），三個腳本（含 pickFolder 內嵌的腳本）都沒有語法錯誤。
-- `host/dist/yte-host-darwin-arm64` 含有 Go 連結器產生的 ad-hoc 簽章（LC_CODE_SIGNATURE），Apple Silicon 可以直接執行。
+- `host/dist/ytm-host-darwin-arm64` 含有 Go 連結器產生的 ad-hoc 簽章（LC_CODE_SIGNATURE），Apple Silicon 可以直接執行。
 
 ## 需要專案擁有者在 macOS 上手動驗證
 
-1. `npm run build:host`，再執行 `sh host/dist/yt-toolbar-master-host-macos/install.sh`（不加 sudo）。確認輸出中兩個「Registered」路徑存在，且 `~/Library/Application Support/youtube-extension-host/yte-host --version` 印出版本。
+1. `npm run build:host`，再執行 `sh host/dist/yt-toolbar-master-host-macos/install.sh`（不加 sudo）。確認輸出中兩個「Registered」路徑存在，且 `~/Library/Application Support/yt-toolbar-master/ytm-host --version` 印出版本。
 2. 未安裝 yt-dlp、ffmpeg 或 deno 時，安裝腳本印出 `brew install yt-dlp ffmpeg deno`；三者都安裝後重新執行不再提示。
 3. 重新啟動 Chrome，在擴充功能的背景頁主控台執行：
    ```js
-   const p = chrome.runtime.connectNative('com.chidi0716.youtube_extension');
+   const p = chrome.runtime.connectNative('com.chidi0716.yt_toolbar_master');
    p.onMessage.addListener((m) => console.log(m));
    p.postMessage({ id: '1', cmd: 'status' });
    ```
    應收到 `ok: true`、`ready: true`、`complete: true`、`missing: []`、`deno.version`，`ytDlp.manager` 為 `homebrew`、`updateCommand` 為 `brew upgrade yt-dlp`，`defaultDir` 為 `~/Downloads`。Firefox（與 Zen）以 `browser.runtime.connectNative` 做同樣的測試。
 4. 同一個連線送 `{"id":"2","cmd":"getInfo","args":{"videoId":"<一部短影片>"}}`，應在數秒內收到格式清單。
-5. 送 `{"id":"3","cmd":"download","args":{"videoId":"<同一部>","kind":"video","formatId":"<從 getInfo 選一個 mp4 影像>+140","container":"mp4","dir":"<下載資料夾的絕對路徑>"}}`，應收到 progress 事件與 done 事件，檔案出現在下載資料夾，`.yte-tmp-…` 已刪除；用 QuickTime 或 IINA 開啟確認有聲音、封面、章節。
+5. 送 `{"id":"3","cmd":"download","args":{"videoId":"<同一部>","kind":"video","formatId":"<從 getInfo 選一個 mp4 影像>+140","container":"mp4","dir":"<下載資料夾的絕對路徑>"}}`，應收到 progress 事件與 done 事件，檔案出現在下載資料夾，`.ytm-tmp-…` 已刪除；用 QuickTime 或 IINA 開啟確認有聲音、封面、章節。
 6. 長一點的影片下載途中送 `{"id":"4","cmd":"cancel","args":{"jobId":"<jobId>"}}`：回應 `state: cancelled`，下載資料夾沒有殘留，`ps ax | grep -E 'yt-dlp|ffmpeg'` 沒有殘留程序。
 7. 下載途中直接結束瀏覽器（Cmd+Q）：檔案仍會完成；重新開啟瀏覽器後送 `jobs`，該工作 `missed: true`。
 8. `{"id":"5","cmd":"reveal","args":{"jobId":"<完成的 jobId>"}}`：Finder 開啟並選取檔案。
 9. `{"id":"6","cmd":"pickFolder"}`：出現選擇資料夾視窗且在瀏覽器前面；選擇後回傳路徑，按取消回傳 `cancelled: true`。若出現「要求控制其他 App」的權限提示，請回報。
 10. `{"id":"7","cmd":"updateYtDlp"}`：Homebrew 安裝時回傳 `ran: false` 與 `brew upgrade yt-dlp`。
-11. 查看 `~/Library/Logs/youtube-extension-host/host.log`：只有指令名稱、工作狀態與錯誤代碼，路徑中的家目錄顯示為 `~`。
-12. 執行 `sh host/dist/yt-toolbar-master-host-macos/uninstall.sh`，確認上述設定檔、`~/Library/Application Support/youtube-extension-host/` 與記錄檔資料夾都已刪除，重新檢查時顯示找不到橋接程式。
+11. 查看 `~/Library/Logs/yt-toolbar-master/host.log`：只有指令名稱、工作狀態與錯誤代碼，路徑中的家目錄顯示為 `~`。
+12. 執行 `sh host/dist/yt-toolbar-master-host-macos/uninstall.sh`，確認上述設定檔、`~/Library/Application Support/yt-toolbar-master/` 與記錄檔資料夾都已刪除，重新檢查時顯示找不到橋接程式。
 
 ## T15a（Q37、Q39 的回答）
 

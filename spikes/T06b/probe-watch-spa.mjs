@@ -40,7 +40,7 @@ async function toWatch(pref, toggle, shotName) {
   await page.evaluate(harness);
   await page.evaluate((toggle) => {
     window.__probeMarker = 1;
-    if (toggle) window.__yteDark.toggle();
+    if (toggle) window.__ytmDark.toggle();
   }, toggle);
   await page.waitForTimeout(1500);
   const box = page.locator('input[name="search_query"]').first();

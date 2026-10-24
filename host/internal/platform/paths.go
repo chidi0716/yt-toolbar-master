@@ -13,7 +13,7 @@ import (
 )
 
 // AppDirName 是橋接程式在使用者資料夾中使用的資料夾名稱（plan 4.7、4.8）。
-const AppDirName = "youtube-extension-host"
+const AppDirName = "yt-toolbar-master"
 
 // pathEnv 是計算路徑時需要的環境。
 type pathEnv struct {
@@ -42,8 +42,8 @@ func (e pathEnv) localAppData() string {
 }
 
 // dataDir 是安裝資料夾，也存放工作狀態（state/）：
-//   - macOS：~/Library/Application Support/youtube-extension-host
-//   - Windows：%LOCALAPPDATA%\youtube-extension-host
+//   - macOS：~/Library/Application Support/yt-toolbar-master
+//   - Windows：%LOCALAPPDATA%\yt-toolbar-master
 //   - 其他（只供開發與測試）：$XDG_STATE_HOME 或 ~/.local/state 下的同名資料夾
 func (e pathEnv) dataDir() string {
 	switch e.goos {

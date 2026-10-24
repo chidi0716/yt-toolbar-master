@@ -55,7 +55,7 @@ check('開始把手不會超過結束', (await thumbs.nth(0).getAttribute('aria-
 await page.keyboard.press('Home');
 
 // 拖動結束把手
-const track = await page.locator('.yte-range-track').boundingBox();
+const track = await page.locator('.ytm-range-track').boundingBox();
 const endBox = await thumbs.nth(1).boundingBox();
 await page.mouse.move(endBox.x + endBox.width / 2, endBox.y + endBox.height / 2);
 await page.mouse.down();

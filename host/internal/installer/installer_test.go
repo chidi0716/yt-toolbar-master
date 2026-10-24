@@ -270,7 +270,7 @@ func TestInstallFreshAndRepeat(t *testing.T) {
 
 func TestInstallUsesSelfWhenItMatches(t *testing.T) {
 	e := newEnv(t)
-	self := filepath.Join(t.TempDir(), "yte-host-darwin-arm64")
+	self := filepath.Join(t.TempDir(), "ytm-host-darwin-arm64")
 	os.WriteFile(self, e.helper, 0o755)
 	in := e.installer()
 	in.SelfPath = self
@@ -502,7 +502,7 @@ func TestInstallRejectsUnsafeArchive(t *testing.T) {
 
 func TestReplaceFileWindows(t *testing.T) {
 	dir := t.TempDir()
-	dest := filepath.Join(dir, "yte-host.exe")
+	dest := filepath.Join(dir, "ytm-host.exe")
 	os.WriteFile(dest, []byte("old"), 0o755)
 	src := filepath.Join(dir, "new")
 	os.WriteFile(src, []byte("new"), 0o755)
@@ -533,7 +533,7 @@ func TestReplaceFileWindows(t *testing.T) {
 func TestInstallOfflineAndUninstall(t *testing.T) {
 	home := t.TempDir()
 	l := platform.LayoutFor("darwin", home, nil)
-	self := filepath.Join(t.TempDir(), "yte-host")
+	self := filepath.Join(t.TempDir(), "ytm-host")
 	os.WriteFile(self, []byte("dev helper"), 0o755)
 	var out bytes.Buffer
 	in := &Installer{Layout: l, Version: "dev", SelfPath: self, Out: &out,
@@ -601,8 +601,8 @@ func TestManifestContentMatchesTemplates(t *testing.T) {
 			t.Fatal(err)
 		}
 		var want, got map[string]any
-		json.Unmarshal(bytes.ReplaceAll(tpl, []byte("@HOST_PATH@"), []byte(`C:\\x\\yte-host.exe`)), &want)
-		b, _ := ManifestContent(browser, `C:\x\yte-host.exe`)
+		json.Unmarshal(bytes.ReplaceAll(tpl, []byte("@HOST_PATH@"), []byte(`C:\\x\\ytm-host.exe`)), &want)
+		b, _ := ManifestContent(browser, `C:\x\ytm-host.exe`)
 		json.Unmarshal(b, &got)
 		wb, _ := json.Marshal(want)
 		gb, _ := json.Marshal(got)
@@ -619,17 +619,17 @@ func TestWindowsLayout(t *testing.T) {
 		}
 		return ""
 	})
-	if l.HelperPath != `C:\Users\me\AppData\Local\youtube-extension-host\yte-host.exe` || l.BinDir != `C:\Users\me\AppData\Local\youtube-extension-host\bin` {
+	if l.HelperPath != `C:\Users\me\AppData\Local\yt-toolbar-master\ytm-host.exe` || l.BinDir != `C:\Users\me\AppData\Local\yt-toolbar-master\bin` {
 		t.Fatalf("%+v", l)
 	}
-	if l.Manifests[0].RegistryKey != `Software\Google\Chrome\NativeMessagingHosts\com.chidi0716.youtube_extension` ||
-		l.Manifests[1].RegistryKey != `Software\Mozilla\NativeMessagingHosts\com.chidi0716.youtube_extension` ||
-		l.Manifests[1].Path != `C:\Users\me\AppData\Local\youtube-extension-host\com.chidi0716.youtube_extension.firefox.json` {
+	if l.Manifests[0].RegistryKey != `Software\Google\Chrome\NativeMessagingHosts\com.chidi0716.yt_toolbar_master` ||
+		l.Manifests[1].RegistryKey != `Software\Mozilla\NativeMessagingHosts\com.chidi0716.yt_toolbar_master` ||
+		l.Manifests[1].Path != `C:\Users\me\AppData\Local\yt-toolbar-master\com.chidi0716.yt_toolbar_master.firefox.json` {
 		t.Fatalf("%+v", l.Manifests)
 	}
 	mac := platform.LayoutFor("darwin", "/Users/me", nil)
-	if mac.Manifests[0].Path != "/Users/me/Library/Application Support/Google/Chrome/NativeMessagingHosts/com.chidi0716.youtube_extension.json" ||
-		mac.Manifests[1].Path != "/Users/me/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.youtube_extension.json" {
+	if mac.Manifests[0].Path != "/Users/me/Library/Application Support/Google/Chrome/NativeMessagingHosts/com.chidi0716.yt_toolbar_master.json" ||
+		mac.Manifests[1].Path != "/Users/me/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.yt_toolbar_master.json" {
 		t.Fatalf("%+v", mac.Manifests)
 	}
 	if PlatformKey("darwin", "arm64") != "darwin-arm64" || PlatformKey("windows", "amd64") != "windows-amd64" || PlatformKey("linux", "amd64") != "" || PlatformKey("windows", "arm64") != "" {

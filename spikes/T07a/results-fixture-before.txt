@@ -2,6 +2,6 @@
 == T07
 FAIL  劇院模式：播放器與工具列以外都被遮罩（FR-20）  ({"player":"overlay","toolbar":"overlay","title":"overlay","masthead":"overlay","secondary":"overlay"})
 PASS  遮罩約 90% 不透明  (rgba(0, 0, 0, 0.9))
-FAIL  T07 script  (TimeoutError: locator.click: Timeout 30000ms exceeded. | Call log: | [2m  - waiting for locator('yte-toolbar .yte-btn[data-button="help"]')[22m)
+FAIL  T07 script  (TimeoutError: locator.click: Timeout 30000ms exceeded. | Call log: | [2m  - waiting for locator('ytm-toolbar .ytm-btn[data-button="help"]')[22m)
 
 1/3 passed

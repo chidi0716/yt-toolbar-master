@@ -29,9 +29,9 @@ sleep 1
 
 set +e
 "$ytdlp" --ignore-config --newline --no-colors --progress \
-  --progress-template "download:YTE-PROGRESS %(progress)j" \
-  --progress-template "postprocess:YTE-POST %(progress.postprocessor)j" \
-  --print "after_move:YTE-FILE %(filepath)j" \
+  --progress-template "download:YTM-PROGRESS %(progress)j" \
+  --progress-template "postprocess:YTM-POST %(progress.postprocessor)j" \
+  --print "after_move:YTM-FILE %(filepath)j" \
   -P "$out/tmpjob" -o "%(title)s [%(id)s].%(ext)s" --windows-filenames --no-playlist \
   "$@" -- "http://127.0.0.1:$port/test.mp4" >"$out/stdout.txt" 2>"$out/stderr.txt"
 echo "exit=$?"

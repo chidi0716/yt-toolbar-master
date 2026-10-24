@@ -10,9 +10,9 @@ import (
 // 橋接程式輸出中用來辨識的前綴。yt-dlp 的 %(...)j 會把非 ASCII 字元跳脫成 \uXXXX，
 // 因此即使在 Windows 的主控台編碼下，路徑也能完整傳回。
 const (
-	ProgressPrefix = "YTE-PROGRESS "
-	PostPrefix     = "YTE-POST "
-	FilePrefix     = "YTE-FILE "
+	ProgressPrefix = "YTM-PROGRESS "
+	PostPrefix     = "YTM-POST "
+	FilePrefix     = "YTM-FILE "
 )
 
 // 進度範本：只取需要的欄位，並附上目前下載的格式 ID（影像＋聲音分兩段下載）。

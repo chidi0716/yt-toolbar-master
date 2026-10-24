@@ -23,7 +23,7 @@ export function Panel({ id, title, pinned, onPin, onUnpin, panelRef, left, maxWi
     <div
       ref={panelRef}
       id={id}
-      class="yte-panel"
+      class="ytm-panel"
       role="dialog"
       aria-modal="false"
       aria-labelledby={titleId}
@@ -34,13 +34,13 @@ export function Panel({ id, title, pinned, onPin, onUnpin, panelRef, left, maxWi
         visibility: left === null ? 'hidden' : undefined,
       }}
     >
-      <div class="yte-panel-header">
-        <h2 id={titleId} class="yte-panel-title">
+      <div class="ytm-panel-header">
+        <h2 id={titleId} class="ytm-panel-title">
           {title}
         </h2>
         <button
           type="button"
-          class="yte-icon-btn"
+          class="ytm-icon-btn"
           aria-pressed={pinned}
           aria-label={pinLabel}
           title={pinLabel}
@@ -49,7 +49,7 @@ export function Panel({ id, title, pinned, onPin, onUnpin, panelRef, left, maxWi
           <Icon name={pinned ? 'keep_off' : 'keep'} size={20} />
         </button>
       </div>
-      <div class="yte-panel-body">{children}</div>
+      <div class="ytm-panel-body">{children}</div>
     </div>
   );
 }
