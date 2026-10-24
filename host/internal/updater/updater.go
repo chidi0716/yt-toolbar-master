@@ -166,7 +166,7 @@ func (u *Updater) run(ctx context.Context) ([]string, error) {
 		if !platform.IsFile(filepath.Join(u.Layout.BinDir, bins[0])) || state.Tools[tool] == version {
 			continue
 		}
-		if _, err := installer.InstallFiles(ctx, u.Fetcher, t.Platforms[u.Platform].Files, u.Layout.BinDir, u.Layout.GOOS, nil); err != nil {
+		if _, err := installer.InstallFiles(ctx, u.Fetcher, t.Platforms[u.Platform].Files, u.Layout.BinDir, u.Layout.GOOS); err != nil {
 			fail(err)
 			continue
 		}
