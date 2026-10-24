@@ -1,10 +1,11 @@
 // 內容腳本 → 背景腳本的訊息型別（plan 3.1）。背景腳本只處理通過驗證的訊息。
 // 下載相關的訊息（階段 4a）只帶影片 ID、尺寸代號、字幕網址等經過驗證的值；檔名與縮圖網址由背景腳本組出。
-import { MP3_BITRATES, type DownloadRequest, type JobRecord } from '@/features/downloads/jobs';
+import { isMp3Bitrate, type DownloadRequest, type JobRecord } from '@/features/downloads/jobs';
 import { CAPTION_FORMATS, type CaptionFormat } from './filename';
 import type { HostErrorCode } from './native-protocol';
 import { normalizeVersion, REMINDER_ACTIONS, type ReminderAction } from './update-check';
 import { CAPTION_LANGUAGE_PATTERN, isThumbnailKey, validateCaptionUrl, type ThumbnailKey } from './youtube/dom';
+import { isRecord, isValidJobId } from './validate';
 import { isValidVideoId } from './youtube/page';
 
 /** 標題的長度上限（字元）；過長的部分在檔名中也會被截斷。 */
@@ -80,10 +81,6 @@ export interface ThumbnailInfo {
 export type MessageResponse<T = Record<string, never>> = ({ ok: true } & T) | { ok: false; error: DownloadError | HostErrorCode };
 
 const isTitle = (v: unknown): v is string => typeof v === 'string' && v.length <= MAX_TITLE_CHARS;
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
-
-/** 橋接程式的工作 ID。 */
-export const JOB_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 /** yt-dlp 的格式 ID（與橋接程式的驗證規則相同：每段開頭必須是英數字）。 */
 export const FORMAT_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_-]{0,9}(\+[A-Za-z0-9][A-Za-z0-9_-]{0,9})?$/;
 /** 字幕語言（橋接程式的 subLang：開頭必須是英數字，不接受 all）。 */
@@ -103,7 +100,7 @@ export function isDownloadRequest(v: unknown): v is DownloadRequest {
     case 'video':
       return typeof v.formatId === 'string' && FORMAT_ID_PATTERN.test(v.formatId) && (v.container === 'mp4' || v.container === 'webm') && isSection(v.section);
     case 'mp3':
-      return (MP3_BITRATES as readonly unknown[]).includes(v.bitrate) && isSection(v.section);
+      return isMp3Bitrate(v.bitrate) && isSection(v.section);
     case 'subtitle':
       return (
         typeof v.subLang === 'string' &&
@@ -158,7 +155,7 @@ export function isContentMessage(value: unknown): value is ContentMessage {
       return isValidVideoId(m.videoId) && (m.kind === 'video' || m.kind === 'mp3') && isTitle(m.title);
     case 'cancelJob':
     case 'revealJob':
-      return typeof m.jobId === 'string' && JOB_ID_PATTERN.test(m.jobId);
+      return isValidJobId(m.jobId);
     case 'getJobs':
     case 'pickFolder':
     case 'updateYtDlp':
@@ -179,3 +176,17 @@ export function isContentMessage(value: unknown): value is ContentMessage {
       return false;
   }
 }
+
+/** 送訊息給背景腳本（內容腳本、設定頁）；背景腳本沒有回覆或出錯時視為失敗。 */
+export async function sendToBackground<T extends Record<string, unknown> = Record<string, never>>(message: ContentMessage): Promise<MessageResponse<T>> {
+  try {
+    const res = (await browser.runtime.sendMessage(message)) as MessageResponse<T> | undefined;
+    return res && typeof res === 'object' && 'ok' in res ? res : { ok: false, error: 'DOWNLOAD_FAILED' };
+  } catch (err) {
+    console.info('[yt-toolbar-master] background message failed', err);
+    return { ok: false, error: 'DOWNLOAD_FAILED' };
+  }
+}
+
+/** 開啟設定頁（001 FR-17、002 FR-6a）。 */
+export const openSettings = () => void sendToBackground({ type: 'openOptions' });

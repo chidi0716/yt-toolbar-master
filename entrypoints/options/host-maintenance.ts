@@ -1,10 +1,11 @@
-// 設定頁「下載」區的元件來源、自動更新與移除（008 FR-24、FR-25、FR-30，plan 3.10）。以 DOM API 建立（設定頁不使用 Preact）。
+// 設定頁「下載」區的自動更新與移除（008 FR-24、FR-25、FR-30，plan 3.10）。以 DOM API 建立。
 import { createIconElement } from '@/components/icon-data';
 import { checkUpdates, HostError, setAutoUpdate, uninstallHost } from '@/features/downloads/host-client';
 import { UPDATE_FAILURE_HINT_AT, type HostState } from '@/features/downloads/host-status';
-import { currentLocaleTag, t, type MessageKey } from '@/utils/i18n';
+import { t, type MessageKey } from '@/utils/i18n';
 import type { HostUpdateInfo } from '@/utils/native-protocol';
 import { hostUpdateHintDismissed } from '@/utils/settings';
+import { el, formatDateTime, group, statusRow } from './dom';
 
 const RESULT_LABELS: Record<NonNullable<HostUpdateInfo['lastResult']>, MessageKey> = {
   ok: 'updatesResultOk',
@@ -12,27 +13,11 @@ const RESULT_LABELS: Record<NonNullable<HostUpdateInfo['lastResult']>, MessageKe
   failed: 'updatesResultFailed',
 };
 
-const formatTime = (ms: number) => new Intl.DateTimeFormat(currentLocaleTag(), { dateStyle: 'medium', timeStyle: 'short' }).format(ms);
-
 /** 「最近一次檢查」的文字。 */
 export function lastCheckText(u: HostUpdateInfo): string {
   if (u.running) return t('updatesRunning');
   if (u.lastCheck === null) return t('updatesNever');
-  return u.lastResult ? t('updatesLastCheckResult', [formatTime(u.lastCheck), t(RESULT_LABELS[u.lastResult])]) : formatTime(u.lastCheck);
-}
-
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> = {}, ...children: Array<Node | string>) {
-  const node = document.createElement(tag);
-  Object.assign(node, props);
-  node.append(...children);
-  return node;
-}
-
-function group(id: string, title: MessageKey): HTMLFieldSetElement {
-  const fieldset = el('fieldset', { className: 'group' });
-  fieldset.dataset.category = id;
-  fieldset.append(el('legend', { textContent: t(title) }));
-  return fieldset;
+  return u.lastResult ? t('updatesLastCheckResult', [formatDateTime(u.lastCheck), t(RESULT_LABELS[u.lastResult])]) : formatDateTime(u.lastCheck);
 }
 
 /** 擴充功能本身的版本與更新方式（008 FR-24）。 */
@@ -73,7 +58,7 @@ export function createMaintenance({ refresh, uninstalled }: { refresh: () => voi
     ),
     autoInput,
   );
-  const lastRow = el('div', { className: 'status-row' }, el('span', { textContent: t('updatesLastCheck') }), el('span', { className: 'option-desc', id: 'downloads-last-check' }));
+  const lastRow = statusRow(t('updatesLastCheck'), '', 'downloads-last-check');
   const checkNow = el('button', { type: 'button', className: 'button', id: 'downloads-check-updates', textContent: t('updatesCheckNow') });
   const updatesMessage = el('p', { className: 'option-desc update-result', id: 'downloads-updates-message' });
   updatesMessage.setAttribute('role', 'status');

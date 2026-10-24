@@ -4,7 +4,7 @@ import { createStore, type Store } from '@/features/viewing/store';
 import { isBackgroundMessage } from '@/utils/messages';
 import { toErrorCode, type HostErrorCode, type HostInfo, type HostStatusResult, type UpdateResult } from '@/utils/native-protocol';
 import { defaultVideoContainer, defaultVideoHeight, mp3Bitrate, quickDownload } from '@/utils/settings';
-import { sendToBackground } from './content';
+import { sendToBackground } from '@/utils/messages';
 import type { QuickResult } from './host-background';
 import type { HostState } from './host-status';
 import type { DownloadRequest, JobRecord } from './jobs';

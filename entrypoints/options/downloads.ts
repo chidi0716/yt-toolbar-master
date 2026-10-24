@@ -19,6 +19,7 @@ import {
   type DefaultVideoHeight,
 } from '@/utils/settings';
 import { mountConnection } from './connection';
+import { el, group, selectRow, switchRow } from './dom';
 import { createMaintenance } from './host-maintenance';
 
 /** 橋接程式內建的檔名格式（status 的 namePresets）；沒有連線時也能顯示目前的選擇。 */
@@ -29,58 +30,11 @@ const PRESET_LABELS: Record<string, MessageKey> = {
   'date-title': 'namePresetDateTitle',
 };
 
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> & { dataset?: Record<string, string> } = {}, ...children: Array<Node | string>) {
-  const node = document.createElement(tag);
-  const { dataset, ...rest } = props;
-  Object.assign(node, rest);
-  if (dataset) Object.assign(node.dataset, dataset);
-  node.append(...children);
-  return node;
-}
-
 /** 預設影片畫質的選項文字（009 FR-2）。 */
 function heightLabel(h: DefaultVideoHeight): string {
   if (h === 'best') return t('quickHeightBest');
   const text = h === 2160 ? '2160p (4K)' : h === 1440 ? '1440p (2K)' : `${h}p`;
   return h === 1080 ? t('optionsDefaultMark', text) : text;
-}
-
-/** 開關一列：名稱、一行說明與開關（與頁面整理的開關相同的外觀）。 */
-function switchRow(id: string, name: MessageKey, desc: MessageKey, item: { getValue(): Promise<boolean>; setValue(v: boolean): Promise<void>; watch(cb: (v: boolean) => void): () => void }, cleanups: Array<() => void>) {
-  const input = el('input', { type: 'checkbox', id, className: 'switch' });
-  input.setAttribute('role', 'switch');
-  input.setAttribute('aria-describedby', `${id}-desc`);
-  input.disabled = true;
-  void item.getValue().then((v) => {
-    input.checked = v !== false;
-    input.disabled = false;
-  });
-  input.addEventListener('change', () => void item.setValue(input.checked));
-  cleanups.push(item.watch((v) => (input.checked = v !== false)));
-  return el(
-    'div',
-    { className: 'option', dataset: { option: id } },
-    el('label', { className: 'option-text', htmlFor: id }, el('span', { className: 'option-name', textContent: t(name) }), el('span', { className: 'option-desc', id: `${id}-desc`, textContent: t(desc) })),
-    input,
-  );
-}
-
-function selectRow(id: string, name: MessageKey, desc: MessageKey | null, options: Array<{ value: string; label: string }>) {
-  const select = el('select', { id, className: 'select' });
-  select.append(...options.map((o) => el('option', { value: o.value, textContent: o.label })));
-  select.disabled = true;
-  const text = el('label', { className: 'option-text', htmlFor: id }, el('span', { className: 'option-name', textContent: t(name) }));
-  if (desc) {
-    text.append(el('span', { className: 'option-desc', id: `${id}-desc`, textContent: t(desc) }));
-    select.setAttribute('aria-describedby', `${id}-desc`);
-  }
-  return { row: el('div', { className: 'option', dataset: { option: id } }, text, select), select };
-}
-
-function group(id: string, title: MessageKey): HTMLFieldSetElement {
-  const fieldset = el('fieldset', { className: 'group', dataset: { category: id } });
-  fieldset.append(el('legend', { textContent: t(title) }));
-  return fieldset;
 }
 
 /** 繪製下載區；回傳的函式取消監聽（介面語言改變時重新繪製，007 FR-3）。 */
@@ -107,23 +61,14 @@ export function renderDownloads(root: HTMLElement): () => void {
   folder.append(el('div', { className: 'option' }, el('span', { className: 'option-text' }, folderPath)), el('div', { className: 'actions' }, choose, reset), folderError);
 
   // ---- 下載的檔案：檔名格式、嵌入資訊 ----
+  // 嵌入資訊的開關跟著其他分頁的變更更新。
+  const cleanups: Array<() => void> = [];
   const files = group('files', 'optionsFiles');
-  const select = el('select', { id: 'downloads-name-preset', className: 'select' });
-  const embedInput = el('input', { type: 'checkbox', id: 'downloads-embed', className: 'switch' });
-  embedInput.setAttribute('role', 'switch');
-  embedInput.setAttribute('aria-describedby', 'downloads-embed-desc');
-  files.append(
-    el('div', { className: 'option', dataset: { option: 'namePreset' } }, el('label', { className: 'option-text', htmlFor: 'downloads-name-preset' }, el('span', { className: 'option-name', textContent: t('optionsNamePreset') })), select),
-    el(
-      'div',
-      { className: 'option', dataset: { option: 'embed' } },
-      el('label', { className: 'option-text', htmlFor: 'downloads-embed' }, el('span', { className: 'option-name', textContent: t('optionsEmbed') }), el('span', { className: 'option-desc', id: 'downloads-embed-desc', textContent: t('optionsEmbedDesc') })),
-      embedInput,
-    ),
-  );
+  const preset = selectRow('downloads-name-preset', 'optionsNamePreset', null, []);
+  const select = preset.select;
+  files.append(preset.row, switchRow('downloads-embed', 'optionsEmbed', 'optionsEmbedDesc', embedInfo, cleanups));
 
   // ---- 一鍵下載（009 FR-1、FR-2） ----
-  const cleanups: Array<() => void> = [];
   const quick = group('quick', 'optionsQuickTitle');
   const height = selectRow(
     'downloads-default-height',
@@ -184,6 +129,7 @@ export function renderDownloads(root: HTMLElement): () => void {
       }),
     );
     select.value = presets.some((p) => p.id === current) ? current : 'title-id';
+    select.disabled = false;
   };
 
   choose.addEventListener('click', async () => {
@@ -201,12 +147,6 @@ export function renderDownloads(root: HTMLElement): () => void {
     void renderFolder();
   });
   select.addEventListener('change', () => void namePreset.setValue(select.value));
-  embedInput.disabled = true;
-  void embedInfo.getValue().then((v) => {
-    embedInput.checked = v !== false;
-    embedInput.disabled = false;
-  });
-  embedInput.addEventListener('change', () => void embedInfo.setValue(embedInput.checked));
   const unwatch = downloadDir.watch(() => void renderFolder());
 
   renderStatus();

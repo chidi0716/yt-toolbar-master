@@ -4,7 +4,7 @@
 // - 其他分頁或設定頁處理提醒後（storage 改變）重新讀取狀態；
 // - 卡片與「更多」選單的操作：前往下載、跳過這個版本、不再提醒、✕。
 // 只有在有提醒要顯示（等待出現或卡片顯示中）時才監聽頁面事件，平常不增加任何監聽（001 NFR-3）。
-import { sendToBackground } from '@/features/downloads/content';
+import { sendToBackground } from '@/utils/messages';
 import { updateCheck, updateReminder } from '@/utils/settings';
 import { isReleaseUrl, type ReminderAction, type ReminderView } from '@/utils/update-check';
 import { createReminderController, type ReminderController, type ReminderPhase } from './reminder';

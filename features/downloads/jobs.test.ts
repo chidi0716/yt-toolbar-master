@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { formatSpeed } from '@/utils/format-list';
 import type { HostJob } from '@/utils/native-protocol';
 import {
   applyEvent,
   buttonProgress,
   errorInfo,
   formatEta,
-  formatSpeed,
   markMissing,
   mergeHostJobs,
   newJob,

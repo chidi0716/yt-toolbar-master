@@ -6,6 +6,7 @@ import { render } from 'preact';
 import { Icon } from '@/components/icons';
 import { useLocale } from '@/components/useLocale';
 import { t } from '@/utils/i18n';
+import { ensureStyle } from '@/utils/style';
 import { floatingCorner, floatingPlayer } from '@/utils/settings';
 import { findPlayerContainer, findVideo, mastheadHeight } from '@/utils/youtube/dom';
 import { isWatchPage } from '@/utils/youtube/page';
@@ -106,13 +107,7 @@ export function createFloating(): FloatingFeature {
   /** 位置與尺寸寫在我們自己的 <style> 裡，不改 YouTube 元素的 style 屬性（plan 風險 R3）。 */
   const writeRect = (next: Rect) => {
     rect = next;
-    let style = document.getElementById(POSITION_STYLE_ID);
-    if (!style) {
-      style = document.createElement('style');
-      style.id = POSITION_STYLE_ID;
-      (document.head ?? document.documentElement).append(style);
-    }
-    style.textContent = `.${FLOATING_CLASS} { left: ${next.left}px !important; top: ${next.top}px !important; width: ${next.width}px !important; height: ${next.height}px !important; }`;
+    ensureStyle(POSITION_STYLE_ID, `.${FLOATING_CLASS} { left: ${next.left}px !important; top: ${next.top}px !important; width: ${next.width}px !important; height: ${next.height}px !important; }`);
     if (controls) {
       Object.assign(controls.style, {
         left: `${next.left}px`,

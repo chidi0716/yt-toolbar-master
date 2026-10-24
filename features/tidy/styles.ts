@@ -1,5 +1,6 @@
 // CSS 開關機制的樣式（plan 3.7.2：所有相關樣式放在同一個樣式檔）。
 // 每條規則都以 <html> 上的 class 開頭，選擇器來自 utils/youtube/dom.ts（constitution 第 7 點）。
+import { ensureStyle } from '@/utils/style';
 import {
   END_SCREEN_SELECTORS,
   SELECTORS,
@@ -46,14 +47,7 @@ html.ytm-full-titles ${any(VIDEO_TITLE_SELECTORS)} {
 }
 `;
 
-/**
- * 在頁面加入一次樣式（重複呼叫沒有作用）。在 document_start 執行時 <head> 不一定存在，
- * 這時直接放在 <html> 底下。
- */
+/** 在頁面加入一次樣式（重複呼叫沒有作用）。 */
 export function ensureTidyStyles(doc: Document = document): void {
-  if (doc.getElementById(STYLE_ID)) return;
-  const style = doc.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = TIDY_CSS;
-  (doc.head ?? doc.documentElement).append(style);
+  ensureStyle(STYLE_ID, TIDY_CSS, doc);
 }

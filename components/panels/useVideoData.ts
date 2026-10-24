@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import type { VideoData } from '@/utils/youtube/dom';
+import { findVideo, type VideoData } from '@/utils/youtube/dom';
 import { player } from '@/utils/youtube/player';
 
 export type VideoDataState =
@@ -27,3 +27,21 @@ export function useVideoData(videoId: string, attempt = 0): VideoDataState {
 
 /** 直播中或尚未開始的影片（002 FR-1）。 */
 export const isLiveOrUpcoming = (data: VideoData | null) => !!data && (data.isLive || data.isUpcoming);
+
+/** 目前影片的長度（秒）；中繼資料載入或長度改變時更新。 */
+export function useDuration(): number {
+  const [duration, setDuration] = useState(() => findVideo()?.duration ?? Number.NaN);
+  useEffect(() => {
+    const video = findVideo();
+    if (!video) return;
+    const update = () => setDuration(video.duration);
+    update();
+    video.addEventListener('durationchange', update);
+    video.addEventListener('loadedmetadata', update);
+    return () => {
+      video.removeEventListener('durationchange', update);
+      video.removeEventListener('loadedmetadata', update);
+    };
+  }, []);
+  return duration;
+}

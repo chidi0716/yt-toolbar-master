@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatTime, isFullRange, parseTime, validateRange } from './time';
+import { formatClock, formatRange, formatTime, isFullRange, parseTime, splitTime, validateRange } from './time';
 
 describe('parseTime', () => {
   it.each([
@@ -102,5 +102,20 @@ describe('isFullRange（002 FR-21）', () => {
     expect(isFullRange(0, 245, 245.6)).toBe(true);
     expect(isFullRange(0, 244, 245.6)).toBe(false);
     expect(isFullRange(1, 245, 245.6)).toBe(false);
+  });
+});
+
+describe('splitTime／formatClock／formatRange（共用的拆分）', () => {
+  it('拆成時分秒；小數捨去，負數與非數字為 0', () => {
+    expect(splitTime(3723.9)).toEqual({ h: 1, m: 2, s: 3 });
+    expect(splitTime(-5)).toEqual({ h: 0, m: 0, s: 0 });
+    expect(splitTime(Number.NaN)).toEqual({ h: 0, m: 0, s: 0 });
+  });
+
+  it('小時不補零', () => {
+    expect(formatClock(83)).toBe('01:23');
+    expect(formatClock(3723)).toBe('1:02:03');
+    expect(formatRange({ start: 60, end: 90 })).toBe('01:00–01:30');
+    expect(formatRange({ start: 3600, end: 3723 })).toBe('1:00:00–1:02:03');
   });
 });

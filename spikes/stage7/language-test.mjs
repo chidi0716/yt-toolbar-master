@@ -36,7 +36,7 @@ try {
     h1: document.querySelector('h1').textContent,
     value: document.querySelector('#ui-language').value,
     options: [...document.querySelectorAll('#ui-language option')].map((o) => o.textContent).join('|'),
-    note: document.querySelector('#ui-language-note').textContent,
+    note: document.querySelector('#ui-language-desc').textContent,
   }));
   check('設定頁最上方有「介面語言」選單：跟隨瀏覽器（預設）、繁體中文、English（FR-1）', optEn.first === 'language' && optEn.value === 'auto' && optEn.options === 'Follow the browser|繁體中文|English', JSON.stringify(optEn));
   check('選單下方說明擴充功能名稱等由瀏覽器顯示（FR-5）', /extensions page/.test(optEn.note), optEn.note);

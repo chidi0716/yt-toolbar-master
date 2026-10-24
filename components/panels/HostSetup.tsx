@@ -6,7 +6,7 @@
 // - DenoHint：只缺 deno 時的建議提示（可以下載）。
 import type { ComponentChildren } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
-import { sendToBackground } from '@/features/downloads/content';
+import { sendToBackground } from '@/utils/messages';
 import { checkHostStatus } from '@/features/downloads/host-client';
 import {
   canDownload,
@@ -35,8 +35,7 @@ import { t } from '@/utils/i18n';
 import { hostUpdateHintDismissed } from '@/utils/settings';
 import { Button } from '../controls/Button';
 import { Icon } from '../icons';
-
-const LOG_PREFIX = '[yt-toolbar-master]';
+import { useCopy } from '../useCopy';
 
 /** 從瀏覽器的 user agent 推測作業系統（等背景腳本回覆 runtime.getPlatformInfo 之前先用）。 */
 export const currentOs = (): HostOs => {
@@ -163,35 +162,23 @@ export function ComponentList({ state, details = false, children }: { state: Hos
 
 /** 指令與「複製」按鈕；無法寫入剪貼簿時選取指令文字，讓使用者自己複製。 */
 export function CopyCommand({ command, id }: { command: string; id: string }) {
-  const [copied, setCopied] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const { copied: done, failed, copy } = useCopy<'command'>();
+  const copied = done ? 'copied' : failed ? 'failed' : 'idle';
   const codeRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (copied !== 'copied') return;
-    const timer = setTimeout(() => setCopied('idle'), 2000);
-    return () => clearTimeout(timer);
-  }, [copied]);
-  const copy = () => {
-    // 在點擊的使用者操作中直接呼叫（與複製連結相同，plan 3.7.1）。
-    const write = navigator.clipboard?.writeText(command) ?? Promise.reject(new Error('clipboard unavailable'));
-    write.then(
-      () => setCopied('copied'),
-      (err: unknown) => {
-        console.info(`${LOG_PREFIX} copy install command failed`, err);
-        setCopied('failed');
-        try {
-          if (codeRef.current) window.getSelection()?.selectAllChildren(codeRef.current);
-        } catch {
-          // 選取失敗時，指令文字仍可以手動選取（user-select: all）。
-        }
-      },
-    );
-  };
+    if (!failed || !codeRef.current) return;
+    try {
+      window.getSelection()?.selectAllChildren(codeRef.current);
+    } catch {
+      // 選取失敗時，指令文字仍可以手動選取（user-select: all）。
+    }
+  }, [failed]);
   return (
     <div class="ytm-command">
       <code ref={codeRef} id={id} class="ytm-code ytm-command-text">
         {command}
       </code>
-      <Button variant="secondary" aria-describedby={id} onClick={copy} data-copied={copied === 'copied' ? '' : undefined}>
+      <Button variant="secondary" aria-describedby={id} onClick={() => copy('command', command)} data-copied={copied === 'copied' ? '' : undefined}>
         <Icon name={copied === 'copied' ? 'check' : 'content_copy'} size={18} />
         <span>{copied === 'copied' ? t('installCopied') : t('installCopy')}</span>
       </Button>

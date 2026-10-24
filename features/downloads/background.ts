@@ -83,8 +83,8 @@ function releaseWhenDone(id: number, url: string) {
   browser.downloads.onChanged.addListener(onChanged);
 }
 
-type DirectMessage = Extract<ContentMessage, { type: 'getThumbnails' | 'downloadThumbnail' | 'saveScreenshot' | 'downloadCaption' }>;
-const DIRECT_TYPES: readonly string[] = ['getThumbnails', 'downloadThumbnail', 'saveScreenshot', 'downloadCaption'];
+const DIRECT_TYPES = ['getThumbnails', 'downloadThumbnail', 'saveScreenshot', 'downloadCaption'] as const;
+type DirectMessage = Extract<ContentMessage, { type: (typeof DIRECT_TYPES)[number] }>;
 
 async function handle(message: DirectMessage): Promise<MessageResponse<Record<string, unknown>>> {
   switch (message.type) {
@@ -161,7 +161,7 @@ async function handle(message: DirectMessage): Promise<MessageResponse<Record<st
 
 /** 處理下載相關的訊息；結果以 sendResponse 回覆（Chrome 與 Firefox 都支援 return true 的寫法）。 */
 export function handleDownloadMessage(message: ContentMessage, sendResponse: (response: unknown) => void): boolean {
-  if (!DIRECT_TYPES.includes(message.type)) return false;
+  if (!(DIRECT_TYPES as readonly string[]).includes(message.type)) return false;
   handle(message as DirectMessage).then(sendResponse, (err: unknown) => {
     console.info(`${LOG_PREFIX} download message failed`, err);
     sendResponse({ ok: false, error: 'DOWNLOAD_FAILED' });

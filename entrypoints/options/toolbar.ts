@@ -2,6 +2,7 @@
 // 顯示／隱藏開關、「上移」「下移」；另有「重設為預設」。與編輯模式共用設定模型（utils/toolbar-layout.ts）。
 // 變更立即寫入 sync:toolbarLayout；已開啟的 YouTube 分頁監聽設定變更而立即套用（FR-21、FR-22）。
 import { createIconElement } from '@/components/icon-data';
+import { group } from './dom';
 import { TOOLS } from '@/components/toolbar/buttons';
 import { t } from '@/utils/i18n';
 import { toolbarLayout } from '@/utils/settings';
@@ -26,11 +27,7 @@ export function renderToolbarSettings(root: HTMLElement): () => void {
   let loaded = false;
   let dragging = false;
 
-  const group = document.createElement('fieldset');
-  group.className = 'group';
-  group.dataset.category = 'toolbar';
-  const legend = document.createElement('legend');
-  legend.textContent = t('optionsToolbarTools');
+  const fieldset = group('toolbar', 'optionsToolbarTools');
   const list = document.createElement('ol');
   list.className = 'toolbar-list';
   list.id = 'toolbar-list';
@@ -45,8 +42,8 @@ export function renderToolbarSettings(root: HTMLElement): () => void {
   reset.id = 'toolbar-reset';
   reset.textContent = t('optionsToolbarReset');
   actions.append(reset);
-  group.append(legend, list, indicator, actions);
-  root.append(group);
+  fieldset.append(list, indicator, actions);
+  root.append(fieldset);
 
   const nameOf = (id: LayoutItemId) => (id === SEPARATOR ? t('optionsToolbarDivider') : t(TOOLS[id].label));
 
@@ -165,7 +162,7 @@ export function renderToolbarSettings(root: HTMLElement): () => void {
         rects.map((r) => r.top + r.height / 2),
         e.clientY,
       );
-      const box = group.getBoundingClientRect();
+      const box = fieldset.getBoundingClientRect();
       const y = to < rects.length ? rects[to]!.top : rects.length ? rects[rects.length - 1]!.bottom : box.top;
       indicator.hidden = false;
       indicator.style.top = `${Math.round(y - box.top - 1)}px`;

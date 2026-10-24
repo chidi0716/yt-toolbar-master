@@ -1,5 +1,6 @@
 // 觀看輔助功能加在 YouTube 頁面上的樣式（constitution 第 6 點：只用 ytm- 前綴的 class，
 // 不改 YouTube 原本的屬性）。選擇器來自 utils/youtube/dom.ts。
+import { ensureStyle } from '@/utils/style';
 import { APPEARANCE_MENU, CINEMA_DIMMED_REGIONS, SELECTORS } from '@/utils/youtube/dom';
 
 const STYLE_ID = 'ytm-page-styles';
@@ -57,9 +58,5 @@ html.ytm-audio-only ${SELECTORS.videoContainer} video {
 
 /** 在頁面加入一次共用樣式（重複呼叫沒有作用）。 */
 export function ensurePageStyles(doc: Document = document): void {
-  if (doc.getElementById(STYLE_ID)) return;
-  const style = doc.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = PAGE_CSS;
-  (doc.head ?? doc.documentElement).append(style);
+  ensureStyle(STYLE_ID, PAGE_CSS, doc);
 }

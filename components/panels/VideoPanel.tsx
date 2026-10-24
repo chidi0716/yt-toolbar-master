@@ -6,25 +6,24 @@ import type { ComponentChildren } from 'preact';
 import { useContext, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { cancelJob, downloadJobs, getInfo, HostError, quickSettings, startDownload, startQuickDownload } from '@/features/downloads/host-client';
 import { canDownload, missingOnlyDeno } from '@/features/downloads/host-status';
-import { isActive, MP3_BITRATES, type DownloadRequest, type JobRecord, type Mp3Bitrate } from '@/features/downloads/jobs';
-import { existingQuickJob, initialDownloadMode, mp3SpecLabel, quickSummary, videoSpecLabel, type DownloadMode, type QuickKind } from '@/features/downloads/quick';
+import { isActive, isMp3Bitrate, MP3_BITRATES, mp3Label, videoLabel, type DownloadRequest, type JobRecord, type Mp3Bitrate } from '@/features/downloads/jobs';
+import { existingQuickJob, initialDownloadMode, quickSummary, videoSpecLabel, type DownloadMode, type QuickKind } from '@/features/downloads/quick';
 import { buildQualityList, formatSize, sizeForSection, visibleRows, type QualityRow } from '@/utils/format-list';
 import { t } from '@/utils/i18n';
-import type { HostInfo } from '@/utils/native-protocol';
+import { isLiveInfo, type HostInfo } from '@/utils/native-protocol';
 import { clipHintSeen, mp3Bitrate } from '@/utils/settings';
-import { findVideo } from '@/utils/youtube/dom';
+import { formatRange } from '@/utils/time';
 import { Button } from '../controls/Button';
 import { Select } from '../controls/Select';
 import { Icon } from '../icons';
 import { PanelPinContext } from '../toolbar/PanelHost';
 import { DenoHint, HostSetup, UpdateFailureHint, useHostState } from './HostSetup';
-import { ErrorBlock, JobList, JobRow, OtherJobs, openSettings } from './JobList';
+import { openSettings } from '@/utils/messages';
+import { ErrorBlock, JobList, JobRow, OtherJobs } from './JobList';
 import { PanelError, PanelLoading } from './PanelStatus';
 import { TimeRange, useClipRange } from './TimeRange';
 import { useStore } from './useStore';
-import { isLiveOrUpcoming, useVideoData } from './useVideoData';
-
-const isLiveInfo = (info: HostInfo) => info.isLive || info.liveStatus === 'is_live' || info.liveStatus === 'is_upcoming';
+import { isLiveOrUpcoming, useDuration, useVideoData } from './useVideoData';
 
 /**
  * 共通：直播檢查、橋接程式狀態、只缺 deno 的提示。children 的第二個參數表示這次打開面板時小幫手還不能使用、
@@ -54,20 +53,6 @@ function DownloadGate({ videoId, children }: { videoId: string; children: (title
   );
 }
 
-/** 使用播放器的影片長度（取得 getInfo 前也能操作時間範圍）。 */
-function usePlayerDuration(): number {
-  const [duration, setDuration] = useState(() => findVideo()?.duration ?? Number.NaN);
-  useEffect(() => {
-    const video = findVideo();
-    if (!video) return;
-    const update = () => setDuration(video.duration);
-    update();
-    video.addEventListener('durationchange', update);
-    return () => video.removeEventListener('durationchange', update);
-  }, []);
-  return duration;
-}
-
 /** 開始下載；失敗時回傳錯誤代碼。 */
 async function begin(request: DownloadRequest): Promise<JobRecord['error']> {
   try {
@@ -88,7 +73,7 @@ function QualityList({ videoId, pageTitle }: { videoId: string; pageTitle: strin
   const [showAll, setShowAll] = useState(false);
   const [startError, setStartError] = useState<JobRecord['error']>(null);
   const [hintSeen, setHintSeen] = useState(true);
-  const playerDuration = usePlayerDuration();
+  const playerDuration = useDuration();
 
   useEffect(() => {
     let current = true;
@@ -120,7 +105,7 @@ function QualityList({ videoId, pageTitle }: { videoId: string; pageTitle: strin
       setHintSeen(true);
       void clipHintSeen.setValue(true);
     }
-    const label = `${row.resolution} ${row.container.toUpperCase()}`;
+    const label = videoLabel(row);
     const error = await begin({
       kind: 'video',
       videoId,
@@ -185,18 +170,6 @@ function QualityList({ videoId, pageTitle }: { videoId: string; pageTitle: strin
   );
 }
 
-/** 檔名與標籤中的時間範圍（例如 01:00–01:30）。 */
-function formatRange(section: { start: number; end: number }): string {
-  const f = (s: number) => {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-    const p = (n: number) => String(n).padStart(2, '0');
-    return h > 0 ? `${h}:${p(m)}:${p(sec)}` : `${p(m)}:${p(sec)}`;
-  };
-  return `${f(section.start)}–${f(section.end)}`;
-}
-
 export function VideoPanel({ videoId }: { videoId: string }) {
   return <DownloadPanel videoId={videoId} kind="video" />;
 }
@@ -205,18 +178,16 @@ export function VideoPanel({ videoId }: { videoId: string }) {
 // MP3
 // ---------------------------------------------------------------------------
 
-const isBitrate = (v: unknown): v is Mp3Bitrate => (MP3_BITRATES as readonly unknown[]).includes(v);
-
 function Mp3Options({ videoId, pageTitle }: { videoId: string; pageTitle: string }) {
   const [bitrate, setBitrate] = useState<Mp3Bitrate>(192);
   const [startError, setStartError] = useState<JobRecord['error']>(null);
   const [starting, setStarting] = useState(false);
   const pin = useContext(PanelPinContext);
-  const duration = usePlayerDuration();
+  const duration = useDuration();
   const clip = useClipRange('mp3', videoId, Number.isFinite(duration) ? duration : 0);
 
   useEffect(() => {
-    void mp3Bitrate.getValue().then((v) => isBitrate(v) && setBitrate(v));
+    void mp3Bitrate.getValue().then((v) => isMp3Bitrate(v) && setBitrate(v));
   }, []);
 
   const download = async () => {
@@ -226,7 +197,7 @@ function Mp3Options({ videoId, pageTitle }: { videoId: string; pageTitle: string
       kind: 'mp3',
       videoId,
       title: pageTitle,
-      label: `MP3 ${bitrate} kbps${section ? ` ${formatRange(section)}` : ''}`,
+      label: `${mp3Label(bitrate)}${section ? ` ${formatRange(section)}` : ''}`,
       bitrate,
       section,
     });
@@ -244,7 +215,7 @@ function Mp3Options({ videoId, pageTitle }: { videoId: string; pageTitle: string
           options={MP3_BITRATES.map((b) => ({ value: String(b), label: `${b} kbps` }))}
           onChange={(v) => {
             const b = Number(v);
-            if (!isBitrate(b)) return;
+            if (!isMp3Bitrate(b)) return;
             setBitrate(b);
             void mp3Bitrate.setValue(b);
           }}
@@ -311,7 +282,7 @@ function DownloadBody(props: { videoId: string; kind: QuickKind; pageTitle: stri
       </>
     );
   }
-  const spec = kind === 'video' ? videoSpecLabel(settings.defaults.height, settings.defaults.container) : mp3SpecLabel(settings.defaults.bitrate);
+  const spec = kind === 'video' ? videoSpecLabel(settings.defaults.height, settings.defaults.container) : mp3Label(settings.defaults.bitrate);
   return (
     <div class={kind === 'video' ? 'ytm-video ytm-quick' : 'ytm-mp3 ytm-quick'} data-kind={kind} data-phase="confirm">
       {installed && <InstalledNote />}

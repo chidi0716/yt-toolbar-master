@@ -3,6 +3,7 @@
 //
 // 規則：找不到預期的元素時回傳 null，由呼叫端安靜地放棄該功能並在 console 記錄，
 // 不得丟出例外讓 YouTube 頁面出錯。
+import { isRecord } from '../validate';
 
 /** YouTube 單頁應用完成換頁時，在 document 上發出的事件。 */
 export const NAVIGATE_FINISH_EVENT = 'yt-navigate-finish';
@@ -399,7 +400,6 @@ export interface AudioTrackInfo {
 /** 語音軌識別值的格式（例如 "en.4"、"es-419.3"、"und"）；setAudioTrack 只接受這種格式。 */
 export const AUDIO_TRACK_ID_PATTERN = /^[A-Za-z0-9._:-]{1,64}$/;
 
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 
 /** 把播放器的語音軌物件整理成固定欄位；看不懂時回傳 null。 */
 export function describeAudioTrack(track: unknown): AudioTrackInfo | null {

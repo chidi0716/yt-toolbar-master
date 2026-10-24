@@ -1,25 +1,12 @@
 // 內容腳本端：與背景腳本溝通的封裝，以及截圖（002 FR-50 至 FR-53，plan 3.8）。
 import { createStore, type Store, type ToggleState } from '@/features/viewing/store';
 import { t } from '@/utils/i18n';
-import type { ContentMessage, DownloadError, MessageResponse } from '@/utils/messages';
+import { sendToBackground, type DownloadError } from '@/utils/messages';
 import { findVideo } from '@/utils/youtube/dom';
 import { getVideoId } from '@/utils/youtube/page';
 import { player } from '@/utils/youtube/player';
 
 const LOG_PREFIX = '[yt-toolbar-master]';
-
-/** 送訊息給背景腳本；背景腳本沒有回覆或出錯時視為失敗。 */
-export async function sendToBackground<T extends Record<string, unknown> = Record<string, never>>(
-  message: ContentMessage,
-): Promise<MessageResponse<T>> {
-  try {
-    const res = (await browser.runtime.sendMessage(message)) as MessageResponse<T> | undefined;
-    return res && typeof res === 'object' && 'ok' in res ? res : { ok: false, error: 'DOWNLOAD_FAILED' };
-  } catch (err) {
-    console.info(`${LOG_PREFIX} background message failed`, err);
-    return { ok: false, error: 'DOWNLOAD_FAILED' };
-  }
-}
 
 /** 目前影片的標題（檔名用）；讀不到時為空字串，檔名只用影片 ID。 */
 export async function currentTitle(videoId: string): Promise<string> {

@@ -4,9 +4,10 @@
 import { useState } from 'preact/hooks';
 import { cancelJob, revealJob, startDownload, updateYtDlp, HostError } from '@/features/downloads/host-client';
 import { INSTALL_GUIDE_URL } from '@/features/downloads/host-status';
-import { errorInfo, formatEta, formatSpeed, isActive, otherActiveJobs, type JobRecord } from '@/features/downloads/jobs';
+import { errorInfo, formatEta, isActive, otherActiveJobs, type JobRecord } from '@/features/downloads/jobs';
+import { formatSpeed } from '@/utils/format-list';
 import { t, type MessageKey } from '@/utils/i18n';
-import type { ContentMessage } from '@/utils/messages';
+import { openSettings } from '@/utils/messages';
 import type { JobKind } from '@/utils/native-protocol';
 import type { UpdateResult } from '@/utils/native-protocol';
 import { Button } from '../controls/Button';
@@ -22,11 +23,6 @@ const STATE_LABELS: Record<JobRecord['state'], MessageKey> = {
   failed: 'jobFailed',
   cancelled: 'jobCancelled',
 };
-
-export function openSettings() {
-  const message: ContentMessage = { type: 'openOptions' };
-  browser.runtime.sendMessage(message).catch(() => {});
-}
 
 /** 「更新 yt-dlp」：直接更新，或顯示可以複製的更新指令（由套件管理工具安裝時）。onDone 在指令結束後呼叫。 */
 export function UpdateYtDlp({ onDone }: { onDone?: () => void }) {

@@ -17,6 +17,7 @@ import {
   type HostInfo,
   type HostStatusResult,
 } from '@/utils/native-protocol';
+import { isValidJobId } from '@/utils/validate';
 import { defaultVideoContainer, defaultVideoHeight, downloadDir, embedInfo, mp3Bitrate, namePreset } from '@/utils/settings';
 import { applyEvent, errorInfo, isActive, isFinal, markMissing, mergeHostJobs, newJob, pruneJobs, type DownloadRequest, type JobRecord } from './jobs';
 import { component, createStatusCache } from './host-status';
@@ -238,7 +239,7 @@ async function startDownload(request: DownloadRequest, estimate: JobRecord['esti
   };
   // 設定的下載資料夾不存在或無法寫入時，橋接程式回應 PERMISSION_DENIED（T15b）。
   const result = await hostRequest('download', downloadArgs(request, settings));
-  const jobId = typeof result.jobId === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(result.jobId) ? result.jobId : null;
+  const jobId = isValidJobId(result.jobId) ? result.jobId : null;
   if (!jobId) throw new HostRequestError('UNKNOWN', 'download returned no jobId');
   // 事件有時比 download 的回應早到：已經有紀錄時保留進度，只補上請求內容。
   const existing = jobs.find((j) => j.jobId === jobId);
@@ -306,20 +307,7 @@ export function quickDownload(
   return run;
 }
 
-type HostMessageType =
-  | 'hostStatus'
-  | 'getInfo'
-  | 'startDownload'
-  | 'quickDownload'
-  | 'cancelJob'
-  | 'revealJob'
-  | 'getJobs'
-  | 'pickFolder'
-  | 'updateYtDlp'
-  | 'hostSetAutoUpdate'
-  | 'hostCheckUpdates'
-  | 'hostUninstall';
-export const HOST_MESSAGE_TYPES: readonly string[] = [
+const HOST_MESSAGE_TYPES = [
   'hostStatus',
   'getInfo',
   'startDownload',
@@ -332,7 +320,8 @@ export const HOST_MESSAGE_TYPES: readonly string[] = [
   'hostSetAutoUpdate',
   'hostCheckUpdates',
   'hostUninstall',
-];
+] as const;
+type HostMessageType = (typeof HOST_MESSAGE_TYPES)[number];
 
 async function handle(message: Extract<ContentMessage, { type: HostMessageType }>, tabId: number | undefined): Promise<MessageResponse<Record<string, unknown>>> {
   switch (message.type) {
@@ -388,7 +377,7 @@ async function handle(message: Extract<ContentMessage, { type: HostMessageType }
 
 /** 處理經由橋接程式的訊息；結果以 sendResponse 回覆。不是這類訊息時回傳 false。 */
 export function handleHostMessage(message: ContentMessage, tabId: number | undefined, sendResponse: (response: unknown) => void): boolean {
-  if (!HOST_MESSAGE_TYPES.includes(message.type)) return false;
+  if (!(HOST_MESSAGE_TYPES as readonly string[]).includes(message.type)) return false;
   const done = handle(message as Extract<ContentMessage, { type: HostMessageType }>, tabId);
   void done.finally(scheduleIdleClose).catch(() => {});
   done.then(sendResponse, (err: unknown) => {

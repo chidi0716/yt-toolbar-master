@@ -9,7 +9,8 @@ import { downloadContextMenu, uiLanguage } from '@/utils/settings';
 import { videoIdFromLink } from '@/utils/youtube/page';
 import { quickDownload, readQuickDefaults } from './host-background';
 import { errorInfo } from './jobs';
-import { contextMenuTitles, mp3SpecLabel, needsHelper, startNotificationId, videoSpecLabel, type QuickKind } from './quick';
+import { mp3Label } from './jobs';
+import { contextMenuTitles, needsHelper, startNotificationId, videoSpecLabel, type QuickKind } from './quick';
 
 const LOG_PREFIX = '[yt-toolbar-master]';
 
@@ -87,7 +88,7 @@ export async function downloadFromMenu(videoId: string, kind: QuickKind): Promis
   await initI18n();
   const id = startNotificationId(videoId, kind);
   const defaults = await readQuickDefaults();
-  const spec = kind === 'video' ? videoSpecLabel(defaults.height, defaults.container) : mp3SpecLabel(defaults.bitrate);
+  const spec = kind === 'video' ? videoSpecLabel(defaults.height, defaults.container) : mp3Label(defaults.bitrate);
   let title = '';
   try {
     const result = await quickDownload(videoId, kind, {

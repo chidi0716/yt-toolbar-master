@@ -27,20 +27,32 @@ export function parseTime(text: string): number | null {
   return seconds;
 }
 
-const pad2 = (n: number) => String(n).padStart(2, '0');
+export const pad2 = (n: number) => String(n).padStart(2, '0');
+
+/** 秒數拆成時、分、秒（小數無條件捨去；負數與非數字視為 0）。所有時間格式共用。 */
+export function splitTime(seconds: number): { h: number; m: number; s: number } {
+  const total = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
+  return { h: Math.floor(total / 3600), m: Math.floor((total % 3600) / 60), s: total % 60 };
+}
 
 /**
  * 把秒數格式化成 `時:分:秒`（例如 `00:01:30`）或 `分:秒`（例如 `01:30`）。
  * 小數會無條件捨去；負數視為 0。`withHours` 未指定時，滿 1 小時才顯示小時欄位。
  */
 export function formatTime(seconds: number, withHours?: boolean): string {
-  const total = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
-  const h = Math.floor(total / 3600);
-  const m = Math.floor((total % 3600) / 60);
-  const s = total % 60;
+  const { h, m, s } = splitTime(seconds);
   const showHours = withHours ?? h > 0;
   return showHours ? `${pad2(h)}:${pad2(m)}:${pad2(s)}` : `${pad2(m + h * 60)}:${pad2(s)}`;
 }
+
+/** 小時不補零的時間：`01:23`、`1:02:03`（剩餘時間、下載說明中的時間範圍）。 */
+export function formatClock(seconds: number): string {
+  const { h, m, s } = splitTime(seconds);
+  return h > 0 ? `${h}:${pad2(m)}:${pad2(s)}` : `${pad2(m)}:${pad2(s)}`;
+}
+
+/** 時間範圍，例如 `01:00–01:30`。 */
+export const formatRange = (section: { start: number; end: number }) => `${formatClock(section.start)}–${formatClock(section.end)}`;
 
 export type TimeError = 'format' | 'outOfRange' | 'order';
 

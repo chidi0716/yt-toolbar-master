@@ -1,6 +1,9 @@
 // 與橋接程式（ytm-host）之間的原生訊息協定（plan 4.2、specs/notes/T11-T15-host.md）。純函式與型別。
 // 橋接程式的回應與事件一律先經過這裡驗證，欄位型別不對時視為無效（不信任外部程式的輸出）。
 
+import { isRecord, isValidJobId } from './validate';
+import { isValidVideoId } from './youtube/page';
+
 export const HOST_NAME = 'com.chidi0716.yt_toolbar_master';
 
 /** 橋接程式的錯誤代碼（筆記中的錯誤代碼表）；另加擴充功能端的 HOST_UNREACHABLE（找不到或無法啟動橋接程式）。 */
@@ -81,11 +84,8 @@ export type HostMessage =
   | { kind: 'done'; jobId: string; videoId: string; jobKind: JobKind; path: string; fileName: string }
   | { kind: 'failed'; jobId: string; videoId: string; jobKind: JobKind; error: HostError };
 
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const str = (v: unknown): string | null => (typeof v === 'string' ? v : null);
 const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
-const JOB_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
-const VIDEO_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/;
 const KINDS: readonly string[] = ['video', 'mp3', 'subtitle'];
 
 function parseError(v: unknown): HostError {
@@ -99,12 +99,12 @@ export function parseHostMessage(raw: unknown): HostMessage | null {
   if ('event' in raw) {
     const jobId = str(raw.jobId);
     const stage = toStage(raw.stage);
-    if (raw.event === 'progress' && stage && jobId && JOB_ID_PATTERN.test(jobId) && (raw.videoId === undefined || raw.kind === undefined)) {
+    if (raw.event === 'progress' && stage && isValidJobId(jobId) && (raw.videoId === undefined || raw.kind === undefined)) {
       return { kind: 'stage', jobId, stage };
     }
     const videoId = str(raw.videoId);
     const jobKind = str(raw.kind);
-    if (!jobId || !JOB_ID_PATTERN.test(jobId) || !videoId || !VIDEO_ID_PATTERN.test(videoId) || !jobKind || !KINDS.includes(jobKind)) return null;
+    if (!isValidJobId(jobId) || !isValidVideoId(videoId) || !jobKind || !KINDS.includes(jobKind)) return null;
     const base = { jobId, videoId, jobKind: jobKind as JobKind };
     switch (raw.event) {
       case 'progress': {
@@ -268,6 +268,9 @@ export interface HostInfo {
   formats: HostFormat[];
 }
 
+/** 直播中或首播尚未開始（002 FR-1、009 FR-6）。 */
+export const isLiveInfo = (info: HostInfo) => info.isLive || info.liveStatus === 'is_live' || info.liveStatus === 'is_upcoming';
+
 export function parseInfo(result: Record<string, unknown>): HostInfo {
   const formats = (Array.isArray(result.formats) ? result.formats : []).filter(isRecord).map(
     (f): HostFormat => ({
@@ -320,7 +323,7 @@ export function parseJobs(result: Record<string, unknown>): HostJob[] {
     const videoId = str(j.videoId);
     const kind = str(j.kind);
     const state = str(j.state);
-    if (!jobId || !JOB_ID_PATTERN.test(jobId) || !videoId || !VIDEO_ID_PATTERN.test(videoId) || !kind || !KINDS.includes(kind) || !state || !STATES.includes(state)) continue;
+    if (!isValidJobId(jobId) || !isValidVideoId(videoId) || !kind || !KINDS.includes(kind) || !state || !STATES.includes(state)) continue;
     out.push({
       jobId,
       videoId,

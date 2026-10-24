@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { setLocale } from '@/utils/i18n';
 import type { HostFormat, HostInfo } from '@/utils/native-protocol';
 import { newJob, type JobRecord } from './jobs';
-import { activeJobFor, existingQuickJob, initialDownloadMode, mp3SpecLabel, planQuickDownload, quickSummary, quickTooltip, toQuickDefaults, videoSpecLabel } from './quick';
+import { mp3Label } from './jobs';
+import { activeJobFor, existingQuickJob, initialDownloadMode, planQuickDownload, quickSummary, quickTooltip, toQuickDefaults, videoSpecLabel } from './quick';
 
 const ID = 'jNQXAC9IVRw';
 const f = (p: Partial<HostFormat> & { id: string }): HostFormat => ({
@@ -62,7 +63,7 @@ describe('文字（009 FR-7、FR-20）', () => {
   it('不合法的設定值改用預設值', () => {
     expect(toQuickDefaults('9999', 'mkv', 999)).toEqual({ height: 1080, container: 'mp4', bitrate: 192 });
     expect(toQuickDefaults('best', 'any', 320)).toEqual({ height: 'best', container: 'any', bitrate: 320 });
-    expect(mp3SpecLabel(64)).toBe('MP3 64 kbps');
+    expect(mp3Label(64)).toBe('MP3 64 kbps');
   });
 });
 

@@ -1,7 +1,8 @@
 // 縮圖面板（002 FR-30 至 FR-32）：列出實際存在的縮圖尺寸，每個尺寸有預覽小圖，點了就下載。
 // 不需要橋接程式。尺寸是否存在由背景腳本檢查（plan 3.8）。
 import { useEffect, useState } from 'preact/hooks';
-import { currentTitle, downloadErrorText, sendToBackground } from '@/features/downloads/content';
+import { currentTitle, downloadErrorText } from '@/features/downloads/content';
+import { sendToBackground } from '@/utils/messages';
 import { t } from '@/utils/i18n';
 import type { ThumbnailInfo } from '@/utils/messages';
 import { Icon } from '../icons';
