@@ -144,6 +144,11 @@ describe('面板一開始顯示什麼（009 FR-4、FR-8、FR-10、FR-11）', () 
     expect(initialDownloadMode({ quickEnabled: true, clickedForThisVideo: true, helperJustInstalled: true })).toBe('confirm');
   });
 
+  it('安裝後收起面板、再點一次按鈕：重新偵測後直接開始（FR-10a），不顯示「開始下載」按鈕', () => {
+    // 新打開的面板一開始就偵測到小幫手，沒有顯示過安裝引導。
+    expect(initialDownloadMode({ quickEnabled: true, clickedForThisVideo: true, helperJustInstalled: false })).toBe('quick');
+  });
+
   it('釘選的面板換了影片：不替沒點過的影片下載', () => {
     expect(initialDownloadMode({ quickEnabled: true, clickedForThisVideo: false, helperJustInstalled: false })).toBe('confirm');
   });

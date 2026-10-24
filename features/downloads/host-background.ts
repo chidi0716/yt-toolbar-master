@@ -18,11 +18,11 @@ import {
 } from '@/utils/native-protocol';
 import { defaultVideoContainer, defaultVideoHeight, downloadDir, embedInfo, mp3Bitrate, namePreset } from '@/utils/settings';
 import { applyEvent, errorInfo, isActive, isFinal, markMissing, mergeHostJobs, newJob, pruneJobs, type DownloadRequest, type JobRecord } from './jobs';
+import { createStatusCache } from './host-status';
 import { activeJobFor, planQuickDownload, startNotificationId, toQuickDefaults, type QuickDefaults, type QuickKind } from './quick';
 
 const LOG_PREFIX = '[yt-toolbar-master]';
 const INFO_TTL_MS = 30 * 60_000;
-const STATUS_TTL_MS = 60_000;
 const NOTIFICATION_PREFIX = 'ytm-job:';
 /** 沒有進行中的下載、也沒有等待中的指令這麼久之後關閉連線（橋接程式隨之結束，也不讓 service worker 一直執行）。 */
 const IDLE_CLOSE_MS = 60_000;
@@ -43,7 +43,7 @@ let unfinished = false;
 let loaded: Promise<void> | null = null;
 
 const infoCache = new Map<string, { at: number; promise: Promise<HostInfo> }>();
-let statusCache: { at: number; value: HostStatusResult } | null = null;
+const statusCache = createStatusCache();
 
 const client = new NativeClient({
   connect: () => browser.runtime.connectNative(HOST_NAME) as unknown as PortLike,
@@ -52,7 +52,7 @@ const client = new NativeClient({
   onEvent: (event) => void onHostEvent(event),
   onConnect: () => void syncJobs(),
   onDisconnect: (reason) => {
-    statusCache = null;
+    statusCache.clear();
     if (reason) console.info(`${LOG_PREFIX} helper disconnected: ${reason}`);
   },
   // 還有進行中的下載時自動重連，才能繼續收到進度與完成事件。
@@ -171,11 +171,18 @@ export function onNotificationClicked(notificationId: string): void {
   });
 }
 
-async function getStatus(refresh: boolean): Promise<HostStatusResult> {
-  if (!refresh && statusCache && Date.now() - statusCache.at < STATUS_TTL_MS) return statusCache.value;
-  const value = parseStatus(await client.request('status'));
-  statusCache = { at: Date.now(), value };
-  return value;
+/** 只快取可以下載的結果；未安裝或缺少元件時每次都重新查詢（009 FR-10a）。 */
+export async function getStatus(refresh: boolean): Promise<HostStatusResult> {
+  const cached = refresh ? null : statusCache.get();
+  if (cached) return cached;
+  try {
+    const value = parseStatus(await client.request('status'));
+    statusCache.put(value);
+    return value;
+  } catch (err) {
+    statusCache.clear();
+    throw err;
+  }
 }
 
 function getInfo(videoId: string): Promise<HostInfo> {
@@ -350,23 +357,23 @@ async function handle(message: Extract<ContentMessage, { type: HostMessageType }
     }
     case 'updateYtDlp': {
       const result = parseUpdate(await client.request('updateYtDlp'));
-      statusCache = null;
+      statusCache.clear();
       return { ok: true, update: result };
     }
     // 008（plan 4.9、3.10）
     case 'hostSetAutoUpdate':
       await client.request('setAutoUpdate', { enabled: message.enabled });
-      statusCache = null;
+      statusCache.clear();
       return { ok: true };
     case 'hostCheckUpdates': {
       const result = await client.request('checkUpdates');
-      statusCache = null;
+      statusCache.clear();
       return { ok: true, started: result.started === true };
     }
     case 'hostUninstall':
       // 有進行中的下載時，小幫手回應 JOBS_RUNNING。成功後小幫手 2 秒後刪除自己與瀏覽器的註冊。
       await client.request('uninstall');
-      statusCache = null;
+      statusCache.clear();
       infoCache.clear();
       // 關閉這次的連線：正在執行的小幫手隨之結束，下一次查詢會重新連線（註冊已被刪除時為未安裝）。
       client.close();

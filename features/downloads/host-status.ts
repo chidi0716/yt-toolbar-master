@@ -49,6 +49,48 @@ export const missingOnlyDeno = (s: HostState) => canDownload(s) && componentStat
 /** 自動更新連續失敗幾次以上才在下載面板提示（008 FR-25）。 */
 export const UPDATE_FAILURE_HINT_AT = 3;
 
+// ---------------------------------------------------------------------------
+// 背景腳本的狀態快取（009 FR-10a，tasks T57）
+// ---------------------------------------------------------------------------
+
+/** 可以下載的結果保留這麼久，連續打開面板時不必每次都啟動小幫手查詢。 */
+export const STATUS_TTL_MS = 60_000;
+
+/**
+ * 只有「可以下載、而且元件齊全」的結果可以快取。未安裝（查詢失敗）、缺少 yt-dlp／ffmpeg、或缺少 deno 的結果都不快取：
+ * 使用者照著說明補裝後再打開面板，就會立即重新偵測，不會看到舊的畫面（FR-10a）。
+ */
+export const isCacheableStatus = (status: HostStatusResult) => status.ready && status.complete;
+
+export interface StatusCache {
+  /** 未過期的快取結果；沒有時為 null。 */
+  get(): HostStatusResult | null;
+  /** 記下最新的結果；不能快取的結果會清除舊的快取。 */
+  put(status: HostStatusResult): void;
+  clear(): void;
+}
+
+export function createStatusCache(now: () => number = Date.now, ttlMs = STATUS_TTL_MS): StatusCache {
+  let entry: { at: number; value: HostStatusResult } | null = null;
+  return {
+    get() {
+      if (!entry) return null;
+      const age = now() - entry.at;
+      if (age < 0 || age >= ttlMs) {
+        entry = null;
+        return null;
+      }
+      return entry.value;
+    },
+    put(status) {
+      entry = isCacheableStatus(status) ? { at: now(), value: status } : null;
+    },
+    clear() {
+      entry = null;
+    },
+  };
+}
+
 /** 下載面板是否顯示「自動更新連續失敗」的一行提示：失敗 3 次以上、且這次的失敗沒有被使用者關閉。 */
 export function showUpdateFailureHint(s: HostState, dismissedAt: number | null): boolean {
   if (s.state !== 'connected' || !s.status.update) return false;
