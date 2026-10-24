@@ -2,11 +2,11 @@
 
 **English** | [繁體中文](./what-gets-installed.zh-TW.md)
 
-The extension's Video and MP3 downloads need a few programs on your computer. This page explains, in plain words, what the one-line install command puts on your computer, where, what it connects to, and how to remove it.
+What the one-line install command puts on your computer, where, what it connects to, and how to remove it.
 
 ## In short
 
-- Four programs, about 150 MB (about 300 MB on Windows, because the Windows ffmpeg package is bigger).
+- Four programs: about 150 MB on macOS, about 300 MB on Windows (the Windows ffmpeg package is larger).
 - Everything goes into **one folder in your user account**. No administrator password, no system settings, no changes to `PATH`.
 - Programs you installed yourself (for example with Homebrew or winget) are never changed.
 - Nothing about you or your downloads is collected or sent anywhere.
@@ -38,7 +38,7 @@ If ffmpeg and ffprobe are already on your computer, the installer uses them inst
 | Log file | `~/Library/Logs/yt-toolbar-master/host.log` | `%LOCALAPPDATA%\yt-toolbar-master\logs\host.log` |
 | Browser registration | `~/Library/Application Support/Google/Chrome/NativeMessagingHosts/` and `~/Library/Application Support/Mozilla/NativeMessagingHosts/` (one small file each) | Two registry keys under `HKCU\Software\Google\Chrome\NativeMessagingHosts\` and `HKCU\Software\Mozilla\NativeMessagingHosts\` |
 
-The browser registration tells Chrome and Firefox (and Firefox-based browsers such as Zen) where the helper is, and that **only this extension** may start it.
+The browser registration tells Chrome and Firefox (and Firefox-based browsers such as Zen) where the helper is, and that **only this extension** can start it.
 
 The log file only contains command names and error messages (never cookies, passwords or account data) and is limited to 5 MB.
 
@@ -62,7 +62,7 @@ No other servers are contacted. There is no analytics, tracking or telemetry. Vi
 
 ## How to remove it
 
-- **From the extension:** settings page → **Downloads** → **Remove download feature**. It deletes the folder above (helper, yt-dlp, deno, ffmpeg, log) and the browser registration.
+- **From the extension:** settings page → **Downloads** → **Remove downloads…**. It deletes the folder above (helper, yt-dlp, deno, ffmpeg, log) and the browser registration.
 - **Without the extension:**
   - macOS (Terminal): `curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.sh | sh`
   - Windows (PowerShell): `irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.ps1 | iex`

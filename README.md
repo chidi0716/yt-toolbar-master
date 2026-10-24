@@ -12,9 +12,9 @@ A toolbar appears between the player and the video title on watch pages. It foll
 
 **Download tools**
 
-- **One-click download** (on by default): click **Video** or **MP3** and the download starts right away in your default quality (1080p MP4 unless you change it; MP3 uses the bitrate you chose last). The panel shows the title, the quality and size (for example “1080p60 MP4, ~320 MB”) and the progress; **Choose another quality** cancels it and shows the full list below. Clicking again while it runs does not download twice. Turn it off in the settings page to choose every time.
+- **One-click download** (on by default): click **Video** or **MP3** and the download starts right away in your default quality (1080p MP4 unless you change it; MP3 uses the bitrate you chose last). The panel shows the title, the quality and size (for example “1080p60 MP4, ~320 MB”) and the progress; **Choose another quality** cancels it and shows the full list. Clicking again while it runs does not download twice. Turn it off in the settings page to choose each time.
 - **Right-click download:** right-click a video on YouTube (home page, search results, recommendations, playlists) → **YT Toolbar Master** → **Download video (1080p MP4)** or **Download MP3 (192 kbps)**, without opening the video. A notification tells you it started and when it's done; the download also shows up in the Video and MP3 panels of every YouTube tab, where you can cancel it. This can be turned off in the settings page.
-- **Video:** a quality list from high to low (8K / 4K / 2K / 1080 / HD labels) with file sizes, as MP4 by default and WEBM under “Show more formats”. 2K and above, which YouTube has no H.264 version of, use AV1 (or VP9) inside MP4 and are marked “May not play in some players”.
+- **Video:** a quality list from high to low (8K / 4K / 2K / 1080 / HD labels) with file sizes, as MP4 by default and WEBM under “Show more formats”. 2K and above, which YouTube has no H.264 version of, use AV1 (or VP9) inside MP4 and are marked “AV1: not supported by some players” (or VP9).
 - **MP3:** 64–320 kbps (remembers your choice).
 - **Time range** for video and MP3: download only a part, with a range slider, start/end fields, “Sync with player” and “Set to current time”.
 - Cover, title, channel, upload date, link and chapters are embedded into videos and MP3 (can be turned off).
@@ -113,14 +113,14 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 
 ### Automatic updates
 
-- **yt-dlp, deno and the helper** update themselves in the background when you start a download, at most once a day (no download, no check). The download you started is not delayed; replacements happen after downloads finish, and the old version is kept if anything fails. yt-dlp is updated with its own `yt-dlp -U`, everything else is checked against the signed release list.
+- **yt-dlp, deno and the helper** update themselves in the background when you start a download, at most once a day (no download, no check). The download you started is not delayed; replacements happen after downloads finish, and the old version is kept if anything fails. yt-dlp is updated with its own `yt-dlp -U`; everything else must match the SHA-256 in the release list.
 - When YouTube changes and a download fails with “Please update yt-dlp”, the helper updates yt-dlp right away and retries the download once.
-- ffmpeg is not updated automatically (it rarely needs to be); a new helper release can bring a newer one.
+- ffmpeg is not updated automatically; a new helper release can bring a newer one.
 - You can turn automatic updates off, check now, and see the version and source of every component in the settings page (**Downloads**).
 
 ### Uninstall
 
-Use **Remove download feature** in the settings page (**Downloads**). It removes the folder above (helper, yt-dlp, deno, ffmpeg, logs) and the browser registration. Your downloaded files are not touched.
+Use **Remove downloads…** in the settings page (**Downloads**). It removes the folder above (helper, yt-dlp, deno, ffmpeg, logs) and the browser registration. Your downloaded files are not touched.
 
 If the extension is already gone, run:
 
@@ -158,27 +158,27 @@ To remove a manual install, run `uninstall.sh` or `uninstall.ps1` from the same 
 - **Logs:** `~/Library/Logs/yt-toolbar-master/host.log` (macOS) or `%LOCALAPPDATA%\yt-toolbar-master\logs\host.log` (Windows). They contain command names and error messages only, never cookies or account data.
 - Downloads keep running if you close the YouTube tab or the browser. Unfinished files are kept in a hidden `.ytm-tmp-…` folder inside the download folder and are removed when the download finishes, fails or is cancelled.
 
-**What the helper can do:** only the fixed commands the extension needs (check status, read video info, download, cancel, list downloads, show a file, choose a folder, update, uninstall). Only this extension may start it (`allowed_origins` / `allowed_extensions` in the registration). It accepts a YouTube video ID, never a URL or command-line options, and opens no network ports. yt-dlp talks to YouTube; the helper itself only connects to GitHub and the ffmpeg build site listed above, to install and update.
+**What the helper can do:** only the fixed commands the extension needs (check status, read video info, download, cancel, list downloads, show a file, choose a folder, update, uninstall). Only this extension can start it (`allowed_origins` / `allowed_extensions` in the registration). It accepts a YouTube video ID, never a URL or command-line options, and opens no network ports. yt-dlp talks to YouTube; the helper itself only connects to GitHub and the ffmpeg build site listed above, to install and update.
 
 ## FAQ
 
 **Downloads suddenly fail with “YouTube has changed. Please update yt-dlp.”**
-YouTube changes often and yt-dlp follows quickly. With the one-line install, the helper updates yt-dlp and retries automatically; if it still fails, click **Update yt-dlp** in the panel or in the settings page. If you use your own yt-dlp from Homebrew or winget, run the command it shows (`brew upgrade yt-dlp` or `winget upgrade --id yt-dlp.yt-dlp`).
+With the one-line install, the helper updates yt-dlp and retries automatically; if it still fails, click **Update yt-dlp** in the panel or in the settings page. If you use your own yt-dlp from Homebrew or winget, run the command it shows (`brew upgrade yt-dlp` or `winget upgrade --id yt-dlp.yt-dlp`).
 
 **The panel says only deno is missing. Can I still download?**
-Yes. Without deno, yt-dlp may not see some YouTube formats (often the highest qualities). Run the [one-line install command](#install-the-helper) again (it adds what is missing), or install it yourself with `brew install deno` or `winget install DenoLand.Deno`, then click **Check again**.
+Yes. Without deno, yt-dlp can't get some YouTube formats. Run the [one-line install command](#install-the-helper) again (it adds what is missing), or install it yourself with `brew install deno` or `winget install DenoLand.Deno`, then click **Check again**.
 
 **macOS says the helper “cannot be opened” or is from an unidentified developer (Gatekeeper).**
 Files downloaded by `curl` in Terminal are not marked as coming from the internet, so the one-line install does not trigger this. If you installed manually from a zip downloaded in the browser, run `sh install.sh` from that folder again (it removes the quarantine attribute), or use the one-line install. Do not use `sudo`.
 
 **Zen (or another Firefox-based browser) cannot find the helper.**
-The installer registers the helper for Firefox, which Zen normally reads. Restart Zen completely after installing and click **Check again**. If it still says the helper isn't connected, please open an issue with your Zen version, your macOS or Windows version, and whether `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.yt_toolbar_master.json` (macOS) exists. Messages starting with `[yt-toolbar-master]` in the extension's console (open `about:debugging`, find the extension, click **Inspect**) also help.
+The installer registers the helper for Firefox; Zen uses the same registration. Restart Zen completely after installing and click **Check again**. If it still says the helper isn't connected, open an issue with your Zen version, your macOS or Windows version, and whether `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.yt_toolbar_master.json` (macOS) exists. Also include messages starting with `[yt-toolbar-master]` from the extension's console (open `about:debugging`, find the extension, click **Inspect**).
 
 **Downloads fail with “Couldn't write to the download folder.”**
-The folder chosen in the settings page was moved or deleted, the disk is full, or the folder isn't writable. Choose another folder or click **Use default** in the settings page. On macOS, folders such as Desktop or Documents may need permission: if a prompt asks to allow access, allow it.
+The folder chosen in the settings page was moved or deleted, the disk is full, or the folder isn't writable. Choose another folder or click **Use default** in the settings page. On macOS, if a prompt asks for access to a folder such as Desktop or Documents, allow it.
 
 **The extension disappeared from Firefox after a restart.**
-Add-ons loaded from `about:debugging` are temporary and are removed when Firefox restarts. Install the signed `.xpi` from the [releases page](https://github.com/chidi0716/yt-toolbar-master/releases) instead (see [Load the extension manually](#load-the-extension-manually)); it also updates itself.
+Add-ons loaded from `about:debugging` are temporary and are removed when Firefox restarts. When a release has a signed `.xpi` on the [releases page](https://github.com/chidi0716/yt-toolbar-master/releases), install that instead (see [Load the extension manually](#load-the-extension-manually)); it updates itself.
 
 ## Development
 
@@ -269,6 +269,7 @@ This project follows spec-driven development and a clean-room process:
 | [`specs/006-toolbar-customization`](./specs/006-toolbar-customization/spec.md) | Customize which tools the toolbar shows and their order |
 | [`specs/007-ui-language`](./specs/007-ui-language/spec.md) | Choose the interface language in the settings page |
 | [`specs/008-install-and-update`](./specs/008-install-and-update/spec.md) | One-line install, automatic updates and update reminders |
+| [`specs/009-quick-download`](./specs/009-quick-download/spec.md) | One-click and right-click downloads |
 | [`docs/what-gets-installed.md`](./docs/what-gets-installed.md) | What the download helper installs, where, and what it connects to |
 | [`specs/plan.md`](./specs/plan.md) / [`specs/tasks.md`](./specs/tasks.md) | Technical plan and tasks |
 | [`specs/ROADMAP.md`](./specs/ROADMAP.md) | Future directions |
@@ -279,7 +280,7 @@ Specs are written in Traditional Chinese.
 
 ## Disclaimer
 
-Downloading YouTube content may violate YouTube's Terms of Service. Use this extension only for content you have the right to download, for personal use. Because Chrome Web Store does not allow YouTube downloaders, the extension is meant to be loaded manually.
+YouTube's Terms of Service restrict downloading content. Use this extension only for content you have the right to download, for personal use. Chrome Web Store does not allow YouTube downloaders, so the extension is loaded manually.
 
 ## License
 

@@ -2,11 +2,11 @@
 
 [English](./what-gets-installed.md) | **繁體中文**
 
-擴充功能的影片與 MP3 下載需要在你的電腦上安裝幾個程式。這一頁用白話說明一行安裝指令會在電腦上放什麼、放在哪裡、會連到哪裡，以及如何移除。
+一行安裝指令會在電腦上放什麼、放在哪裡、會連到哪裡，以及如何移除。
 
 ## 重點
 
-- 四個程式，約 150 MB（Windows 約 300 MB，因為 Windows 版的 ffmpeg 比較大）。
+- 四個程式：macOS 約 150 MB，Windows 約 300 MB（Windows 版的 ffmpeg 較大）。
 - 全部放在**你帳號下的一個資料夾**。不需要系統管理員密碼，不修改系統設定，也不修改 `PATH`。
 - 你自己安裝的程式（例如以 Homebrew 或 winget 安裝的）不會被修改。
 - 不收集任何關於你或你下載內容的資料，也不會送到任何地方。
@@ -62,7 +62,7 @@
 
 ## 如何移除
 
-- **從擴充功能**：設定頁 →「下載」→「移除下載功能」。會刪除上面的資料夾（小幫手、yt-dlp、deno、ffmpeg、記錄檔）與瀏覽器註冊。
+- **從擴充功能**：設定頁 →「下載」→「移除下載功能…」。會刪除上面的資料夾（小幫手、yt-dlp、deno、ffmpeg、記錄檔）與瀏覽器註冊。
 - **擴充功能已經移除時**：
   - macOS（終端機）：`curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.sh | sh`
   - Windows（PowerShell）：`irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.ps1 | iex`

@@ -38,8 +38,8 @@
             Remove-Item -LiteralPath $AppDir -Recurse -Force
             Write-Host ((Z '已移除') + " / Removed: $AppDir")
         } catch {
-            Write-Host ((Z '無法刪除 ') + $AppDir + (Z '。請關閉 Chrome 與 Firefox（可能有下載正在進行）後再執行一次。')) -ForegroundColor Red
-            Write-Host "Could not remove $AppDir. Close Chrome and Firefox (a download may be running) and run this again." -ForegroundColor Red
+            Write-Host ((Z '無法刪除 ') + $AppDir + (Z '。請等下載完成、關閉 Chrome 與 Firefox 後再執行一次。')) -ForegroundColor Red
+            Write-Host "Could not remove $AppDir. Wait for downloads to finish, close Chrome and Firefox, then run this again." -ForegroundColor Red
             return
         }
     }

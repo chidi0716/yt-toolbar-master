@@ -12,17 +12,17 @@
 
 **下載工具**
 
-- **一鍵下載**（預設開啟）：點「影片」或「MP3」就以預設畫質直接開始下載（未修改時為 1080p MP4；MP3 使用上次選擇的位元率）。面板顯示標題、畫質與大小（例如「1080p60 MP4，約 320 MB」）與進度；「改用其他畫質」會取消這次下載並顯示下方的完整清單。下載中再點一次不會重複下載。可以在設定頁關閉，改回每次先選再下載。
+- **一鍵下載**（預設開啟）：點「影片」或「MP3」就以預設畫質直接開始下載（未修改時為 1080p MP4；MP3 使用上次選擇的位元率）。面板顯示標題、畫質與大小（例如「1080p60 MP4，約 320 MB」）與進度；「改用其他畫質」會取消這次下載並顯示完整清單。下載中再點一次不會重複下載。可以在設定頁關閉，改回每次先選再下載。
 - **右鍵下載**：在 YouTube 的影片連結（首頁、搜尋結果、推薦、播放清單）按右鍵 →「YT Toolbar Master」→「下載影片（1080p MP4）」或「下載 MP3（192 kbps）」，不用點進影片。開始與完成時會顯示通知；下載也會出現在每個 YouTube 分頁的影片與 MP3 面板中，可以取消。可以在設定頁關閉。
-- **影片**：由高到低的畫質清單（標示 8K／4K／2K／1080／HD）與檔案大小，預設為 MP4，「顯示更多格式」可選 WEBM。2K 以上 YouTube 沒有 H.264 版本，改以 AV1（或 VP9）合併成 MP4，並標示「部分播放器可能無法播放」。
+- **影片**：由高到低的畫質清單（標示 8K／4K／2K／1080／HD）與檔案大小，預設為 MP4，「顯示更多格式」可選 WEBM。2K 以上 YouTube 沒有 H.264 版本，改以 AV1（或 VP9）合併成 MP4，並標示「AV1：部分播放器不支援」（或 VP9）。
 - **MP3**：64–320 kbps（記住上次選擇）。
 - 影片與 MP3 都可以設定**時間範圍**，只下載其中一段：區間滑桿、開始／結束輸入框、「與播放器同步」與「設為目前時間」。
 - 自動在影片與 MP3 中嵌入封面、標題、頻道、上傳日期、網址與章節（可以關閉）。
 - 工具列按鈕顯示進度，面板顯示速度與剩餘時間，可以取消、重試，錯誤訊息易懂；完成時顯示通知（點通知會顯示檔案）；關閉分頁或瀏覽器，下載仍會完成。
-- **縮圖**（只列出實際存在的尺寸）、**字幕**（上傳的與自動產生的，SRT／VTT／TXT）與目前畫面的**截圖**不需要橋接程式，存到瀏覽器的下載位置；字幕直接下載失敗時改用 yt-dlp。
+- **縮圖**（只列出實際存在的尺寸）、**字幕**（上傳的與自動產生的，SRT／VTT／TXT）與目前畫面的**截圖**不需要小幫手，存到瀏覽器的下載位置；字幕直接下載失敗時改用 yt-dlp。
 - 經由 yt-dlp 下載的影片、MP3 與字幕存到設定頁指定的資料夾，檔名格式可以選擇。
 
-影片與 MP3 下載經由一個小型橋接程式，使用你電腦上的 [yt-dlp](https://github.com/yt-dlp/yt-dlp)、[ffmpeg](https://ffmpeg.org) 與 [deno](https://deno.com)；見[安裝下載功能](#install-the-helper)。
+影片與 MP3 下載經由本專案的小幫手，使用你電腦上的 [yt-dlp](https://github.com/yt-dlp/yt-dlp)、[ffmpeg](https://ffmpeg.org) 與 [deno](https://deno.com)；見[安裝下載功能](#install-the-helper)。
 
 **觀看輔助**
 
@@ -40,7 +40,7 @@
 
 ## 隱私與安全
 
-- 不收集任何使用資料，只與 YouTube 及本機的橋接程式溝通。以「載入未封裝項目」（Chrome）或臨時附加元件載入時，另外會向本專案的 GitHub 查詢最新版本號，每天最多一次、不送出任何識別資訊，用來提醒你更新；提醒可以關閉。
+- 不收集任何使用資料，只與 YouTube 及本機的小幫手溝通。以「載入未封裝項目」（Chrome）或臨時附加元件載入時，另外會向本專案的 GitHub 查詢最新版本號，每天最多一次、不送出任何識別資訊，用來提醒你更新；提醒可以關閉。
 - 小幫手與安裝腳本只連到本專案的 GitHub 正式版本、yt-dlp 與 deno 的官方正式版本，以及[會安裝什麼](./docs/what-gets-installed.zh-TW.md)中列出的 ffmpeg 下載網站；yt-dlp 會連到 YouTube。
 - 不執行遠端程式碼：所有程式都打包在擴充功能內，不從 CDN 載入腳本，不使用 `eval`。
 - 只申請必要的權限，內容腳本只在 `youtube.com` 執行。
@@ -50,21 +50,21 @@
 
 ## 下載功能的運作方式
 
-瀏覽器擴充功能無法直接執行 yt-dlp，所以會在你的電腦上安裝一支小型橋接程式（以 Go 撰寫），透過瀏覽器的原生訊息（Native Messaging）機制連線：
+瀏覽器擴充功能無法直接執行 yt-dlp，所以會在你的電腦上安裝一支小幫手（以 Go 撰寫），透過瀏覽器的原生訊息（Native Messaging）機制連線：
 
 ```
-YouTube 上的工具列  →  擴充功能背景腳本  →  本機橋接程式  →  yt-dlp  →  ffmpeg
+YouTube 上的工具列  →  擴充功能背景腳本  →  本機小幫手  →  yt-dlp  →  ffmpeg
 ```
 
-只需以一行指令安裝一次（見[安裝下載功能（橋接程式）](#install-the-helper)），之後小幫手會自動更新自己、yt-dlp 與 deno。縮圖、截圖、字幕與所有觀看輔助功能不需要橋接程式。
+只需以一行指令安裝一次（見[安裝下載功能](#install-the-helper)），之後小幫手會自動更新自己、yt-dlp 與 deno。縮圖、截圖、字幕與所有觀看輔助功能不需要小幫手。
 
 <a id="install-the-helper"></a>
 
-## 安裝下載功能（橋接程式）
+## 安裝下載功能
 
-影片、MP3 下載（以及直接下載失敗時的字幕下載）需要在電腦上安裝四個程式：本專案的**小幫手**（橋接程式）、[yt-dlp](https://github.com/yt-dlp/yt-dlp)（下載影片的開源工具）、[ffmpeg](https://ffmpeg.org)（合併影音與轉 MP3）與 [deno](https://deno.com)（yt-dlp 需要的 JavaScript 執行環境）。縮圖、截圖、字幕與所有觀看輔助功能不需要它們。
+影片、MP3 下載（以及直接下載失敗時的字幕下載）需要在電腦上安裝四個程式：本專案的**小幫手**、[yt-dlp](https://github.com/yt-dlp/yt-dlp)（下載影片的開源工具）、[ffmpeg](https://ffmpeg.org)（合併影音與轉 MP3）與 [deno](https://deno.com)（yt-dlp 需要的 JavaScript 執行環境）。縮圖、截圖、字幕與所有觀看輔助功能不需要它們。
 
-一行指令就能全部裝好，約 150 MB（Windows 約 300 MB），只放在你帳號下的一個專屬資料夾。不需要系統管理員權限、`sudo` 或任何開發工具，不會修改使用者資料夾以外的地方，可以隨時移除。每個檔案、下載來源與網路連線見[會安裝什麼](./docs/what-gets-installed.zh-TW.md)。
+一行指令就能全部裝好，macOS 約 150 MB、Windows 約 300 MB，只放在你帳號下的一個專屬資料夾。不需要系統管理員權限、`sudo` 或任何開發工具，不會修改使用者資料夾以外的地方，可以隨時移除。每個檔案、下載來源與網路連線見[會安裝什麼](./docs/what-gets-installed.zh-TW.md)。
 
 ### macOS（Apple Silicon 與 Intel）
 
@@ -115,14 +115,14 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 
 ### 自動更新
 
-- **yt-dlp、deno 與小幫手**會在你開始下載時於背景自動更新，每天最多檢查一次（沒有下載就不檢查、不連網）。不會延遲這次下載；替換在下載結束後進行，任何一步失敗都保留舊版本。yt-dlp 以它自己的 `yt-dlp -U` 更新，其他元件依簽署過的發佈清單核對。
+- **yt-dlp、deno 與小幫手**會在你開始下載時於背景自動更新，每天最多檢查一次（沒有下載就不檢查、不連網）。不會延遲這次下載；替換在下載結束後進行，任何一步失敗都保留舊版本。yt-dlp 以它自己的 `yt-dlp -U` 更新，其他元件必須符合發佈清單中的 SHA-256。
 - YouTube 改版導致下載失敗、顯示「請更新 yt-dlp」時，小幫手會立即更新 yt-dlp，並自動重試該下載一次。
-- ffmpeg 不自動更新（很少需要）；小幫手的新版本可以附帶更新。
+- ffmpeg 不自動更新；小幫手的新版本可以附帶更新。
 - 在設定頁的「下載」區可以關閉自動更新、立即檢查更新，並查看各元件的版本與來源。
 
 ### 移除
 
-在設定頁的「下載」區按「移除下載功能」，會刪除上面的專屬資料夾（小幫手、yt-dlp、deno、ffmpeg、記錄檔）與瀏覽器註冊。已下載的檔案不受影響。
+在設定頁的「下載」區按「移除下載功能…」，會刪除上面的專屬資料夾（小幫手、yt-dlp、deno、ffmpeg、記錄檔）與瀏覽器註冊。已下載的檔案不受影響。
 
 擴充功能已經移除時，執行：
 
@@ -165,22 +165,22 @@ irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/unin
 ## 常見問題
 
 **下載突然失敗，顯示「YouTube 有變動，請更新 yt-dlp」**
-YouTube 經常改版，yt-dlp 會很快跟上。以一行指令安裝時，小幫手會自動更新 yt-dlp 並重試；仍然失敗時，在面板或設定頁按「更新 yt-dlp」。若使用自己以 Homebrew 或 winget 安裝的 yt-dlp，請執行畫面上顯示的指令（`brew upgrade yt-dlp` 或 `winget upgrade --id yt-dlp.yt-dlp`）。
+以一行指令安裝時，小幫手會自動更新 yt-dlp 並重試；仍然失敗時，在面板或設定頁按「更新 yt-dlp」。若使用自己以 Homebrew 或 winget 安裝的 yt-dlp，請執行畫面上顯示的指令（`brew upgrade yt-dlp` 或 `winget upgrade --id yt-dlp.yt-dlp`）。
 
 **面板顯示只缺 deno，還能下載嗎？**
-可以。沒有 deno 時，yt-dlp 可能取得不到部分 YouTube 格式（常見的是最高畫質）。再執行一次[一行安裝指令](#install-the-helper)（會補上缺少的元件），或自行以 `brew install deno`、`winget install DenoLand.Deno` 安裝，然後按「重新檢查」。
+可以。沒有 deno 時，yt-dlp 取得不到部分 YouTube 格式。再執行一次[一行安裝指令](#install-the-helper)（會補上缺少的元件），或自行以 `brew install deno`、`winget install DenoLand.Deno` 安裝，然後按「重新檢查」。
 
-**macOS 顯示橋接程式「無法打開」或「來自未識別的開發者」（Gatekeeper）**
+**macOS 顯示小幫手「無法打開」或「來自未識別的開發者」（Gatekeeper）**
 在「終端機」以 `curl` 下載的檔案不會被標記為「來自網路」，所以一行指令安裝不會遇到這個問題。若是從瀏覽器下載 zip 手動安裝，請在該資料夾再執行一次 `sh install.sh`（會移除隔離屬性），或改用一行指令安裝；不要加 `sudo`。
 
-**Zen（或其他以 Firefox 為基礎的瀏覽器）找不到橋接程式**
-安裝程式為 Firefox 註冊小幫手，Zen 通常會讀取同一個位置。安裝後請完全結束 Zen 再開啟，並按「重新檢查」。若仍顯示尚未連接，請開 issue 回報 Zen 版本、macOS 或 Windows 版本，以及 `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.yt_toolbar_master.json`（macOS）是否存在；擴充功能主控台（`about:debugging` 中找到本擴充功能，按「檢查」）裡 `[yt-toolbar-master]` 開頭的訊息也很有幫助。
+**Zen（或其他以 Firefox 為基礎的瀏覽器）找不到小幫手**
+安裝程式為 Firefox 註冊小幫手，Zen 使用同一個註冊。安裝後請完全結束 Zen 再開啟，並按「重新檢查」。若仍顯示尚未連接，請開 issue 回報 Zen 版本、macOS 或 Windows 版本，以及 `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.yt_toolbar_master.json`（macOS）是否存在；擴充功能主控台（`about:debugging` 中找到本擴充功能，按「檢查」）裡 `[yt-toolbar-master]` 開頭的訊息也請一併附上。
 
 **下載失敗，顯示「無法寫入下載資料夾」**
-設定頁選擇的資料夾被移動或刪除、磁碟已滿，或資料夾沒有寫入權限。請在設定頁改選其他資料夾或按「使用預設」。macOS 上「桌面」「文件」等資料夾可能需要授權：出現詢問是否允許存取時請允許。
+設定頁選擇的資料夾被移動或刪除、磁碟已滿，或資料夾沒有寫入權限。請在設定頁改選其他資料夾或按「使用預設」。macOS 上出現詢問是否允許存取「桌面」「文件」等資料夾時，請允許。
 
 **Firefox 重新啟動後擴充功能不見了**
-從 `about:debugging` 載入的是暫時附加元件，Firefox 重新啟動後會被移除。請改從[版本頁面](https://github.com/chidi0716/yt-toolbar-master/releases)下載簽署過的 `.xpi` 安裝（見[手動載入擴充功能](#手動載入擴充功能)），它也會自動更新。
+從 `about:debugging` 載入的是暫時附加元件，Firefox 重新啟動後會被移除。[版本頁面](https://github.com/chidi0716/yt-toolbar-master/releases)有簽署過的 `.xpi` 時，請改用它安裝（見[手動載入擴充功能](#手動載入擴充功能)），它會自動更新。
 
 ## 開發
 
@@ -197,7 +197,7 @@ npm run compile         # 型別檢查
 npm test                # 單元測試（Vitest）
 npm run build           # Chrome  → .output/chrome-mv3
 npm run build:firefox   # Firefox → .output/firefox-mv3
-npm run build:host      # 本機橋接程式 → host/dist/（macOS arm64/amd64、Windows amd64；需要 Go）
+npm run build:host      # 小幫手 → host/dist/（macOS arm64/amd64、Windows amd64；需要 Go）
 npm run zip
 npm run zip:firefox
 npm run sign:firefox    # Firefox → 簽署後的 .xpi，輸出到 .output/firefox-signed（見下方）
@@ -271,6 +271,7 @@ Firefox 版由 [WXT](https://wxt.dev)／Vite 打包並壓縮。從上傳的原�
 | [`specs/006-toolbar-customization`](./specs/006-toolbar-customization/spec.md) | 自訂工具列（顯示哪些工具與順序） |
 | [`specs/007-ui-language`](./specs/007-ui-language/spec.md) | 在設定頁選擇介面語言 |
 | [`specs/008-install-and-update`](./specs/008-install-and-update/spec.md) | 一行指令安裝、自動更新與新版本提醒 |
+| [`specs/009-quick-download`](./specs/009-quick-download/spec.md) | 一鍵下載與右鍵下載 |
 | [`docs/what-gets-installed.zh-TW.md`](./docs/what-gets-installed.zh-TW.md) | 下載功能會安裝什麼、放在哪裡、會連到哪裡 |
 | [`specs/plan.md`](./specs/plan.md)／[`specs/tasks.md`](./specs/tasks.md) | 技術計畫與任務拆解 |
 | [`specs/ROADMAP.md`](./specs/ROADMAP.md) | 後續擴充方向 |
@@ -279,7 +280,7 @@ Firefox 版由 [WXT](https://wxt.dev)／Vite 打包並壓縮。從上傳的原�
 
 ## 免責聲明
 
-下載 YouTube 內容可能違反 YouTube 服務條款。請只下載你有權下載的內容，並僅供個人使用。由於 Chrome 線上應用程式商店不允許 YouTube 下載工具，本擴充功能需要手動載入。
+YouTube 服務條款限制下載內容。請只下載你有權下載的內容，並僅供個人使用。Chrome 線上應用程式商店不允許 YouTube 下載工具，所以本擴充功能以手動方式載入。
 
 ## 授權
 

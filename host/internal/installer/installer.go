@@ -345,14 +345,14 @@ func classify(err error) error {
 func Explain(err error) (zh, en string) {
 	switch errs.From(err).Code {
 	case errs.ManifestInvalid:
-		return "發佈清單格式不正確或不是來自本專案的 GitHub，為了安全已停止，沒有安裝任何東西。請稍後再試；若持續發生請回報問題。",
-			"The release list is not valid or did not come from this project's GitHub, so nothing was installed. Try again later; report an issue if it keeps happening."
+		return "發佈清單格式不正確或不是來自本專案的 GitHub，沒有安裝任何東西。持續發生時請回報問題。",
+			"The release list is invalid or not from this project's GitHub; nothing was installed. If this keeps happening, report an issue."
 	case errs.ChecksumMismatch:
-		return "下載的檔案與發佈清單不符（可能下載不完整或被竄改），已刪除該檔案。",
-			"A downloaded file did not match the release list (incomplete or tampered download) and was deleted."
+		return "下載的檔案與發佈清單中的 SHA-256 不符，已刪除該檔案。",
+			"A downloaded file did not match the SHA-256 in the release list and was deleted."
 	case errs.Network:
-		return "無法連線到下載來源，請確認網路連線（公司或學校網路可能會阻擋 GitHub）。",
-			"Could not reach the download site. Check your internet connection (some networks block GitHub)."
+		return "無法連到下載來源。請確認網路連線，以及網路允許連到 GitHub。",
+			"Could not reach the download site. Check your internet connection and that your network allows GitHub."
 	case errs.DiskFull:
 		return "磁碟空間不足，請先清出約 400 MB 的空間。", "Not enough disk space. Free up about 400 MB first."
 	case errs.PermissionDenied:
