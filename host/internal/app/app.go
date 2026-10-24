@@ -9,14 +9,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/errs"
-	"github.com/chidi0716/youtube-extension/host/internal/jobs"
-	"github.com/chidi0716/youtube-extension/host/internal/platform"
-	"github.com/chidi0716/youtube-extension/host/internal/protocol"
-	"github.com/chidi0716/youtube-extension/host/internal/release"
-	"github.com/chidi0716/youtube-extension/host/internal/updater"
-	"github.com/chidi0716/youtube-extension/host/internal/validate"
-	"github.com/chidi0716/youtube-extension/host/internal/ytdlp"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/jobs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/protocol"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/release"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/updater"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/ytdlp"
 )
 
 // App 實作 commands.Backend。
@@ -304,7 +304,7 @@ func (a *App) Download(ctx context.Context, d *validate.Download) (any, error) {
 }
 
 // maybeStartUpdate 在開始下載時檢查是否該自動更新（008 FR-20）：自動更新開啟、距上次檢查超過
-// 24 小時、沒有正在執行的更新，就啟動分離的 yte-host --update，不等待、不延遲這次下載。
+// 24 小時、沒有正在執行的更新，就啟動分離的 ytm-host --update，不等待、不延遲這次下載。
 // 開發版（版本不是 x.y.z）不自動更新。
 func (a *App) maybeStartUpdate() {
 	if _, ok := release.ParseVersion(a.Version); !ok || a.SpawnSelf == nil {
@@ -367,7 +367,7 @@ type UninstallResult struct {
 const UninstallDelay = "2"
 
 // Uninstall 實作 uninstall（008 FR-30）：有進行中的下載時回傳 JOBS_RUNNING；否則啟動分離的
-// yte-host --uninstall --delay 2 後回傳 {ok: true}。
+// ytm-host --uninstall --delay 2 後回傳 {ok: true}。
 func (a *App) Uninstall(ctx context.Context) (any, error) {
 	if a.Manager != nil && a.Manager.Store != nil && a.Manager.Store.ActiveCount(a.now()) > 0 {
 		return nil, errs.New(errs.JobsRunning, "downloads are in progress")

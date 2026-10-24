@@ -79,18 +79,18 @@ export function LoopPanel({ loop }: { loop: LoopController }) {
   };
 
   return (
-    <div class="yte-loop">
-      <fieldset class="yte-fieldset">
-        <legend class="yte-visually-hidden">{t('loopModeLabel')}</legend>
+    <div class="ytm-loop">
+      <fieldset class="ytm-fieldset">
+        <legend class="ytm-visually-hidden">{t('loopModeLabel')}</legend>
 
-        <label class="yte-radio">
-          <input type="radio" name="yte-loop-mode" checked={mode === 'repeat'} onChange={() => setMode('repeat')} />
+        <label class="ytm-radio">
+          <input type="radio" name="ytm-loop-mode" checked={mode === 'repeat'} onChange={() => setMode('repeat')} />
           <span>{t('loopModeRepeat')}</span>
         </label>
-        <div class="yte-loop-option" data-disabled={mode !== 'repeat' ? '' : undefined}>
+        <div class="ytm-loop-option" data-disabled={mode !== 'repeat' ? '' : undefined}>
           <input
-            id="yte-loop-times"
-            class="yte-input yte-number-input"
+            id="ytm-loop-times"
+            class="ytm-input ytm-number-input"
             type="number"
             inputMode="numeric"
             min={MIN_TIMES}
@@ -102,7 +102,7 @@ export function LoopPanel({ loop }: { loop: LoopController }) {
             onInput={(e) => setTimesText((e.currentTarget as HTMLInputElement).value)}
           />
           <span>{t('loopTimesUnit')}</span>
-          <label class="yte-checkbox">
+          <label class="ytm-checkbox">
             <input
               type="checkbox"
               checked={infinite}
@@ -112,13 +112,13 @@ export function LoopPanel({ loop }: { loop: LoopController }) {
             <span>{t('loopInfinite')}</span>
           </label>
         </div>
-        {mode === 'repeat' && !infinite && times === null && <p class="yte-field-error">{t('loopTimesError')}</p>}
+        {mode === 'repeat' && !infinite && times === null && <p class="ytm-field-error">{t('loopTimesError')}</p>}
 
-        <label class="yte-radio">
-          <input type="radio" name="yte-loop-mode" checked={mode === 'segment'} onChange={() => setMode('segment')} />
+        <label class="ytm-radio">
+          <input type="radio" name="ytm-loop-mode" checked={mode === 'segment'} onChange={() => setMode('segment')} />
           <span>{t('loopModeSegment')}</span>
         </label>
-        <div class="yte-loop-option yte-loop-segment" data-disabled={mode !== 'segment' ? '' : undefined}>
+        <div class="ytm-loop-option ytm-loop-segment" data-disabled={mode !== 'segment' ? '' : undefined}>
           <RangeSlider
             min={0}
             max={Math.max(limit, 1)}
@@ -129,45 +129,45 @@ export function LoopPanel({ loop }: { loop: LoopController }) {
             formatValue={(v) => formatTime(v)}
             onChange={setRangeAndText}
           />
-          <div class="yte-range-labels">
+          <div class="ytm-range-labels">
             <span>{formatTime(0)}</span>
             <span>{known ? formatTime(duration) : '—'}</span>
           </div>
-          <div class="yte-time-fields">
-            <label class="yte-field">
+          <div class="ytm-time-fields">
+            <label class="ytm-field">
               <span>{t('timeStart')}</span>
               <TimeInput
-                id="yte-loop-start"
+                id="ytm-loop-start"
                 value={range[0]}
                 disabled={mode !== 'segment' || !known}
                 invalid={mode === 'segment' && !!segment.startError}
-                errorId="yte-loop-start-error"
+                errorId="ytm-loop-start-error"
                 onInput={(seconds, text) => {
                   setStartText(text);
                   if (seconds !== null && seconds <= limit) setRange([seconds, range[1]]);
                 }}
               />
               {mode === 'segment' && segment.startError && (
-                <span id="yte-loop-start-error" class="yte-field-error">
+                <span id="ytm-loop-start-error" class="ytm-field-error">
                   {t(ERROR_KEYS[segment.startError])}
                 </span>
               )}
             </label>
-            <label class="yte-field">
+            <label class="ytm-field">
               <span>{t('timeEnd')}</span>
               <TimeInput
-                id="yte-loop-end"
+                id="ytm-loop-end"
                 value={range[1]}
                 disabled={mode !== 'segment' || !known}
                 invalid={mode === 'segment' && !!segment.endError}
-                errorId="yte-loop-end-error"
+                errorId="ytm-loop-end-error"
                 onInput={(seconds, text) => {
                   setEndText(text);
                   if (seconds !== null && seconds <= limit) setRange([range[0], seconds]);
                 }}
               />
               {mode === 'segment' && segment.endError && (
-                <span id="yte-loop-end-error" class="yte-field-error">
+                <span id="ytm-loop-end-error" class="ytm-field-error">
                   {t(ERROR_KEYS[segment.endError])}
                 </span>
               )}
@@ -176,11 +176,11 @@ export function LoopPanel({ loop }: { loop: LoopController }) {
         </div>
       </fieldset>
 
-      <div class="yte-loop-footer">
-        <span class="yte-loop-status" role="status" aria-live="polite">
+      <div class="ytm-loop-footer">
+        <span class="ytm-loop-status" role="status" aria-live="polite">
           {status.running || status.played > 0 ? t('loopPlayedCount', String(status.played)) : ''}
         </span>
-        <div class="yte-loop-actions">
+        <div class="ytm-loop-actions">
           <Button variant="secondary" disabled={!status.running} onClick={() => loop.end()}>
             {t('loopStop')}
           </Button>

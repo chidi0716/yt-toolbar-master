@@ -83,7 +83,7 @@ export function initI18n(): Promise<void> {
         if (area === 'sync' && STORAGE_KEY in changes) setLocale(resolveLocale(changes[STORAGE_KEY]!.newValue));
       });
     } catch (err) {
-      console.info('[youtube-extension] failed to read the interface language', err);
+      console.info('[yt-toolbar-master] failed to read the interface language', err);
     }
   })();
   return ready;

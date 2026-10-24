@@ -29,7 +29,7 @@ container children:
   ytd-watch-flexy #columns > div#primary, div#secondary
   ytd-watch-flexy #full-bleed-container > div#player-full-bleed-container[has player], div#panels-full-bleed-container
   ytd-watch-flexy #primary-inner > div#player, div#below
-  ytd-watch-flexy #below > div#shopping-timely-shelf, yte-toolbar, div, div
+  ytd-watch-flexy #below > div#shopping-timely-shelf, ytm-toolbar, div, div
 sidebar thumbnail mean luminance {"before":null,"cinema":null,"rect":null}
 cinema on, elementFromPoint: {
  "playerCenter": "player",
@@ -39,8 +39,8 @@ cinema on, elementFromPoint: {
  "masthead": "input.ytSearchboxComponentInput",
  "secondary": null
 }
-state {"pressed":"true","overlay":false,"htmlClass":"yte-cinema"}
+state {"pressed":"true","overlay":false,"htmlClass":"ytm-cinema"}
 visible elements not dimmed (outside the player and toolbar): 0
 sidebar thumbnail mean luminance before the full screenshot null
-screenshot /home/user/youtube-extension/.claude/worktrees/agent-a093306d044012db1/spikes/T07a/.cache/T07a-real-cinema-theater.png
+screenshot /home/user/yt-toolbar-master/.claude/worktrees/agent-a093306d044012db1/spikes/T07a/.cache/T07a-real-cinema-theater.png
 sidebar thumbnail mean luminance after the full screenshot null

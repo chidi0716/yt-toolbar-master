@@ -33,7 +33,7 @@ export function TimeInput({ value, onInput, invalid, errorId, id, label, disable
       inputMode="numeric"
       autoComplete="off"
       spellcheck={false}
-      class="yte-input yte-time-input"
+      class="ytm-input ytm-time-input"
       aria-label={label}
       aria-invalid={invalid ? 'true' : undefined}
       aria-describedby={invalid ? errorId : undefined}

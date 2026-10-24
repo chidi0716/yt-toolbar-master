@@ -1,9 +1,9 @@
 ﻿# Remove the download helper (Windows). plan 4.8, 4.9, 002 FR-77, 008 FR-31.
 #
-#   irm https://github.com/chidi0716/youtube-extension/releases/latest/download/uninstall.ps1 | iex
+#   irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.ps1 | iex
 #   (or, from the manual-install zip: powershell -ExecutionPolicy Bypass -File uninstall.ps1)
 #
-# Removes everything the installer created: %LOCALAPPDATA%\youtube-extension-host\ (the helper,
+# Removes everything the installer created: %LOCALAPPDATA%\yt-toolbar-master\ (the helper,
 # yt-dlp, deno, ffmpeg, state and logs) and the Chrome and Firefox registry keys under HKCU.
 # Downloaded videos are not touched. yt-dlp, ffmpeg or deno installed by you (for example with
 # winget) are not touched either.
@@ -19,8 +19,8 @@
         Write-Host 'Error: LOCALAPPDATA is not set.' -ForegroundColor Red
         return
     }
-    $Name = 'com.chidi0716.youtube_extension'
-    $AppDir = Join-Path $env:LOCALAPPDATA 'youtube-extension-host'
+    $Name = 'com.chidi0716.yt_toolbar_master'
+    $AppDir = Join-Path $env:LOCALAPPDATA 'yt-toolbar-master'
     $Keys = @(
         "HKCU:\Software\Google\Chrome\NativeMessagingHosts\$Name",
         "HKCU:\Software\Mozilla\NativeMessagingHosts\$Name"

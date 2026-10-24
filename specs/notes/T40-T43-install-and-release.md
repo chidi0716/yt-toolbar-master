@@ -6,8 +6,8 @@
 
 ```
 host/
-  cmd/yte-host/            install.go（--install、--uninstall）、update.go（--update）
-  cmd/yte-release/         維護者與發佈流程的工具：lock-check、manifest、check、zip
+  cmd/ytm-host/            install.go（--install、--uninstall）、update.go（--update）
+  cmd/ytm-release/         維護者與發佈流程的工具：lock-check、manifest、check、zip
   internal/release/        components.json 格式與驗證、允許的下載網址與清單網址（hosts.go）、
                            官方檢查碼解析、版本比較、下載工具
   internal/installer/      --install／--uninstall：下載、核對、解壓、替換、註冊瀏覽器
@@ -17,9 +17,9 @@ host/
 install/
   bootstrap/install.sh     一行指令（macOS）：下載清單與小幫手、核對 SHA256、執行 --install
   bootstrap/install.ps1    一行指令（Windows）：同上；發佈時轉成純 ASCII（scripts/ps1-ascii.mjs）
-  macos/install.sh         手動安裝：yte-host --install --offline
+  macos/install.sh         手動安裝：ytm-host --install --offline
   macos/uninstall.sh       移除（也就是 Release 的 uninstall.sh）
-  windows/install.ps1      手動安裝：yte-host.exe --install --offline
+  windows/install.ps1      手動安裝：ytm-host.exe --install --offline
   windows/uninstall.ps1    移除（也就是 Release 的 uninstall.ps1，可以 irm | iex）
 release/
   components.lock.json     固定的第三方工具版本、網址、SHA256、官方檢查碼網址
@@ -38,9 +38,9 @@ spikes/stage8/             引導腳本的模擬測試（macOS：假 curl 等；
   "schema": 1,
   "version": "0.2.0",
   "helper": {
-    "darwin-amd64":  { "url": "https://github.com/chidi0716/yt-toolbar-master/releases/download/v0.2.0/yte-host-darwin-amd64", "sha256": "…" },
+    "darwin-amd64":  { "url": "https://github.com/chidi0716/yt-toolbar-master/releases/download/v0.2.0/ytm-host-darwin-amd64", "sha256": "…" },
     "darwin-arm64":  { … },
-    "windows-amd64": { "url": "…/yte-host-windows-amd64.exe", "sha256": "…" }
+    "windows-amd64": { "url": "…/ytm-host-windows-amd64.exe", "sha256": "…" }
   },
   "tools": {
     "yt-dlp": { "version": "2026.10.21", "platforms": { "darwin-arm64": { "files": [ { "url": "…/yt-dlp_macos", "sha256": "…", "name": "yt-dlp" } ] }, … } },
@@ -61,18 +61,18 @@ spikes/stage8/             引導腳本的模擬測試（macOS：假 curl 等；
 
 | | macOS | Windows |
 |---|---|---|
-| 安裝資料夾 | `~/Library/Application Support/youtube-extension-host/` | `%LOCALAPPDATA%\youtube-extension-host\` |
-| 小幫手 | `yte-host` | `yte-host.exe` |
+| 安裝資料夾 | `~/Library/Application Support/yt-toolbar-master/` | `%LOCALAPPDATA%\yt-toolbar-master\` |
+| 小幫手 | `ytm-host` | `ytm-host.exe` |
 | 工具 | `bin/yt-dlp`、`bin/deno`、`bin/ffmpeg`、`bin/ffprobe` | `bin\*.exe` |
 | 狀態 | `install-state.json`（各工具依哪個清單版本安裝）、`update-state.json`、`update.lock`、`state/jobs/` | 同左 |
-| 記錄檔 | `~/Library/Logs/youtube-extension-host/host.log`（--update 的記錄以 `update` 標示） | `logs\host.log` |
-| 註冊 | `~/Library/Application Support/{Google/Chrome,Mozilla}/NativeMessagingHosts/com.chidi0716.youtube_extension.json` | 安裝資料夾中的 `….chrome.json`、`….firefox.json`，加上 `HKCU\Software\{Google\Chrome,Mozilla}\NativeMessagingHosts\com.chidi0716.youtube_extension` |
+| 記錄檔 | `~/Library/Logs/yt-toolbar-master/host.log`（--update 的記錄以 `update` 標示） | `logs\host.log` |
+| 註冊 | `~/Library/Application Support/{Google/Chrome,Mozilla}/NativeMessagingHosts/com.chidi0716.yt_toolbar_master.json` | 安裝資料夾中的 `….chrome.json`、`….firefox.json`，加上 `HKCU\Software\{Google\Chrome,Mozilla}\NativeMessagingHosts\com.chidi0716.yt_toolbar_master` |
 
-Linux（只供開發與測試）：`$XDG_STATE_HOME`（或 `~/.local/state`）`/youtube-extension-host/`，註冊在 `~/.config/google-chrome/NativeMessagingHosts/` 與 `~/.mozilla/native-messaging-hosts/`。
+Linux（只供開發與測試）：`$XDG_STATE_HOME`（或 `~/.local/state`）`/yt-toolbar-master/`，註冊在 `~/.config/google-chrome/NativeMessagingHosts/` 與 `~/.mozilla/native-messaging-hosts/`。
 
 工具尋找順序（`ytdlp.Env.Find`）：安裝資料夾 `bin/` → PATH → `/opt/homebrew/bin`、`/usr/local/bin`（macOS）→ WinGet（Windows）。
 
-## yte-host --install
+## ytm-host --install
 
 1. 檢查清單（`--manifest` 的檔案，或以 HTTPS 從本專案 GitHub 的 `releases/latest/download/` 下載）：格式錯誤、網址不在允許清單、清單網址或轉址不是本專案 GitHub 時為 `MANIFEST_INVALID`，不下載任何東西。
 2. 小幫手：安裝資料夾中的檔案 SHA256 已與清單相同就略過；目前執行的小幫手（引導腳本剛核對過的）與清單相同就複製自己，否則從清單網址下載並核對。
@@ -85,11 +85,11 @@ Linux（只供開發與測試）：`$XDG_STATE_HOME`（或 `~/.local/state`）`/
 - macOS 上以 root 執行時拒絕（引導腳本也會先拒絕）。
 - `--install --offline`：只把自己複製到安裝資料夾並註冊，列出找到／缺少的 yt-dlp、ffmpeg、ffprobe、deno。
 
-## yte-host --uninstall [--delay N]
+## ytm-host --uninstall [--delay N]
 
-刪除註冊（設定檔與登錄機碼）、安裝資料夾、macOS 的記錄檔資料夾；刪除失敗時重試最多 2 分鐘。Windows 上從安裝資料夾執行時，先把自己複製到 `%TEMP%\yte-uninstall-<時間>.exe` 並以分離的方式執行複本（執行中的檔案無法刪除），複本留在暫存資料夾（Q59）。
+刪除註冊（設定檔與登錄機碼）、安裝資料夾、macOS 的記錄檔資料夾；刪除失敗時重試最多 2 分鐘。Windows 上從安裝資料夾執行時，先把自己複製到 `%TEMP%\ytm-uninstall-<時間>.exe` 並以分離的方式執行複本（執行中的檔案無法刪除），複本留在暫存資料夾（Q59）。
 
-## 自動更新（yte-host --update）
+## 自動更新（ytm-host --update）
 
 - `download` 成功建立工作後，若版本是 x.y.z（開發版不更新）、自動更新開啟、距 `lastCheck` 超過 24 小時（或時鐘被往回調超過一小時），且沒有其他 `--update` 在執行，就以分離的方式啟動 `--update`。`checkUpdates` 不受 24 小時限制。
 - 流程：鎖檔（`update.lock`，內容為 PID；程序已不在的鎖檔會被取代）→ 從 `releases/latest/download/` 下載並驗證清單 → 每 10 秒檢查一次進行中的下載，最多 6 小時 → 安裝資料夾中的 yt-dlp 執行 `yt-dlp -U` → deno、ffmpeg（只限安裝資料夾中已有的）版本與清單不同時替換 → 清單版本比自己新、且自己就是安裝資料夾中的小幫手時替換小幫手 → 寫入 `update-state.json`。任何一個元件失敗時繼續處理其他元件，結果為 `failed`。
@@ -100,9 +100,9 @@ Linux（只供開發與測試）：`$XDG_STATE_HOME`（或 `~/.local/state`）`/
 `status` 新增：
 
 ```json
-"installDir": "/Users/me/Library/Application Support/youtube-extension-host",
+"installDir": "/Users/me/Library/Application Support/yt-toolbar-master",
 "components": [
-  {"name": "helper",  "version": "0.2.0",      "path": "…/yte-host",   "source": "bundled", "found": true},
+  {"name": "helper",  "version": "0.2.0",      "path": "…/ytm-host",   "source": "bundled", "found": true},
   {"name": "yt-dlp",  "version": "2026.10.21", "path": "…/bin/yt-dlp", "source": "bundled", "found": true},
   {"name": "deno",    "version": "2.9.8",      "path": "…",            "source": "bundled", "found": true},
   {"name": "ffmpeg",  "version": "8.0",        "path": "/opt/homebrew/bin/ffmpeg", "source": "homebrew", "found": true},
@@ -136,11 +136,11 @@ Linux（只供開發與測試）：`$XDG_STATE_HOME`（或 `~/.local/state`）`/
 `node scripts/release.mjs --tag vX.Y.Z`（GitHub Actions）與 `npm run release:dry`：
 
 1. 測試（`npm test`、`npm run compile`、`go test ./...`；Actions 中在前面的步驟執行）。
-2. `yte-release lock-check`：正式發佈加 `-download`，下載每個第三方檔案，與 lock 的 SHA256 及官方檢查碼比對。
+2. `ytm-release lock-check`：正式發佈加 `-download`，下載每個第三方檔案，與 lock 的 SHA256 及官方檢查碼比對。
 3. 建置三種小幫手與手動安裝的 zip。
-4. 產生 `components.json` 並以 `yte-release check` 再檢查一次。
+4. 產生 `components.json` 並以 `ytm-release check` 再檢查一次。
 5. 引導腳本與移除腳本：代入版本標籤（`@RELEASE_TAG@`）；`.ps1` 轉成純 ASCII。
-6. 擴充功能：Chrome zip；Firefox 先以 `web-ext lint --self-hosted` 檢查。有 Mozilla 金鑰（Actions 把 `AMO_JWT_ISSUER`、`AMO_JWT_SECRET` 傳成 `WEB_EXT_API_KEY`、`WEB_EXT_API_SECRET`）、不是預先發行版本、也不是試跑時，以 `scripts/sign-firefox.mjs` 送 Mozilla 簽署並附 `.xpi`；否則附未簽署的 `youtube-extension-<版本>-firefox-temporary.zip`（008 FR-52）。
+6. 擴充功能：Chrome zip；Firefox 先以 `web-ext lint --self-hosted` 檢查。有 Mozilla 金鑰（Actions 把 `AMO_JWT_ISSUER`、`AMO_JWT_SECRET` 傳成 `WEB_EXT_API_KEY`、`WEB_EXT_API_SECRET`）、不是預先發行版本、也不是試跑時，以 `scripts/sign-firefox.mjs` 送 Mozilla 簽署並附 `.xpi`；否則附未簽署的 `yt-toolbar-master-<版本>-firefox-temporary.zip`（008 FR-52）。
 7. `updates.json`：只在有簽署的 `.xpi` 時附上；版本取自建置出的 Firefox manifest，`update_link` 指向這個版本的 `.xpi`，附 `update_hash`（sha256）與 `applications.gecko.strict_min_version`。試跑時寫到 `release/dist/updates.preview.json`（不附加）。
 8. `release-notes.md`（範本中的 `{{firefoxSteps}}`、`{{firefoxStepsZh}}`、`{{firefoxFiles}}` 依是否簽署代入不同的說明）與 `SHA256SUMS`。
 - Actions 以 `gh release create <tag> release/dist/upload/* --notes-file … --verify-tag` 建立 Release；標籤含 `-` 時加 `--prerelease`。
@@ -152,7 +152,7 @@ Linux（只供開發與測試）：`$XDG_STATE_HOME`（或 `~/.local/state`）`/
   - installer（本機 TLS 假伺服器）：全新安裝、重複執行全部略過且不再下載、清單版本改變時只重新下載 deno、複製自己、中途失敗（NETWORK）後再執行從失敗處繼續、SHA256 不符時保留舊版本、竄改的小幫手不安裝、格式不正確的清單完全不下載（`MANIFEST_INVALID`）、從 latest 下載清單、清單轉址到不允許的位置時拒絕、系統已有 ffmpeg 時跳過、zip 路徑穿越、Windows 的 `.old` 替換與清理、手動安裝與移除（已下載的影片保留）、設定檔與 `install/manifests/` 範本相同。
   - updater：24 小時判斷、鎖檔、等到下載結束才替換、只更新安裝資料夾中的元件、自我更新、開發版不更新、連續失敗次數、等待逾時。
   - jobs：`outdated-once`、`bot-once` 情境（假 yt-dlp 在 `-U` 前回報過舊或要求驗證）更新後重試成功並送出 `stage`；已是最新、更新失敗、更新後仍失敗、其他錯誤都不重試。
-  - e2e（真正的 yte-host）：`--install --offline`、非法參數、Linux 上 `--install` 回報不支援、`--uninstall`；經由原生訊息的 `status` 新欄位、`setAutoUpdate`、`checkUpdates`、`uninstall`（2 秒後安裝資料夾被刪除）。
+  - e2e（真正的 ytm-host）：`--install --offline`、非法參數、Linux 上 `--install` 回報不支援、`--uninstall`；經由原生訊息的 `status` 新欄位、`setAutoUpdate`、`checkUpdates`、`uninstall`（2 秒後安裝資料夾被刪除）。
 - `bash spikes/stage8/test-bootstrap-macos.sh`：以假 curl、uname、sysctl、id、shasum 執行引導腳本：Apple Silicon 與 Intel 選對小幫手、以正確參數執行 `--install`、竄改的小幫手不執行、下載失敗時說明、拒絕 root 與非 macOS、沒有版本標籤時停止、`curl … | sh` 方式也可以、暫存資料夾刪除。
 - `bash spikes/stage3/check-ps1.sh`（官方 PowerShell 7.4.6 for Linux）：三個 `.ps1` 語法正確。
 - `bash spikes/stage8/test-bootstrap-windows.sh`：把發佈版 `install.ps1` 以 Latin-1 解碼後 `Invoke-Expression`（模擬 Windows PowerShell 5.1 的 `irm | iex`），`Invoke-WebRequest` 換成本機檔案：中文訊息正確還原、核對 SHA256 後以正確參數執行小幫手、竄改時停止、下載失敗時說明、沒有版本標籤時停止，且腳本結束後 PowerShell 仍在執行（沒有呼叫 `exit`）。

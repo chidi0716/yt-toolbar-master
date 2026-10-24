@@ -43,7 +43,7 @@ export function createUpdateService(deps: UpdateServiceDeps): UpdateService {
 
   const eligible = () => {
     eligibleCache ??= deps.installType().then(isReminderEligible, (err: unknown) => {
-      console.info('[youtube-extension] update check: cannot read the install type', err);
+      console.info('[yt-toolbar-master] update check: cannot read the install type', err);
       return false;
     });
     return eligibleCache;
@@ -63,7 +63,7 @@ export function createUpdateService(deps: UpdateServiceDeps): UpdateService {
     try {
       await deps.setBadge(view.pending ? BADGE_TEXT : '');
     } catch (err) {
-      console.info('[youtube-extension] failed to set the badge', err);
+      console.info('[yt-toolbar-master] failed to set the badge', err);
     }
   };
 

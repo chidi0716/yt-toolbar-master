@@ -82,7 +82,7 @@ export function createViewingController(): ViewingController {
           else feature.stop();
         } catch (err) {
           // 單一功能失效不得影響影片播放與其他功能（003 FR-4）。
-          console.info('[youtube-extension] viewing feature failed', err);
+          console.info('[yt-toolbar-master] viewing feature failed', err);
         }
       }
     },
@@ -92,7 +92,7 @@ export function createViewingController(): ViewingController {
         try {
           feature.navigate?.();
         } catch (err) {
-          console.info('[youtube-extension] viewing feature failed on navigation', err);
+          console.info('[yt-toolbar-master] viewing feature failed on navigation', err);
         }
       }
     },

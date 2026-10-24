@@ -1,6 +1,6 @@
-/* 各面板的內容樣式（顏色使用 toolbar.css 的 --yte-* 別名）。 */
+/* 各面板的內容樣式（顏色使用 toolbar.css 的 --ytm-* 別名）。 */
 
-.yte-visually-hidden {
+.ytm-visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -9,59 +9,59 @@
   white-space: nowrap;
 }
 
-.yte-fieldset {
+.ytm-fieldset {
   margin: 0;
   padding: 0;
   border: 0;
   min-width: 0;
 }
 
-.yte-radio,
-.yte-checkbox {
+.ytm-radio,
+.ytm-checkbox {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
 }
 
-.yte-radio {
+.ytm-radio {
   display: flex;
   margin: 8px 0;
   font-weight: 500;
 }
 
-.yte-radio input,
-.yte-checkbox input {
+.ytm-radio input,
+.ytm-checkbox input {
   width: 18px;
   height: 18px;
   margin: 0;
-  accent-color: var(--yte-call-to-action);
+  accent-color: var(--ytm-call-to-action);
   cursor: pointer;
 }
 
-.yte-number-input {
+.ytm-number-input {
   width: 72px;
   font-variant-numeric: tabular-nums;
 }
 
-.yte-field {
+.ytm-field {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
   font-size: 12px;
 }
 
-.yte-range-labels {
+.ytm-range-labels {
   display: flex;
   justify-content: space-between;
   margin-top: 2px;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
 
-.yte-time-fields {
+.ytm-time-fields {
   display: flex;
   gap: 16px;
   margin-top: 12px;
@@ -69,27 +69,27 @@
 
 /* ---------- 循環播放面板 ---------- */
 
-.yte-loop {
+.ytm-loop {
   width: 400px;
   max-width: 100%;
 }
 
-.yte-loop-option {
+.ytm-loop-option {
   display: flex;
   align-items: center;
   gap: 8px;
   margin: 0 0 8px 26px;
 }
 
-.yte-loop-segment {
+.ytm-loop-segment {
   display: block;
 }
 
-.yte-loop-option[data-disabled] {
+.ytm-loop-option[data-disabled] {
   opacity: 0.5;
 }
 
-.yte-loop-footer {
+.ytm-loop-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -97,19 +97,19 @@
   margin-top: 16px;
 }
 
-.yte-loop-status {
-  color: var(--yte-text-secondary);
+.ytm-loop-status {
+  color: var(--ytm-text-secondary);
   font-variant-numeric: tabular-nums;
 }
 
-.yte-loop-actions {
+.ytm-loop-actions {
   display: flex;
   gap: 8px;
 }
 
 /* ---------- 更多面板 ---------- */
 
-.yte-more {
+.ytm-more {
   width: 420px;
   max-width: 100%;
   margin: 0;
@@ -117,55 +117,55 @@
   list-style: none;
 }
 
-.yte-more-item {
+.ytm-more-item {
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 10px 0;
 }
 
-.yte-more-icon {
+.ytm-more-icon {
   display: flex;
   align-self: flex-start;
   padding-top: 2px;
 }
 
-.yte-more-text {
+.ytm-more-text {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-width: 0;
 }
 
-.yte-more-name {
+.ytm-more-name {
   font-weight: 500;
 }
 
-.yte-more-desc {
-  color: var(--yte-text-secondary);
+.ytm-more-desc {
+  color: var(--ytm-text-secondary);
   font-size: 12px;
   line-height: 16px;
 }
 
-.yte-more-item[data-disabled] .yte-more-name,
-.yte-more-item[data-disabled] .yte-more-icon {
+.ytm-more-item[data-disabled] .ytm-more-name,
+.ytm-more-item[data-disabled] .ytm-more-icon {
   opacity: 0.5;
 }
 
 /* ---------- 連結面板（004 第 4 節） ---------- */
 
-.yte-copylink {
+.ytm-copylink {
   width: 440px;
   max-width: 100%;
 }
 
-.yte-copylink-list {
+.ytm-copylink-list {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.yte-copylink-row {
+.ytm-copylink-row {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -182,54 +182,54 @@
   cursor: pointer;
 }
 
-.yte-copylink-row:hover {
-  background: var(--yte-hover-background);
+.ytm-copylink-row:hover {
+  background: var(--ytm-hover-background);
 }
 
-.yte-copylink-row:focus-visible {
-  outline: 2px solid var(--yte-call-to-action);
+.ytm-copylink-row:focus-visible {
+  outline: 2px solid var(--ytm-call-to-action);
   outline-offset: -2px;
 }
 
-.yte-copylink-text {
+.ytm-copylink-text {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-width: 0;
 }
 
-.yte-copylink-name {
+.ytm-copylink-name {
   font-weight: 500;
 }
 
-.yte-copylink-preview {
+.ytm-copylink-preview {
   overflow: hidden;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
   font-size: 12px;
   line-height: 16px;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.yte-copylink-status {
+.ytm-copylink-status {
   display: flex;
   flex: none;
   align-items: center;
   gap: 4px;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
   font-size: 12px;
 }
 
-.yte-copylink-row[data-copied] .yte-copylink-status {
-  color: var(--yte-call-to-action);
+.ytm-copylink-row[data-copied] .ytm-copylink-status {
+  color: var(--ytm-call-to-action);
   font-weight: 500;
 }
 
-.yte-copylink-manual {
+.ytm-copylink-manual {
   margin-top: 8px;
 }
 
-.yte-copylink-manual-text {
+.ytm-copylink-manual-text {
   display: block;
   width: 100%;
   height: auto;
@@ -241,13 +241,13 @@
 
 /* ---------- 下載面板共通：清單列（001 外觀規格：每列約 56px、懸停時整列變亮並帶圓角） ---------- */
 
-.yte-list {
+.ytm-list {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.yte-list-row {
+.ytm-list-row {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -264,92 +264,92 @@
   cursor: pointer;
 }
 
-.yte-list-row:hover:not(:disabled) {
-  background: var(--yte-hover-background);
+.ytm-list-row:hover:not(:disabled) {
+  background: var(--ytm-hover-background);
 }
 
-.yte-list-row:focus-visible {
-  outline: 2px solid var(--yte-call-to-action);
+.ytm-list-row:focus-visible {
+  outline: 2px solid var(--ytm-call-to-action);
   outline-offset: -2px;
 }
 
-.yte-list-row:disabled {
+.ytm-list-row:disabled {
   cursor: progress;
 }
 
-.yte-row-status {
+.ytm-row-status {
   display: flex;
   flex: none;
   align-items: center;
   gap: 4px;
   margin-left: auto;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
   font-size: 12px;
 }
 
-.yte-row-status[data-state='saved'] {
-  color: var(--yte-call-to-action);
+.ytm-row-status[data-state='saved'] {
+  color: var(--ytm-call-to-action);
   font-weight: 500;
 }
 
-.yte-row-status[data-state='error'] {
-  color: var(--yte-error);
+.ytm-row-status[data-state='error'] {
+  color: var(--ytm-error);
 }
 
 /* ---------- 縮圖面板（002 FR-30） ---------- */
 
-.yte-thumbs {
+.ytm-thumbs {
   width: 360px;
   max-width: 100%;
 }
 
-.yte-thumb-preview {
+.ytm-thumb-preview {
   display: block;
   flex: none;
   width: 96px;
   border-radius: 6px;
   object-fit: cover;
-  background: var(--yte-hover-background);
+  background: var(--ytm-hover-background);
 }
 
-.yte-thumb-size {
+.ytm-thumb-size {
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
 /* ---------- 字幕面板（002 FR-40 至 FR-44） ---------- */
 
-.yte-subs {
+.ytm-subs {
   width: 380px;
   max-width: 100%;
 }
 
-.yte-subs-list {
+.ytm-subs-list {
   max-height: 320px;
   overflow-y: auto;
 }
 
-.yte-subs-group + .yte-subs-group {
+.ytm-subs-group + .ytm-subs-group {
   margin-top: 12px;
 }
 
-.yte-subs-legend {
+.ytm-subs-legend {
   padding: 0;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
   font-size: 12px;
   font-weight: 500;
 }
 
-.yte-subs-track {
+.ytm-subs-track {
   font-weight: 400;
 }
 
-.yte-subs-auto {
+.ytm-subs-auto {
   display: inline-flex;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
 }
 
-.yte-subs-footer {
+.ytm-subs-footer {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -357,41 +357,41 @@
   margin-top: 16px;
 }
 
-.yte-subs-status {
+.ytm-subs-status {
   min-height: 20px;
   margin: 8px 0 0;
   font-size: 12px;
 }
 
-.yte-subs-saved {
+.ytm-subs-saved {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--yte-call-to-action);
+  color: var(--ytm-call-to-action);
   font-weight: 500;
 }
 
-.yte-subs-error {
+.ytm-subs-error {
   flex-wrap: wrap;
   margin-top: 4px;
   font-size: 13px;
   line-height: 18px;
 }
 
-.yte-subs-error > span {
+.ytm-subs-error > span {
   flex: 1;
   min-width: 200px;
 }
 
 /* ---------- 影片、MP3 面板的未連線狀態（002 FR-1、FR-2） ---------- */
 
-.yte-setup {
+.ytm-setup {
   width: 420px;
   max-width: 100%;
   line-height: 20px;
 }
 
-.yte-setup-title {
+.ytm-setup-title {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -399,56 +399,56 @@
   font-weight: 500;
 }
 
-.yte-setup-intro,
-.yte-setup-os-title {
+.ytm-setup-intro,
+.ytm-setup-os-title {
   margin: 0 0 8px;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
 }
 
-.yte-setup-os-title {
+.ytm-setup-os-title {
   margin-top: 16px;
-  color: var(--yte-text-primary);
+  color: var(--ytm-text-primary);
   font-weight: 500;
 }
 
-.yte-setup-components {
+.ytm-setup-components {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.yte-setup-components li {
+.ytm-setup-components li {
   display: flex;
   justify-content: space-between;
   gap: 16px;
   padding: 6px 0;
-  border-bottom: 1px solid var(--yte-outline);
+  border-bottom: 1px solid var(--ytm-outline);
 }
 
-.yte-setup-state {
-  color: var(--yte-text-secondary);
+.ytm-setup-state {
+  color: var(--ytm-text-secondary);
   font-size: 12px;
 }
 
-.yte-setup-components li[data-component='host'][data-missing] .yte-setup-state {
-  color: var(--yte-error);
+.ytm-setup-components li[data-component='host'][data-missing] .ytm-setup-state {
+  color: var(--ytm-error);
 }
 
-.yte-setup-steps {
+.ytm-setup-steps {
   margin: 0;
   padding-left: 20px;
 }
 
-.yte-setup-steps li + li {
+.ytm-setup-steps li + li {
   margin-top: 8px;
 }
 
-.yte-code {
+.ytm-code {
   display: block;
   margin-top: 4px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--yte-hover-background);
+  background: var(--ytm-hover-background);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
   user-select: all;
@@ -456,7 +456,7 @@
 }
 
 /* 一行安裝指令與「複製」（008 FR-1）。 */
-.yte-command {
+.ytm-command {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -464,67 +464,67 @@
   margin: 0 0 12px;
 }
 
-.yte-command .yte-command-text {
+.ytm-command .ytm-command-text {
   flex: 1 1 260px;
   min-width: 0;
   margin: 0;
 }
 
-.yte-command-status {
+.ytm-command-status {
   flex-basis: 100%;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
   font-size: 12px;
   line-height: 16px;
 }
 
-.yte-command-status:empty {
+.ytm-command-status:empty {
   display: none;
 }
 
-.yte-install-details {
+.ytm-install-details {
   margin-top: 12px;
   font-size: 13px;
   line-height: 18px;
 }
 
-.yte-install-details summary {
-  color: var(--yte-call-to-action);
+.ytm-install-details summary {
+  color: var(--ytm-call-to-action);
   font-weight: 500;
   cursor: pointer;
 }
 
-.yte-install-detail-list {
+.ytm-install-detail-list {
   margin: 8px 0;
   padding-left: 20px;
 }
 
-.yte-install-detail-list li + li {
+.ytm-install-detail-list li + li {
   margin-top: 6px;
 }
 
-.yte-inline-code {
+.ytm-inline-code {
   display: block;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
   overflow-wrap: anywhere;
 }
 
-.yte-install-note {
+.ytm-install-note {
   margin: 8px 0 0;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
 }
 
-.yte-install-details .yte-code {
+.ytm-install-details .ytm-code {
   white-space: pre-wrap;
 }
 
-.yte-install-auto {
+.ytm-install-auto {
   margin-top: 12px;
   font-size: 13px;
 }
 
-.yte-setup-actions {
+.ytm-setup-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -532,45 +532,45 @@
   margin-top: 16px;
 }
 
-a.yte-link {
+a.ytm-link {
   margin: 0;
   text-decoration: none;
 }
 
 /* ---------- 時間範圍（002 FR-20 至 FR-23、004 第 3 節） ---------- */
 
-.yte-clip {
+.ytm-clip {
   margin-bottom: 12px;
 }
 
-.yte-clip-title {
+.ytm-clip-title {
   margin-bottom: 4px;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
   font-size: 12px;
   font-weight: 500;
 }
 
-.yte-clip-label {
+.ytm-clip-label {
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 
-.yte-clip-now {
+.ytm-clip-now {
   display: inline-flex;
   padding: 2px;
   border: 0;
   border-radius: 50%;
   background: none;
-  color: var(--yte-call-to-action);
+  color: var(--ytm-call-to-action);
   cursor: pointer;
 }
 
-.yte-clip-now:hover {
-  background: var(--yte-hover-background);
+.ytm-clip-now:hover {
+  background: var(--ytm-hover-background);
 }
 
-.yte-clip-sync {
+.ytm-clip-sync {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -578,107 +578,107 @@ a.yte-link {
   margin-top: 12px;
 }
 
-.yte-hint {
+.ytm-hint {
   display: flex;
   align-items: flex-start;
   gap: 8px;
   margin: 8px 0;
   padding: 8px 12px;
   border-radius: 8px;
-  background: var(--yte-hover-background);
-  color: var(--yte-text-secondary);
+  background: var(--ytm-hover-background);
+  color: var(--ytm-text-secondary);
   font-size: 12px;
   line-height: 16px;
 }
 
-.yte-hint .yte-code {
+.ytm-hint .ytm-code {
   margin-top: 4px;
 }
 
 /* 小幫手自動更新連續失敗（008 FR-25）：一行提示，可以關閉。 */
-.yte-update-failed-text {
+.ytm-update-failed-text {
   flex: 1;
 }
 
-.yte-inline-link {
+.ytm-inline-link {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--yte-call-to-action);
+  color: var(--ytm-call-to-action);
   font: inherit;
   cursor: pointer;
 }
 
-.yte-inline-link:hover {
+.ytm-inline-link:hover {
   text-decoration: underline;
 }
 
-.yte-hint .yte-hint-close {
+.ytm-hint .ytm-hint-close {
   width: 24px;
   height: 24px;
   margin: -4px -6px -4px 0;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
 }
 
 /* ---------- 畫質清單（002 FR-10 至 FR-13） ---------- */
 
-.yte-video,
-.yte-mp3 {
+.ytm-video,
+.ytm-mp3 {
   width: 440px;
   max-width: 100%;
 }
 
-.yte-quality-row {
+.ytm-quality-row {
   display: grid;
   grid-template-columns: 56px 96px 56px 1fr;
   gap: 8px;
 }
 
-.yte-quality-row:disabled {
+.ytm-quality-row:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.yte-quality-container {
-  color: var(--yte-text-secondary);
+.ytm-quality-container {
+  color: var(--ytm-text-secondary);
   font-size: 12px;
   font-weight: 500;
 }
 
-.yte-quality-resolution {
+.ytm-quality-resolution {
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
-.yte-quality-size {
-  color: var(--yte-text-secondary);
+.ytm-quality-size {
+  color: var(--ytm-text-secondary);
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
 /* AV1／VP9 合併成的 MP4：部分播放器可能無法播放（002 FR-13）。 */
-.yte-quality-note {
+.ytm-quality-note {
   grid-column: 2 / -1;
   margin-top: -4px;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
   font-size: 12px;
 }
 
-.yte-more-formats {
+.ytm-more-formats {
   margin-top: 4px;
 }
 
 /* ---------- MP3 面板（002 FR-20） ---------- */
 
-.yte-mp3-bitrate {
+.ytm-mp3-bitrate {
   margin-bottom: 12px;
 }
 
-.yte-mp3-bitrate .yte-select {
+.ytm-mp3-bitrate .ytm-select {
   align-self: flex-start;
 }
 
-.yte-mp3-footer {
+.ytm-mp3-footer {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
@@ -687,27 +687,27 @@ a.yte-link {
 
 /* ---------- 下載工作（002 FR-3、FR-4、FR-6） ---------- */
 
-.yte-jobs {
+.ytm-jobs {
   margin: 12px 0 0;
   padding: 0;
-  border-top: 1px solid var(--yte-outline);
+  border-top: 1px solid var(--ytm-outline);
   list-style: none;
 }
 
-.yte-job {
+.ytm-job {
   padding: 10px 0;
-  border-bottom: 1px solid var(--yte-outline);
+  border-bottom: 1px solid var(--ytm-outline);
 }
 
-.yte-job-head,
-.yte-job-foot {
+.ytm-job-head,
+.ytm-job-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-.yte-job-label {
+.ytm-job-label {
   min-width: 0;
   overflow: hidden;
   font-weight: 500;
@@ -715,56 +715,56 @@ a.yte-link {
   text-overflow: ellipsis;
 }
 
-.yte-job-state,
-.yte-job-details,
-.yte-job-file {
-  color: var(--yte-text-secondary);
+.ytm-job-state,
+.ytm-job-details,
+.ytm-job-file {
+  color: var(--ytm-text-secondary);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
 
-.yte-job-file {
+.ytm-job-file {
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.yte-job[data-state='done'] .yte-job-state {
-  color: var(--yte-call-to-action);
+.ytm-job[data-state='done'] .ytm-job-state {
+  color: var(--ytm-call-to-action);
 }
 
-.yte-job[data-state='failed'] .yte-job-state {
-  color: var(--yte-error);
+.ytm-job[data-state='failed'] .ytm-job-state {
+  color: var(--ytm-error);
 }
 
-.yte-job-foot {
+.ytm-job-foot {
   margin-top: 6px;
 }
 
-.yte-progress {
+.ytm-progress {
   position: relative;
   height: 4px;
   margin-top: 8px;
   overflow: hidden;
   border-radius: 2px;
-  background: var(--yte-range-rail);
+  background: var(--ytm-range-rail);
 }
 
-.yte-progress-fill {
+.ytm-progress-fill {
   height: 100%;
   border-radius: 2px;
-  background: var(--yte-call-to-action);
+  background: var(--ytm-call-to-action);
   transition: width 0.3s;
 }
 
-.yte-progress[data-indeterminate] .yte-progress-fill {
+.ytm-progress[data-indeterminate] .ytm-progress-fill {
   position: absolute;
   width: 30%;
-  animation: yte-indeterminate 1.2s ease-in-out infinite;
+  animation: ytm-indeterminate 1.2s ease-in-out infinite;
 }
 
-@keyframes yte-indeterminate {
+@keyframes ytm-indeterminate {
   from {
     left: -30%;
   }
@@ -774,12 +774,12 @@ a.yte-link {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .yte-progress[data-indeterminate] .yte-progress-fill {
+  .ytm-progress[data-indeterminate] .ytm-progress-fill {
     animation-duration: 4s;
   }
 }
 
-.yte-job-error {
+.ytm-job-error {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -789,18 +789,18 @@ a.yte-link {
   line-height: 18px;
 }
 
-.yte-job-error-text {
+.ytm-job-error-text {
   flex: 1 1 200px;
-  color: var(--yte-error);
+  color: var(--ytm-error);
 }
 
-.yte-job-error-actions {
+.ytm-job-error-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.yte-update {
+.ytm-update {
   display: flex;
   flex: 1 1 100%;
   flex-wrap: wrap;
@@ -809,42 +809,42 @@ a.yte-link {
   font-size: 12px;
 }
 
-.yte-update[data-state='done'] {
-  color: var(--yte-call-to-action);
+.ytm-update[data-state='done'] {
+  color: var(--ytm-call-to-action);
 }
 
 /* ---------- 「更多」面板的其他工具與編輯工具列（006 FR-1、FR-15 至 FR-17） ---------- */
 
-.yte-other-tools {
+.ytm-other-tools {
   width: 420px;
   max-width: 100%;
   padding-bottom: 8px;
   margin-bottom: 8px;
-  border-bottom: 1px solid var(--yte-outline);
+  border-bottom: 1px solid var(--ytm-outline);
 }
 
-.yte-other-title {
+.ytm-other-title {
   margin: 0 0 4px;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
 }
 
-.yte-other-list {
+.ytm-other-list {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.yte-other-item {
+.ytm-other-item {
   display: flex;
   align-items: center;
   gap: 16px;
   min-height: 44px;
 }
 
-.yte-other-btn {
+.ytm-other-btn {
   display: flex;
   flex: 1;
   align-items: center;
@@ -861,43 +861,43 @@ a.yte-link {
   cursor: pointer;
 }
 
-.yte-other-btn:hover {
-  background: var(--yte-hover-background);
+.ytm-other-btn:hover {
+  background: var(--ytm-hover-background);
 }
 
-.yte-other-btn:focus-visible {
-  outline: 2px solid var(--yte-text-primary);
+.ytm-other-btn:focus-visible {
+  outline: 2px solid var(--ytm-text-primary);
 }
 
-.yte-other-icon {
+.ytm-other-icon {
   display: flex;
 }
 
-.yte-other-text {
+.ytm-other-text {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-width: 0;
 }
 
-.yte-other-name {
+.ytm-other-name {
   font-weight: 500;
 }
 
-.yte-other-desc {
-  color: var(--yte-text-secondary);
+.ytm-other-desc {
+  color: var(--ytm-text-secondary);
   font-size: 12px;
   line-height: 16px;
 }
 
-.yte-other-dot {
+.ytm-other-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--yte-call-to-action);
+  background: var(--ytm-call-to-action);
 }
 
-.yte-more-edit {
+.ytm-more-edit {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -905,10 +905,10 @@ a.yte-link {
   padding: 8px;
   margin: 8px -8px 0;
   border: 0;
-  border-top: 1px solid var(--yte-outline);
+  border-top: 1px solid var(--ytm-outline);
   border-radius: 0;
   background: transparent;
-  color: var(--yte-text-primary);
+  color: var(--ytm-text-primary);
   font: inherit;
   font-weight: 500;
   text-align: left;
@@ -916,15 +916,58 @@ a.yte-link {
   box-sizing: content-box;
 }
 
-.yte-more-edit:hover {
-  background: var(--yte-hover-background);
+.ytm-more-edit:hover {
+  background: var(--ytm-hover-background);
 }
 
-.yte-more-edit:focus-visible {
-  outline: 2px solid var(--yte-text-primary);
+.ytm-more-edit:focus-visible {
+  outline: 2px solid var(--ytm-text-primary);
 }
 
-.yte-help-hidden {
+.ytm-help-hidden {
   margin: 8px 0 0;
   font-size: 12px;
+}
+
+/* ---------- 一鍵下載（009 FR-4、FR-5、FR-11） ---------- */
+
+.ytm-quick-title {
+  margin: 0 0 4px;
+  overflow: hidden;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ytm-quick-preparing {
+  margin: 8px 0;
+}
+
+.ytm-quick-job {
+  margin-top: 8px;
+}
+
+.ytm-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ytm-other-jobs {
+  margin-top: 16px;
+}
+
+.ytm-other-jobs-title {
+  margin: 0;
+  color: var(--ytm-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ytm-quick-installed {
+  align-items: center;
+  color: var(--ytm-text-primary);
 }

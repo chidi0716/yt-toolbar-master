@@ -1,14 +1,14 @@
-// 觀看輔助功能加在 YouTube 頁面上的樣式（constitution 第 6 點：只用 yte- 前綴的 class，
+// 觀看輔助功能加在 YouTube 頁面上的樣式（constitution 第 6 點：只用 ytm- 前綴的 class，
 // 不改 YouTube 原本的屬性）。選擇器來自 utils/youtube/dom.ts。
 import { APPEARANCE_MENU, CINEMA_DIMMED_REGIONS, SELECTORS } from '@/utils/youtube/dom';
 
-const STYLE_ID = 'yte-page-styles';
+const STYLE_ID = 'ytm-page-styles';
 
 /** 深色模式操作 YouTube 外觀選單期間加在 <html> 上的 class（003 FR-11：選單不得被看見）。 */
-export const THEME_MENU_BUSY_CLASS = 'yte-theme-menu-busy';
+export const THEME_MENU_BUSY_CLASS = 'ytm-theme-menu-busy';
 
 /** 劇院模式時加在 <html> 上的 class。 */
-export const CINEMA_CLASS = 'yte-cinema';
+export const CINEMA_CLASS = 'ytm-cinema';
 /** 劇院模式調暗區域的不透明度：變暗約 93%（003 FR-20）。 */
 export const CINEMA_DIM_OPACITY = 0.07;
 
@@ -34,7 +34,7 @@ html.${THEME_MENU_BUSY_CLASS} ${APPEARANCE_MENU.popup} {
 }
 
 /* 浮動播放器（003 FR-40）：位置與尺寸由 features/viewing/floating.ts 另外寫入。 */
-.yte-floating {
+.ytm-floating {
   position: fixed !important;
   right: auto !important;
   bottom: auto !important;
@@ -47,10 +47,10 @@ html.${THEME_MENU_BUSY_CLASS} ${APPEARANCE_MENU.popup} {
 /* 隱藏留言（003 FR-64）改由 CSS 開關機制處理：features/tidy/styles.ts */
 
 /* 純音訊模式（003 FR-62）：隱藏畫面，縮圖由 features/viewing/audio-only.ts 另外寫入。 */
-html.yte-audio-only ${SELECTORS.videoContainer} {
+html.ytm-audio-only ${SELECTORS.videoContainer} {
   background: #000 center / contain no-repeat !important;
 }
-html.yte-audio-only ${SELECTORS.videoContainer} video {
+html.ytm-audio-only ${SELECTORS.videoContainer} video {
   opacity: 0 !important;
 }
 `;

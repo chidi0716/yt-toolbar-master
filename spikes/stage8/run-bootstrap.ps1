@@ -12,7 +12,7 @@ $text = [IO.File]::ReadAllText($Script, [Text.Encoding]::GetEncoding(28591))
 
 function Invoke-WebRequest {
     param([switch]$UseBasicParsing, [string]$Uri, [string]$OutFile)
-    $prefix = "https://github.com/chidi0716/youtube-extension/releases/download/$Tag/"
+    $prefix = "https://github.com/chidi0716/yt-toolbar-master/releases/download/$Tag/"
     if (-not $Uri.StartsWith($prefix)) { throw "unexpected URL $Uri" }
     $src = Join-Path $ReleaseDir $Uri.Substring($prefix.Length)
     if (-not (Test-Path -LiteralPath $src)) { throw "404 Not Found: $Uri" }

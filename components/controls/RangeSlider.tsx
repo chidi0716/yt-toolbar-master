@@ -27,7 +27,7 @@ export function RangeSlider(props: RangeSliderProps) {
 
   const valueAt = (clientX: number) => {
     // 數值以軌道內的 rail（與把手的移動範圍相同）換算。
-    const rail = trackRef.current!.querySelector('.yte-range-rail') ?? trackRef.current!;
+    const rail = trackRef.current!.querySelector('.ytm-range-rail') ?? trackRef.current!;
     const rect = rail.getBoundingClientRect();
     return valueFromPosition(clientX, { left: rect.left, width: rect.width }, min, max, step);
   };
@@ -80,7 +80,7 @@ export function RangeSlider(props: RangeSliderProps) {
     const pct = thumb === 0 ? startPct : endPct;
     return (
       <div
-        class="yte-range-thumb"
+        class="ytm-range-thumb"
         role="slider"
         tabIndex={disabled ? -1 : 0}
         aria-label={thumb === 0 ? startLabel : endLabel}
@@ -103,17 +103,17 @@ export function RangeSlider(props: RangeSliderProps) {
   };
 
   return (
-    <div class="yte-range" data-disabled={disabled ? '' : undefined}>
+    <div class="ytm-range" data-disabled={disabled ? '' : undefined}>
       <div
         ref={trackRef}
-        class="yte-range-track"
+        class="ytm-range-track"
         onPointerDown={(e) => onPointerDown(e)}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       >
-        <div class="yte-range-rail">
-          <div class="yte-range-fill" style={{ left: `${startPct}%`, width: `${Math.max(0, endPct - startPct)}%` }} />
+        <div class="ytm-range-rail">
+          <div class="ytm-range-fill" style={{ left: `${startPct}%`, width: `${Math.max(0, endPct - startPct)}%` }} />
         </div>
       </div>
       {thumbEl(0)}

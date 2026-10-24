@@ -5,17 +5,17 @@
 ## 機制（T29，plan 3.7.2）
 
 - 新的內容腳本 `entrypoints/tidy.content.ts`（isolated world、`document_start`、只在 `www.youtube.com` 與 `youtube.com`）啟動 `features/tidy`：
-  - 先在頁面加入一個 `<style id="yte-tidy-styles">`（`<head>` 還不存在時放在 `<html>` 底下），樣式全部在 `features/tidy/styles.ts`，選擇器來自 `utils/youtube/dom.ts`；
+  - 先在頁面加入一個 `<style id="ytm-tidy-styles">`（`<head>` 還不存在時放在 `<html>` 底下），樣式全部在 `features/tidy/styles.ts`，選擇器來自 `utils/youtube/dom.ts`；
   - 讀取設定後在 `<html>` 加上對應的 class，並以 `storage.watch` 監聽設定變更即時增減（005 FR-3）。沒有計時器或輪詢（005 NFR-1）。
 - class 與設定的對應在 `features/tidy/classes.ts`：
 
   | class | 設定 | 工具列關閉時 |
   |---|---|---|
-  | `yte-hide-comments` | `sync:hideComments`（003 FR-64，「更多」面板） | 移除（003 FR-5） |
-  | `yte-hide-end-cards` | `sync:tidyHideEndCards` | 照常（005 FR-6） |
-  | `yte-no-thumbnail-preview` | `sync:tidyNoThumbnailPreview` | 照常 |
-  | `yte-hide-shorts` | `sync:tidyHideShorts` | 照常 |
-  | `yte-full-titles` | `sync:tidyFullTitles` | 照常 |
+  | `ytm-hide-comments` | `sync:hideComments`（003 FR-64，「更多」面板） | 移除（003 FR-5） |
+  | `ytm-hide-end-cards` | `sync:tidyHideEndCards` | 照常（005 FR-6） |
+  | `ytm-no-thumbnail-preview` | `sync:tidyNoThumbnailPreview` | 照常 |
+  | `ytm-hide-shorts` | `sync:tidyHideShorts` | 照常 |
+  | `ytm-full-titles` | `sync:tidyFullTitles` | 照常 |
 
 - 003 的「隱藏留言」改用此機制：「更多」面板的開關只寫入設定，class 由上述內容腳本處理；原本 `features/viewing/page-styles.ts` 中的規則已移除。重新整理時，頁面解析完成前（工具列出現前）`<html>` 就已有 class。
 - 設定頁（`entrypoints/options/`）：「頁面整理」區依觀看頁、干擾、Shorts、介面分組，每個選項一個開關（`role="switch"`）附一行說明，預設全部關閉；保留「下載」區（T23 再加入內容）。分類與選項的清單在 `features/tidy/options.ts`，有單元測試。

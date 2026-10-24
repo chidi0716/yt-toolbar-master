@@ -30,10 +30,10 @@ regions:
 cinema on, elementFromPoint: {
  "playerCenter": "player",
  "playerControls": "player",
- "toolbarCinema": "div.yte-cinema-overlay",
- "toolbarHelp": "div.yte-cinema-overlay",
- "masthead": "div.yte-cinema-overlay",
- "secondary": "div.yte-cinema-overlay"
+ "toolbarCinema": "div.ytm-cinema-overlay",
+ "toolbarHelp": "div.ytm-cinema-overlay",
+ "masthead": "div.ytm-cinema-overlay",
+ "secondary": "div.ytm-cinema-overlay"
 }
 state {"pressed":"true","overlay":true,"htmlClass":""}
-screenshot /home/user/youtube-extension/.claude/worktrees/agent-a093306d044012db1/spikes/T07a/.cache/real-cinema.png
+screenshot /home/user/yt-toolbar-master/.claude/worktrees/agent-a093306d044012db1/spikes/T07a/.cache/real-cinema.png

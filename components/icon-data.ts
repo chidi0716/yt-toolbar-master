@@ -46,6 +46,7 @@ import edit from '@material-symbols/svg-400/outlined/edit.svg?raw';
 import arrowUpward from '@material-symbols/svg-400/outlined/arrow_upward.svg?raw';
 import arrowDownward from '@material-symbols/svg-400/outlined/arrow_downward.svg?raw';
 import restartAlt from '@material-symbols/svg-400/outlined/restart_alt.svg?raw';
+import tune from '@material-symbols/svg-400/outlined/tune.svg?raw';
 import upgrade from '@material-symbols/svg-400/outlined/upgrade.svg?raw';
 import deleteIcon from '@material-symbols/svg-400/outlined/delete.svg?raw';
 
@@ -94,6 +95,7 @@ const SOURCES = {
   restart_alt: restartAlt,
   settings,
   subtitles,
+  tune,
   upgrade,
   visibility,
   visibility_off: visibilityOff,
@@ -117,7 +119,7 @@ export function createIconElement(name: IconName, size = 24): SVGSVGElement {
   const NS = 'http://www.w3.org/2000/svg';
   const { viewBox, paths } = PARSED[name];
   const svg = document.createElementNS(NS, 'svg');
-  svg.setAttribute('class', 'yte-icon');
+  svg.setAttribute('class', 'ytm-icon');
   svg.setAttribute('width', String(size));
   svg.setAttribute('height', String(size));
   svg.setAttribute('viewBox', viewBox);

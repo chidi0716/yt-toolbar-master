@@ -39,12 +39,12 @@ await box.press('Enter');
 await page.waitForTimeout(5000);
 await page.locator('ytd-video-renderer a#thumbnail[href^="/watch"]').first().click();
 try {
-  await page.waitForSelector('yte-toolbar', { state: 'attached', timeout: 20_000 });
+  await page.waitForSelector('ytm-toolbar', { state: 'attached', timeout: 20_000 });
 } catch {
   await stop('toolbar did not appear');
 }
 await page.waitForTimeout(4000);
-await page.locator('yte-toolbar .yte-btn[data-button="cinema"]').click();
+await page.locator('ytm-toolbar .ytm-btn[data-button="cinema"]').click();
 await page.mouse.move(500, 400);
 await page.waitForTimeout(1500);
 const info = await page.evaluate(() => {

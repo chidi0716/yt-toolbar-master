@@ -30,6 +30,12 @@ export type PanelAction<Id extends string = string> =
   /** 焦點已經還給按鈕。 */
   | { type: 'focusRestored' };
 
+/**
+ * 新版本提醒卡片是否要延後（constitution 第 7c 點）：有面板展開中（包括一鍵下載正在顯示進度的影片／MP3 面板）
+ * 或正在編輯工具列時。
+ */
+export const reminderBlocked = (state: Pick<PanelState, 'openId'>, editing: boolean) => state.openId !== null || editing;
+
 export function initialPanelState<Id extends string = string>(): PanelState<Id> {
   return { openId: null, pinned: false, restoreFocusTo: null };
 }

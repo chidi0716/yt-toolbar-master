@@ -8,7 +8,7 @@
 
 - `utils/native-protocol.ts`：指令、事件、錯誤代碼與各回應的型別；`parseHostMessage`、`parseStatus`、`parseInfo`、`parseJobs`、`parseUpdate`
   只取已知欄位並檢查型別（橋接程式的回應不直接交給畫面）。`status` 依 T15a 讀取 `deno`、`complete`、`missing`（固定順序 yt-dlp、ffmpeg、deno）、`installCommand`。
-- `utils/native.ts` 的 `NativeClient`（有單元測試）：`connectNative('com.chidi0716.youtube_extension')`，請求 ID 與回應配對、每種指令各自的逾時
+- `utils/native.ts` 的 `NativeClient`（有單元測試）：`connectNative('com.chidi0716.yt_toolbar_master')`，請求 ID 與回應配對、每種指令各自的逾時
   （status 45 秒、getInfo 100 秒、pickFolder 30 分鐘、updateYtDlp 6 分鐘等）、事件轉給背景腳本；連線中斷時等待中的請求以 `HOST_UNREACHABLE` 失敗，
   有進行中的下載時自動重連（1、2、4、8、16、30 秒）。
 - `features/downloads/host-background.ts`：
@@ -16,7 +16,7 @@
   - 下載工作清單存在 `storage.session`，每次改變推播（`tabs.sendMessage`，不需要 tabs 權限）給曾經查詢過工作的分頁；分頁關閉後自動移除。
   - `download` 的參數由背景腳本組出（`downloadArgs`，有單元測試）：只帶該種類允許的欄位，補上下載資料夾（設定值或 `status.defaultDir`）、
     檔名格式（必須在 `status.namePresets` 中，否則 `title-id`）與嵌入資訊（影片、MP3）。
-  - 完成與失敗時建立通知（`yte-job:<jobId>`，標題「下載完成」／「下載失敗」，內容為檔名或標題與原因）；取消不通知。
+  - 完成與失敗時建立通知（`ytm-job:<jobId>`，標題「下載完成」／「下載失敗」，內容為檔名或標題與原因）；取消不通知。
     點完成的通知送出 `reveal`（002 FR-5）。
   - 連線後先送 `jobs`：合併橋接程式的狀態，對 `missed` 的工作補發通知，清單中進行中但橋接程式不知道的工作標為 `INTERRUPTED`。
   - 瀏覽器重新啟動：以 `local:hostJobsUnfinished` 記錄還有沒看到結束的下載，背景腳本啟動時連線一次補發通知（QUESTIONS Q44）。
@@ -96,7 +96,7 @@
 
 ### 端到端（Chromium，真正的橋接程式＋假 yt-dlp）
 
-- `sh spikes/stage4/build-host.sh`：以工作目錄內的 Go 快取編譯 `yte-host` 與 `host/testdata/fake-yt-dlp`，產生三個工具資料夾
+- `sh spikes/stage4/build-host.sh`：以工作目錄內的 Go 快取編譯 `ytm-host` 與 `host/testdata/fake-yt-dlp`，產生三個工具資料夾
   （齊全、缺 deno、缺 yt-dlp）。yt-dlp 是一個小腳本，每次執行時讀 `.cache/e2e/scenario`、`.cache/e2e/delay`，測試不用重新啟動瀏覽器就能切換情境。
 - 原生訊息：Playwright 的 Chromium 以 `--user-data-dir` 啟動時，從該資料夾的 `NativeMessagingHosts/` 讀取設定檔（`spikes/stage4/probe-native.mjs` 先確認可行）。
   瀏覽器的 `HOME`、`XDG_STATE_HOME`、`PATH` 指到 `spikes/stage4/.cache/`，橋接程式繼承後，狀態檔、記錄檔與預設下載資料夾（`~/Downloads`）都在工作目錄內。
@@ -137,7 +137,7 @@ BiDi 不能導覽到 `moz-extension:`，以 `--remote-allow-system-access` 從�
 
 1. **安裝工具**：`brew install yt-dlp ffmpeg deno`；確認 `yt-dlp --version`、`ffmpeg -version`、`deno --version` 都有輸出。
 2. **建置**：在 repo 中 `npm install`、`npm run build`、`npm run build:firefox`、`npm run build:host`（需要 Go 1.24 以上）。
-3. **安裝橋接程式**：`sh host/dist/youtube-extension-host-macos/install.sh`（不要 sudo）。
+3. **安裝橋接程式**：`sh host/dist/yt-toolbar-master-host-macos/install.sh`（不要 sudo）。
 4. **載入擴充功能**：Chrome 在 `chrome://extensions` 開啟開發人員模式，「載入未封裝項目」選 `.output/chrome-mv3`（ID 應為 `bkjlangdjfpllnkcpfpdlajchbginjdj`）；
    Firefox 如上。重新啟動瀏覽器。
 5. **未安裝狀態（先做）**：安裝橋接程式之前（或執行 `uninstall.sh` 後），開一部影片的「影片」「MP3」面板：顯示四個元件、macOS 安裝步驟與「重新檢查」；
@@ -149,7 +149,7 @@ BiDi 不能導覽到 `moz-extension:`，以 `--remote-allow-system-access` 從�
 9. **MP3**：選 320 kbps、範圍 00:01:00–00:02:00，下載得到約 60 秒、320 kbps 的 MP3（Finder「取得資訊」），音樂 App 可看到封面、標題、頻道；
    輸入「00:99:00」或開始晚於結束時「下載」停用；開啟「與播放器同步」後拖動把手，播放器跟著跳轉；「設為目前時間」設定為播放器目前時間；
    關閉面板再開，位元率仍是 320。
-10. **取消**：開始一個大的下載後按「取消」，下載停止，「下載」資料夾中沒有 `.part` 或 `.yte-tmp-…` 資料夾。
+10. **取消**：開始一個大的下載後按「取消」，下載停止，「下載」資料夾中沒有 `.part` 或 `.ytm-tmp-…` 資料夾。
 11. **關閉分頁**：開始下載後關閉 YouTube 分頁，下載仍完成並收到通知。
 12. **關閉瀏覽器**：開始下載後按 Cmd+Q 結束瀏覽器，等一兩分鐘再開啟瀏覽器：應收到該下載的「下載完成」通知。
 13. **字幕**：一般影片的字幕仍直接下載到瀏覽器的下載位置；若遇到直接下載失敗，面板顯示「已改用 yt-dlp 下載」，檔案存到設定的下載資料夾。
@@ -159,4 +159,4 @@ BiDi 不能導覽到 `moz-extension:`，以 `--remote-allow-system-access` 從�
 15. **只缺 deno**：`brew uninstall deno` 後按「重新檢查」：仍可下載，面板上方顯示建議安裝 deno 的提示與 `brew install deno`；測完 `brew install deno`。
 16. **錯誤訊息**：拔掉網路後下載顯示「網路連線問題，請重試」與「重試」；會員限定或年齡限制影片顯示需要登入。
 17. **直播**：直播中的影片，影片、MP3、字幕面板都顯示無法下載。
-18. **解除安裝**：`sh host/dist/youtube-extension-host-macos/uninstall.sh` 後面板回到未安裝狀態。
+18. **解除安裝**：`sh host/dist/yt-toolbar-master-host-macos/uninstall.sh` 後面板回到未安裝狀態。

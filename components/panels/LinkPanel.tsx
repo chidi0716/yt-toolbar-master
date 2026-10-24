@@ -9,7 +9,7 @@ import { player } from '@/utils/youtube/player';
 import { Icon } from '../icons';
 import { PanelError, PanelLoading } from './PanelStatus';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 const COPIED_MS = 2000;
 const PREVIEW_MAX = 52;
 
@@ -103,21 +103,21 @@ export function LinkPanel({ videoId }: { videoId: string }) {
   };
 
   return (
-    <div class="yte-copylink">
-      <ul class="yte-copylink-list">
+    <div class="ytm-copylink">
+      <ul class="ytm-copylink-list">
         {LINK_KINDS.map((kind) => {
           const text = linkText(kind, videoId, title.title || videoId, seconds);
           const isCopied = copied === kind;
           return (
             <li key={kind}>
-              <button type="button" class="yte-copylink-row" data-kind={kind} data-copied={isCopied ? '' : undefined} onClick={() => copy(kind, text)}>
-                <span class="yte-copylink-text">
-                  <span class="yte-copylink-name">{t(LABELS[kind])}</span>
-                  <span class="yte-copylink-preview" title={text}>
+              <button type="button" class="ytm-copylink-row" data-kind={kind} data-copied={isCopied ? '' : undefined} onClick={() => copy(kind, text)}>
+                <span class="ytm-copylink-text">
+                  <span class="ytm-copylink-name">{t(LABELS[kind])}</span>
+                  <span class="ytm-copylink-preview" title={text}>
                     {middleEllipsis(text, PREVIEW_MAX)}
                   </span>
                 </span>
-                <span class="yte-copylink-status" aria-live="polite">
+                <span class="ytm-copylink-status" aria-live="polite">
                   {isCopied ? (
                     <>
                       <Icon name="check" size={20} />
@@ -133,13 +133,13 @@ export function LinkPanel({ videoId }: { videoId: string }) {
         })}
       </ul>
       {failed && (
-        <div class="yte-copylink-manual">
-          <p class="yte-field-error" role="alert">
+        <div class="ytm-copylink-manual">
+          <p class="ytm-field-error" role="alert">
             {t('linkCopyFailed')}
           </p>
           <textarea
             ref={manualRef}
-            class="yte-input yte-copylink-manual-text"
+            class="ytm-input ytm-copylink-manual-text"
             readOnly
             rows={2}
             aria-label={t(LABELS[failed.kind])}

@@ -31,6 +31,11 @@ export type ContentMessage =
   | { type: 'getInfo'; videoId: string }
   /** 開始下載（下載資料夾、檔名格式、嵌入資訊由背景腳本依設定補上）。 */
   | { type: 'startDownload'; request: DownloadRequest }
+  /**
+   * 一鍵下載（009 FR-4、FR-5）：背景腳本取得影片資訊、依預設值選格式後開始下載；同一部影片的同一種下載進行中時
+   * 不重複下載，回傳進行中的工作。title 是頁面上的標題（影片資訊沒有標題時使用）。
+   */
+  | { type: 'quickDownload'; videoId: string; kind: 'video' | 'mp3'; title: string }
   | { type: 'cancelJob'; jobId: string }
   /** 在 Finder／檔案總管中顯示完成的檔案（002 FR-5）。 */
   | { type: 'revealJob'; jobId: string }
@@ -149,6 +154,8 @@ export function isContentMessage(value: unknown): value is ContentMessage {
       return isValidVideoId(m.videoId);
     case 'startDownload':
       return isDownloadRequest(m.request);
+    case 'quickDownload':
+      return isValidVideoId(m.videoId) && (m.kind === 'video' || m.kind === 'mp3') && isTitle(m.title);
     case 'cancelJob':
     case 'revealJob':
       return typeof m.jobId === 'string' && JOB_ID_PATTERN.test(m.jobId);

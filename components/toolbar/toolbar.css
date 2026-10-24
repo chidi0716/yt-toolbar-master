@@ -3,7 +3,7 @@
  *
  * 顏色只使用 YouTube 頁面的 CSS 變數（會穿透 Shadow DOM），深色／淺色主題自動跟隨。
  * 先找 plan 3.6 列出的 --yt-spec-*，再找 YouTube 目前使用的 --yt-sys-color-baseline--*，
- * 兩者都不存在時才用固定的備用值（淺色主題的值）。下方 --yte-* 是本擴充功能內部使用的別名。
+ * 兩者都不存在時才用固定的備用值（淺色主題的值）。下方 --ytm-* 是本擴充功能內部使用的別名。
  */
 
 :host {
@@ -15,53 +15,53 @@
 }
 
 /* 劇院模式（003 FR-20a）：工具列維持在調暗的兄弟區塊之上，展開的面板不會被遮住。 */
-:host(.yte-cinema-raised) {
+:host(.ytm-cinema-raised) {
   position: relative !important;
   z-index: 2201 !important;
 }
 
-.yte-root {
-  --yte-text-primary: var(--yt-spec-text-primary, var(--yt-sys-color-baseline--text-primary, #0f0f0f));
-  --yte-text-secondary: var(--yt-spec-text-secondary, var(--yt-sys-color-baseline--text-secondary, #606060));
-  --yte-menu-background: var(--yt-spec-menu-background, var(--yt-sys-color-baseline--menu-background, #fff));
-  --yte-hover-background: var(--yt-spec-badge-chip-background, var(--yt-sys-color-baseline--additive-background, rgba(0, 0, 0, 0.05)));
-  --yte-active-background: var(
+.ytm-root {
+  --ytm-text-primary: var(--yt-spec-text-primary, var(--yt-sys-color-baseline--text-primary, #0f0f0f));
+  --ytm-text-secondary: var(--yt-spec-text-secondary, var(--yt-sys-color-baseline--text-secondary, #606060));
+  --ytm-menu-background: var(--yt-spec-menu-background, var(--yt-sys-color-baseline--menu-background, #fff));
+  --ytm-hover-background: var(--yt-spec-badge-chip-background, var(--yt-sys-color-baseline--additive-background, rgba(0, 0, 0, 0.05)));
+  --ytm-active-background: var(
     --yt-spec-button-chip-background-hover,
     var(--yt-sys-color-baseline--button-chip-background-hover, rgba(0, 0, 0, 0.1))
   );
-  --yte-call-to-action: var(--yt-spec-call-to-action, var(--yt-sys-color-baseline--call-to-action, #065fd4));
-  --yte-outline: var(--yt-spec-10-percent-layer, var(--yt-sys-color-baseline--outline, rgba(0, 0, 0, 0.1)));
-  --yte-shadow: var(--yt-sys-color-baseline--shadow-medium, rgba(0, 0, 0, 0.25));
-  --yte-tooltip-background: var(--yt-sys-color-baseline--static-grey, #606060);
-  --yte-tooltip-text: var(--yt-sys-color-baseline--overlay-text-primary, #fff);
-  --yte-on-call-to-action: var(--yt-spec-text-primary-inverse, var(--yt-sys-color-baseline--text-primary-inverse, #fff));
-  --yte-badge-background: var(--yt-sys-color-baseline--static-grey, #606060);
-  --yte-badge-text: var(--yt-sys-color-baseline--static-brand-white, #fff);
-  --yte-switch-track: var(--yt-sys-color-baseline--text-disabled, #909090);
-  --yte-error: var(--yt-spec-error-indicator, var(--yt-sys-color-baseline--error-indicator, #c30027));
-  --yte-range-rail: var(--yte-active-background);
+  --ytm-call-to-action: var(--yt-spec-call-to-action, var(--yt-sys-color-baseline--call-to-action, #065fd4));
+  --ytm-outline: var(--yt-spec-10-percent-layer, var(--yt-sys-color-baseline--outline, rgba(0, 0, 0, 0.1)));
+  --ytm-shadow: var(--yt-sys-color-baseline--shadow-medium, rgba(0, 0, 0, 0.25));
+  --ytm-tooltip-background: var(--yt-sys-color-baseline--static-grey, #606060);
+  --ytm-tooltip-text: var(--yt-sys-color-baseline--overlay-text-primary, #fff);
+  --ytm-on-call-to-action: var(--yt-spec-text-primary-inverse, var(--yt-sys-color-baseline--text-primary-inverse, #fff));
+  --ytm-badge-background: var(--yt-sys-color-baseline--static-grey, #606060);
+  --ytm-badge-text: var(--yt-sys-color-baseline--static-brand-white, #fff);
+  --ytm-switch-track: var(--yt-sys-color-baseline--text-disabled, #909090);
+  --ytm-error: var(--yt-spec-error-indicator, var(--yt-sys-color-baseline--error-indicator, #c30027));
+  --ytm-range-rail: var(--ytm-active-background);
 
-  font-family: var(--yte-font-family, 'Roboto', 'Arial', sans-serif);
+  font-family: var(--ytm-font-family, 'Roboto', 'Arial', sans-serif);
   font-size: 14px;
   line-height: 20px;
-  color: var(--yte-text-primary);
+  color: var(--ytm-text-primary);
   -webkit-font-smoothing: antialiased;
 }
 
-.yte-root *,
-.yte-root *::before,
-.yte-root *::after {
+.ytm-root *,
+.ytm-root *::before,
+.ytm-root *::after {
   box-sizing: border-box;
 }
 
-.yte-icon {
+.ytm-icon {
   display: block;
   flex: none;
 }
 
 /* ---------- 工具列 ---------- */
 
-.yte-toolbar {
+.ytm-toolbar {
   position: relative;
   display: flex;
   align-items: center;
@@ -71,18 +71,18 @@
   background: transparent;
 }
 
-.yte-group {
+.ytm-group {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.yte-btn-wrap {
+.ytm-btn-wrap {
   position: relative;
 }
 
-.yte-btn,
-.yte-icon-btn {
+.ytm-btn,
+.ytm-icon-btn {
   display: grid;
   place-items: center;
   width: 40px;
@@ -92,45 +92,45 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--yte-text-primary);
+  color: var(--ytm-text-primary);
   font: inherit;
   cursor: pointer;
   outline: none;
 }
 
-.yte-icon-btn {
+.ytm-icon-btn {
   width: 36px;
   height: 36px;
 }
 
-.yte-btn:hover,
-.yte-icon-btn:hover {
-  background: var(--yte-hover-background);
+.ytm-btn:hover,
+.ytm-icon-btn:hover {
+  background: var(--ytm-hover-background);
 }
 
 /* 面板展開中、切換按鈕開啟中：維持圓形背景，顏色稍深（FR-9）。 */
-.yte-btn[data-on],
-.yte-btn[data-on]:hover,
-.yte-icon-btn[aria-pressed='true'] {
-  background: var(--yte-active-background);
+.ytm-btn[data-on],
+.ytm-btn[data-on]:hover,
+.ytm-icon-btn[aria-pressed='true'] {
+  background: var(--ytm-active-background);
 }
 
-.yte-btn:focus-visible,
-.yte-icon-btn:focus-visible {
-  box-shadow: 0 0 0 2px var(--yte-text-primary);
+.ytm-btn:focus-visible,
+.ytm-icon-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--ytm-text-primary);
 }
 
 /* ---------- 提示文字 ---------- */
 
-.yte-tooltip {
+.ytm-tooltip {
   position: absolute;
   top: calc(100% + 8px);
   left: 50%;
   z-index: 3;
   padding: 6px 8px;
   border-radius: 4px;
-  background: var(--yte-tooltip-background);
-  color: var(--yte-tooltip-text);
+  background: var(--ytm-tooltip-background);
+  color: var(--ytm-tooltip-text);
   font-size: 12px;
   line-height: 16px;
   white-space: nowrap;
@@ -140,43 +140,43 @@
   transition: opacity 0.1s;
 }
 
-.yte-btn-wrap[data-tooltip-align='start'] .yte-tooltip {
+.ytm-btn-wrap[data-tooltip-align='start'] .ytm-tooltip {
   left: 0;
   transform: none;
 }
 
-.yte-btn-wrap[data-tooltip-align='end'] .yte-tooltip {
+.ytm-btn-wrap[data-tooltip-align='end'] .ytm-tooltip {
   left: auto;
   right: 0;
   transform: none;
 }
 
-.yte-btn-wrap:hover .yte-tooltip,
-.yte-btn:focus-visible + .yte-tooltip {
+.ytm-btn-wrap:hover .ytm-tooltip,
+.ytm-btn:focus-visible + .ytm-tooltip {
   opacity: 1;
   transition-delay: 0.3s;
 }
 
 /* 「即將推出」等暫時訊息立即顯示。 */
-.yte-btn-wrap .yte-tooltip[data-notice] {
+.ytm-btn-wrap .ytm-tooltip[data-notice] {
   opacity: 1;
   transition-delay: 0s;
 }
 
 /* 較長的暫時訊息（例如 003 FR-15 的說明）換行顯示，不超出工具列太多。 */
-.yte-btn-wrap .yte-tooltip[data-notice] {
+.ytm-btn-wrap .ytm-tooltip[data-notice] {
   width: max-content;
   max-width: 320px;
   white-space: normal;
 }
 
-.yte-tooltip[data-hidden] {
+.ytm-tooltip[data-hidden] {
   display: none;
 }
 
 /* ---------- 面板 ---------- */
 
-.yte-panel {
+.ytm-panel {
   position: absolute;
   top: calc(100% + 4px);
   z-index: 2100;
@@ -184,12 +184,12 @@
   min-width: 280px;
   padding: 16px 24px 24px;
   border-radius: 12px;
-  background: var(--yte-menu-background);
-  color: var(--yte-text-primary);
-  box-shadow: 0 4px 32px 0 var(--yte-shadow);
+  background: var(--ytm-menu-background);
+  color: var(--ytm-text-primary);
+  box-shadow: 0 4px 32px 0 var(--ytm-shadow);
 }
 
-.yte-panel-header {
+.ytm-panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -197,99 +197,99 @@
   margin: 0 -12px 8px 0;
 }
 
-.yte-panel-title {
+.ytm-panel-title {
   margin: 0;
   font-size: 16px;
   line-height: 22px;
   font-weight: 500;
 }
 
-.yte-panel-body {
+.ytm-panel-body {
   min-width: 0;
 }
 
-.yte-muted {
+.ytm-muted {
   margin: 0;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
 }
 
 /* ---------- 面板共通狀態（FR-14） ---------- */
 
-.yte-status {
+.ytm-status {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
 }
 
-.yte-status-error {
-  color: var(--yte-text-primary);
+.ytm-status-error {
+  color: var(--ytm-text-primary);
 }
 
-.yte-spinner {
+.ytm-spinner {
   display: inline-flex;
-  animation: yte-spin 1s linear infinite;
+  animation: ytm-spin 1s linear infinite;
 }
 
-@keyframes yte-spin {
+@keyframes ytm-spin {
   to {
     transform: rotate(360deg);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .yte-spinner {
+  .ytm-spinner {
     animation-duration: 3s;
   }
 
-  .yte-tooltip {
+  .ytm-tooltip {
     transition: none;
   }
 }
 
 /* ---------- 說明面板（FR-17） ---------- */
 
-.yte-help {
+.ytm-help {
   width: 440px;
   max-width: 100%;
 }
 
-.yte-help-list {
+.ytm-help-list {
   margin: 0 0 8px;
   padding: 0;
   list-style: none;
 }
 
-.yte-help-item {
+.ytm-help-item {
   display: flex;
   align-items: flex-start;
   gap: 16px;
   padding: 8px 0;
 }
 
-.yte-help-icon {
+.ytm-help-icon {
   display: flex;
   padding-top: 2px;
 }
 
-.yte-help-text {
+.ytm-help-text {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
-.yte-help-name {
+.ytm-help-name {
   font-weight: 500;
 }
 
-.yte-help-desc {
-  color: var(--yte-text-secondary);
+.ytm-help-desc {
+  color: var(--ytm-text-secondary);
   font-size: 13px;
   line-height: 18px;
   white-space: normal;
 }
 
-.yte-link {
+.ytm-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -298,52 +298,52 @@
   border: 0;
   border-radius: 18px;
   background: transparent;
-  color: var(--yte-call-to-action);
+  color: var(--ytm-call-to-action);
   font: inherit;
   font-weight: 500;
   cursor: pointer;
   outline: none;
 }
 
-.yte-link:hover {
-  background: var(--yte-hover-background);
+.ytm-link:hover {
+  background: var(--ytm-hover-background);
 }
 
-.yte-link:focus-visible {
-  box-shadow: 0 0 0 2px var(--yte-call-to-action);
+.ytm-link:focus-visible {
+  box-shadow: 0 0 0 2px var(--ytm-call-to-action);
 }
 
 /* 劇院模式時頁面背景是黑色：不論 YouTube 主題，工具列按鈕改用深色背景上的文字色，維持可見（003 FR-20a）。 */
-:host(.yte-cinema-raised) .yte-btn {
+:host(.ytm-cinema-raised) .ytm-btn {
   color: var(--yt-sys-color-baseline--overlay-text-primary, #fff);
 }
 
-:host(.yte-cinema-raised) .yte-btn:hover {
+:host(.ytm-cinema-raised) .ytm-btn:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
-:host(.yte-cinema-raised) .yte-btn[data-on],
-:host(.yte-cinema-raised) .yte-btn[data-on]:hover {
+:host(.ytm-cinema-raised) .ytm-btn[data-on],
+:host(.ytm-cinema-raised) .ytm-btn[data-on]:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 
 /* 不能使用的切換按鈕（003 FR-32）：仍可聚焦以顯示原因。 */
-.yte-btn[aria-disabled='true'] {
+.ytm-btn[aria-disabled='true'] {
   opacity: 0.4;
   cursor: default;
 }
 
-.yte-btn[aria-disabled='true']:hover {
+.ytm-btn[aria-disabled='true']:hover {
   background: transparent;
 }
 
 /* ---------- 下載進度環（002 FR-3、FR-6b） ---------- */
 
-.yte-btn {
+.ytm-btn {
   position: relative;
 }
 
-.yte-btn-progress {
+.ytm-btn-progress {
   position: absolute;
   inset: 0;
   width: 40px;
@@ -352,26 +352,26 @@
   pointer-events: none;
 }
 
-.yte-btn-progress circle {
+.ytm-btn-progress circle {
   fill: none;
   stroke-width: 3;
 }
 
-.yte-btn-progress-track {
-  stroke: var(--yte-outline);
+.ytm-btn-progress-track {
+  stroke: var(--ytm-outline);
 }
 
-.yte-btn-progress-fill {
-  stroke: var(--yte-call-to-action);
+.ytm-btn-progress-fill {
+  stroke: var(--ytm-call-to-action);
   stroke-linecap: round;
   transition: stroke-dashoffset 0.3s;
 }
 
-.yte-btn-progress[data-indeterminate] {
-  animation: yte-ring-spin 1.2s linear infinite;
+.ytm-btn-progress[data-indeterminate] {
+  animation: ytm-ring-spin 1.2s linear infinite;
 }
 
-@keyframes yte-ring-spin {
+@keyframes ytm-ring-spin {
   from {
     transform: rotate(-90deg);
   }
@@ -381,40 +381,40 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .yte-btn-progress[data-indeterminate] {
+  .ytm-btn-progress[data-indeterminate] {
     animation-duration: 4s;
   }
 }
 
 /* ---------- 「更多」按鈕的提示圓點（006 FR-17） ---------- */
 
-.yte-btn-dot {
+.ytm-btn-dot {
   position: absolute;
   top: 6px;
   right: 6px;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--yte-call-to-action);
+  background: var(--ytm-call-to-action);
   box-shadow: 0 0 0 2px var(--yt-spec-base-background, var(--yt-sys-color-baseline--base-background, #fff));
   pointer-events: none;
 }
 
 /* ---------- 編輯模式（006 FR-3、FR-10 至 FR-14、外觀） ---------- */
 
-.yte-toolbar[data-editing] {
+.ytm-toolbar[data-editing] {
   flex-wrap: wrap;
   height: auto;
   min-height: 48px;
   padding: 14px 8px 6px;
-  border: 1px dashed var(--yte-text-secondary);
+  border: 1px dashed var(--ytm-text-secondary);
   border-radius: 12px;
   column-gap: 16px;
   row-gap: 4px;
 }
 
 /* 工具列不夠寬時，「重設為預設」「取消」「完成」換到下一行（仍靠右）。 */
-.yte-edit-row {
+.ytm-edit-row {
   position: relative;
   display: flex;
   flex: 1 0 auto;
@@ -422,12 +422,12 @@
   gap: 4px;
 }
 
-.yte-edit-spacer {
+.ytm-edit-spacer {
   flex: 1;
   min-width: 8px;
 }
 
-.yte-edit-item {
+.ytm-edit-item {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -435,13 +435,13 @@
   touch-action: none;
 }
 
-.yte-edit-item[data-dragging] {
+.ytm-edit-item[data-dragging] {
   z-index: 2;
   opacity: 0.85;
 }
 
-.yte-edit-tool,
-.yte-edit-sep {
+.ytm-edit-tool,
+.ytm-edit-sep {
   position: relative;
   display: grid;
   place-items: center;
@@ -451,7 +451,7 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--yte-text-primary);
+  color: var(--ytm-text-primary);
   font: inherit;
   cursor: grab;
   outline: none;
@@ -460,33 +460,33 @@
 }
 
 /* 工具略為放大，顯示可拖曳。 */
-.yte-edit-tool {
+.ytm-edit-tool {
   width: 40px;
   transform: scale(1.08);
 }
 
-.yte-edit-tool:hover,
-.yte-edit-sep:hover {
-  background: var(--yte-hover-background);
+.ytm-edit-tool:hover,
+.ytm-edit-sep:hover {
+  background: var(--ytm-hover-background);
 }
 
-.yte-edit-item[data-dragging] .yte-edit-tool,
-.yte-edit-item[data-dragging] .yte-edit-sep {
+.ytm-edit-item[data-dragging] .ytm-edit-tool,
+.ytm-edit-item[data-dragging] .ytm-edit-sep {
   cursor: grabbing;
-  background: var(--yte-active-background);
+  background: var(--ytm-active-background);
 }
 
-.yte-edit-tool:focus-visible,
-.yte-edit-sep:focus-visible {
-  box-shadow: 0 0 0 2px var(--yte-text-primary);
+.ytm-edit-tool:focus-visible,
+.ytm-edit-sep:focus-visible {
+  box-shadow: 0 0 0 2px var(--ytm-text-primary);
 }
 
 /* 隱藏的工具：半透明，角落有「隱藏」標記（006 FR-10）。 */
-.yte-edit-item[data-hidden] .yte-edit-tool > .yte-icon {
+.ytm-edit-item[data-hidden] .ytm-edit-tool > .ytm-icon {
   opacity: 0.35;
 }
 
-.yte-edit-hidden-mark {
+.ytm-edit-hidden-mark {
   position: absolute;
   right: 2px;
   bottom: 2px;
@@ -495,12 +495,12 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--yte-badge-background);
-  color: var(--yte-badge-text);
+  background: var(--ytm-badge-background);
+  color: var(--ytm-badge-text);
 }
 
 /* 「眼睛」切換按鈕：16px 圓形，在工具上方（006 FR-11）。 */
-.yte-edit-eye {
+.ytm-edit-eye {
   position: absolute;
   top: -13px;
   left: 50%;
@@ -511,48 +511,48 @@
   height: 16px;
   padding: 0;
   margin: 0 0 0 -8px;
-  border: 1px solid var(--yte-outline);
+  border: 1px solid var(--ytm-outline);
   border-radius: 50%;
-  background: var(--yte-menu-background);
-  color: var(--yte-text-primary);
+  background: var(--ytm-menu-background);
+  color: var(--ytm-text-primary);
   cursor: pointer;
 }
 
-.yte-edit-eye:hover {
-  background: var(--yte-active-background);
+.ytm-edit-eye:hover {
+  background: var(--ytm-active-background);
 }
 
-.yte-edit-item[data-hidden] .yte-edit-eye {
-  color: var(--yte-text-secondary);
+.ytm-edit-item[data-hidden] .ytm-edit-eye {
+  color: var(--ytm-text-secondary);
 }
 
 /* 分隔點：2px 寬、與工具同高的直線（006 外觀）。 */
-.yte-edit-sep {
+.ytm-edit-sep {
   width: 16px;
   border-radius: 4px;
   cursor: ew-resize;
 }
 
-.yte-edit-sep-line {
+.ytm-edit-sep-line {
   width: 2px;
   height: 40px;
   border-radius: 1px;
-  background: var(--yte-text-secondary);
+  background: var(--ytm-text-secondary);
 }
 
 /* 拖曳時插入位置的指示線。 */
-.yte-edit-indicator {
+.ytm-edit-indicator {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 2px;
   margin-left: -1px;
   border-radius: 1px;
-  background: var(--yte-call-to-action);
+  background: var(--ytm-call-to-action);
   pointer-events: none;
 }
 
-.yte-edit-actions {
+.ytm-edit-actions {
   display: flex;
   flex: none;
   align-items: center;
@@ -561,10 +561,10 @@
   padding: 2px 0;
 }
 
-.yte-edit-help {
+.ytm-edit-help {
   flex-basis: 100%;
   margin: 0;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
   font-size: 12px;
   line-height: 16px;
 }
@@ -575,7 +575,7 @@
  * 卡片在工具列下方、靠右（收合後成為「更多」上的小圓點），不疊在播放器上。
  * z-index 低於面板（2100）與浮動播放器（2151），不會蓋住浮動中的影片。
  */
-.yte-update-card {
+.ytm-update-card {
   position: absolute;
   top: calc(100% + 4px);
   right: 0;
@@ -587,13 +587,13 @@
   max-width: 100%;
   padding: 12px 8px 14px 16px;
   border-radius: 12px;
-  background: var(--yte-menu-background);
-  color: var(--yte-text-primary);
-  box-shadow: 0 4px 32px 0 var(--yte-shadow);
-  animation: yte-update-in 0.4s ease-out;
+  background: var(--ytm-menu-background);
+  color: var(--ytm-text-primary);
+  box-shadow: 0 4px 32px 0 var(--ytm-shadow);
+  animation: ytm-update-in 0.4s ease-out;
 }
 
-@keyframes yte-update-in {
+@keyframes ytm-update-in {
   from {
     opacity: 0;
     transform: translateY(-4px);
@@ -605,58 +605,58 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .yte-update-card {
+  .ytm-update-card {
     animation: none;
   }
 }
 
-.yte-update-icon {
+.ytm-update-icon {
   display: flex;
   padding-top: 2px;
-  color: var(--yte-call-to-action);
+  color: var(--ytm-call-to-action);
 }
 
-.yte-update-body {
+.ytm-update-body {
   flex: 1;
   min-width: 0;
 }
 
-.yte-update-text p {
+.ytm-update-text p {
   margin: 0;
 }
 
-.yte-update-heading {
+.ytm-update-heading {
   font-weight: 500;
 }
 
-.yte-update-release {
+.ytm-update-release {
   overflow: hidden;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
   font-size: 13px;
   line-height: 18px;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.yte-update-actions {
+.ytm-update-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
 }
 
-.yte-update-close {
+.ytm-update-close {
   flex: none;
   margin-top: -6px;
 }
 
 /* 「更多」選單頂端的同一則提醒。 */
-.yte-update-notice {
+.ytm-update-notice {
   display: flex;
   align-items: flex-start;
   gap: 16px;
   max-width: 440px;
   margin: 0 0 12px;
   padding: 0 0 12px;
-  border-bottom: 1px solid var(--yte-outline);
+  border-bottom: 1px solid var(--ytm-outline);
 }

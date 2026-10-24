@@ -8,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chidi0716/youtube-extension/host/internal/testenv"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/testenv"
 )
 
-// TestInstallOfflineEndToEnd 以真正的 yte-host 執行 --install --offline 與 --uninstall
+// TestInstallOfflineEndToEnd 以真正的 ytm-host 執行 --install --offline 與 --uninstall
 // （Linux 上使用開發用的位置：~/.local/state 與 ~/.config/google-chrome、~/.mozilla）。
 func TestInstallOfflineEndToEnd(t *testing.T) {
 	if runtime.GOOS != "linux" {
@@ -31,10 +31,10 @@ func TestInstallOfflineEndToEnd(t *testing.T) {
 		}
 		return string(out), code
 	}
-	installDir := filepath.Join(e.home, ".local", "state", "youtube-extension-host")
-	helper := filepath.Join(installDir, "yte-host")
-	chrome := filepath.Join(e.home, ".config", "google-chrome", "NativeMessagingHosts", "com.chidi0716.youtube_extension.json")
-	firefox := filepath.Join(e.home, ".mozilla", "native-messaging-hosts", "com.chidi0716.youtube_extension.json")
+	installDir := filepath.Join(e.home, ".local", "state", "yt-toolbar-master")
+	helper := filepath.Join(installDir, "ytm-host")
+	chrome := filepath.Join(e.home, ".config", "google-chrome", "NativeMessagingHosts", "com.chidi0716.yt_toolbar_master.json")
+	firefox := filepath.Join(e.home, ".mozilla", "native-messaging-hosts", "com.chidi0716.yt_toolbar_master.json")
 
 	out, code := run("--install", "--offline")
 	if code != 0 {

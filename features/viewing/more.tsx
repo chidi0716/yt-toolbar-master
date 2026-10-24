@@ -11,7 +11,7 @@ import { ensurePageStyles } from './page-styles';
 import { createSettingFeature } from './setting-feature';
 import { createStore, type Store, type ToggleState, type ViewingFeature } from './store';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 
 // ---------------------------------------------------------------------------
 // 切換分頁時自動暫停（FR-60）
@@ -134,8 +134,8 @@ export function createAutoplay(): AutoplayFeature {
 // 純音訊模式（FR-62）
 // ---------------------------------------------------------------------------
 
-const AUDIO_ONLY_CLASS = 'yte-audio-only';
-const AUDIO_COVER_STYLE_ID = 'yte-audio-only-cover';
+const AUDIO_ONLY_CLASS = 'ytm-audio-only';
+const AUDIO_COVER_STYLE_ID = 'ytm-audio-only-cover';
 
 export function createAudioOnly() {
   const writeCover = () => {
@@ -174,7 +174,7 @@ export function createAudioOnly() {
 // 滑鼠滾輪調整音量（FR-63）
 // ---------------------------------------------------------------------------
 
-const HINT_TAG = 'yte-volume-hint';
+const HINT_TAG = 'ytm-volume-hint';
 const HINT_MS = 1000;
 const HINT_CSS = `
 :host { all: initial; position: fixed; z-index: 2300; pointer-events: none; transform: translate(-50%, -50%); }

@@ -91,6 +91,29 @@ export const embedInfo = storage.defineItem<boolean>('sync:embedInfo', { fallbac
 /** MP3 位元率（002 FR-20：預設 192 kbps，記住上次選擇）。 */
 export const mp3Bitrate = storage.defineItem<number>('sync:mp3Bitrate', { fallback: 192 });
 
+// 一鍵下載與右鍵下載（009，plan 3.11）。
+
+/** 一鍵下載（009 FR-1：預設開啟）：點「影片」「MP3」直接以預設值開始下載。 */
+export const quickDownload = storage.defineItem<boolean>('sync:quickDownload', { fallback: true });
+
+/** 預設影片畫質（009 FR-2）：最高畫質或畫面高度（短邊）。 */
+export const DEFAULT_VIDEO_HEIGHTS = ['best', 2160, 1440, 1080, 720, 480] as const;
+export type DefaultVideoHeight = (typeof DEFAULT_VIDEO_HEIGHTS)[number];
+export const defaultVideoHeight = storage.defineItem<DefaultVideoHeight>('sync:defaultVideoHeight', { fallback: 1080 });
+
+/** 預設影片格式（009 FR-2）：MP4（相容性最好，預設）或不限格式。 */
+export const DEFAULT_VIDEO_CONTAINERS = ['mp4', 'any'] as const;
+export type DefaultVideoContainer = (typeof DEFAULT_VIDEO_CONTAINERS)[number];
+export const defaultVideoContainer = storage.defineItem<DefaultVideoContainer>('sync:defaultVideoContainer', { fallback: 'mp4' });
+
+/** 在影片連結的右鍵選單顯示下載選項（009 FR-25：預設開啟）。 */
+export const downloadContextMenu = storage.defineItem<boolean>('sync:downloadContextMenu', { fallback: true });
+
+/** 讀到的預設畫質不合法時（例如其他版本寫入的值）改用 1080。 */
+export const toDefaultVideoHeight = (v: unknown): DefaultVideoHeight =>
+  (DEFAULT_VIDEO_HEIGHTS as readonly unknown[]).includes(v) ? (v as DefaultVideoHeight) : 1080;
+export const toDefaultVideoContainer = (v: unknown): DefaultVideoContainer => (v === 'any' ? 'any' : 'mp4');
+
 /** 是否已顯示過「裁切需要額外處理時間」的說明（004 FR-23：第一次使用裁切時顯示）。 */
 export const clipHintSeen = storage.defineItem<boolean>('local:clipHintSeen', { fallback: false });
 

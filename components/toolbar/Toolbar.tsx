@@ -13,7 +13,7 @@ import { ComingSoon } from '../panels/PanelStatus';
 import { useStore } from '../panels/useStore';
 import { FIXED, TOOLS, getButton, isToolOngoing, type ButtonDef, type ButtonId } from './buttons';
 import { OtherTools } from './OtherTools';
-import { initialPanelState, panelReducer } from './panel-state';
+import { initialPanelState, panelReducer, reminderBlocked } from './panel-state';
 import { PanelHost } from './PanelHost';
 import type { HorizontalRange } from './position';
 import { ToolbarButton } from './ToolbarButton';
@@ -53,6 +53,8 @@ export interface ToolbarProps {
   onSaveLayout?: (layout: ToolbarLayout) => void;
   /** 新版本提醒（008 FR-28、FR-29b）：工具列下方的卡片、「更多」上的小圓點與選單頂端的提醒。 */
   reminder?: UpdateReminder;
+  /** 取代按鈕名稱的提示文字（009 FR-7：一鍵下載時標明點下去會發生什麼）。 */
+  tooltips?: Partial<Record<ButtonId, string>>;
 }
 
 const NO_REMINDER = createStore<ReminderState>({ phase: 'none', view: null, cardVisible: false });
@@ -71,6 +73,7 @@ export function Toolbar({
   layout = defaultLayout(),
   onSaveLayout,
   reminder,
+  tooltips,
 }: ToolbarProps) {
   useLocale();
   const reminderState = useStore(reminder?.controller.state ?? NO_REMINDER);
@@ -151,7 +154,7 @@ export function Toolbar({
     reminder.attach(host);
     return () => reminder.attach(null);
   }, [reminder, host]);
-  useEffect(() => reminder?.setToolbarBlocked(state.openId !== null || editing), [reminder, state.openId, editing]);
+  useEffect(() => reminder?.setToolbarBlocked(reminderBlocked(state, editing)), [reminder, state.openId, editing]);
 
   const handleClick = (def: ButtonDef) => {
     if (def.kind === 'panel') {
@@ -183,7 +186,7 @@ export function Toolbar({
         def={def}
         label={dotNotes.length ? `${label} (${dotNotes.join(', ')})` : label}
         tooltip={
-          toggleNotice ?? (notice === def.id ? t('comingSoon') : disabledReason ? `${label}: ${disabledReason}` : label)
+          toggleNotice ?? (notice === def.id ? t('comingSoon') : disabledReason ? `${label}: ${disabledReason}` : (tooltips?.[def.id] ?? label))
         }
         notice={notice === def.id || !!toggleNotice}
         expanded={state.openId === def.id}
@@ -209,7 +212,7 @@ export function Toolbar({
 
   if (draft) {
     return (
-      <div ref={containerRef} class="yte-toolbar" data-editing="" role="group" aria-label={t('editToolbarLabel')}>
+      <div ref={containerRef} class="ytm-toolbar" data-editing="" role="group" aria-label={t('editToolbarLabel')}>
         <ToolbarEditor
           draft={draft}
           onChange={setDraft}
@@ -236,7 +239,7 @@ export function Toolbar({
           onOpen={(tool: ToolId) => handleClick(TOOLS[tool])}
         />
         {content}
-        <button type="button" class="yte-more-edit" onClick={startEditing}>
+        <button type="button" class="ytm-more-edit" onClick={startEditing}>
           <Icon name="edit" size={20} />
           <span>{t('moreEditToolbar')}</span>
         </button>
@@ -245,11 +248,11 @@ export function Toolbar({
   };
 
   return (
-    <div ref={containerRef} class="yte-toolbar" role="group" aria-label={t('toolbarLabel')}>
-      <div class="yte-group" data-group="left">
+    <div ref={containerRef} class="ytm-toolbar" role="group" aria-label={t('toolbarLabel')}>
+      <div class="ytm-group" data-group="left">
         {left.map((id, i) => renderButton(TOOLS[id], i === 0 ? 'start' : 'center'))}
       </div>
-      <div class="yte-group" data-group="right">
+      <div class="ytm-group" data-group="right">
         {rightDefs.map((def, i) => renderButton(def, i === rightDefs.length - 1 ? 'end' : 'center'))}
       </div>
       {reminder && reminderState.cardVisible && reminderState.view && <UpdateCard view={reminderState.view} reminder={reminder} />}
@@ -276,5 +279,5 @@ export function Toolbar({
 }
 
 function panelDomId(id: ButtonId): string {
-  return `yte-panel-${id}`;
+  return `ytm-panel-${id}`;
 }

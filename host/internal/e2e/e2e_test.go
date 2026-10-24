@@ -1,4 +1,4 @@
-// Package e2e 是橋接程式的端到端測試：編譯真正的 yte-host 與假 yt-dlp，
+// Package e2e 是橋接程式的端到端測試：編譯真正的 ytm-host 與假 yt-dlp，
 // 模擬瀏覽器經由 stdin/stdout 送出原生訊息（4 位元組長度＋JSON），確認協定與完整流程。
 package e2e
 
@@ -17,7 +17,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/testenv"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/testenv"
 )
 
 func TestMain(m *testing.M) { testenv.Main(m) }
@@ -38,7 +38,7 @@ func buildHost(t *testing.T) string {
 			hostErr = err
 			return
 		}
-		hostBin, hostErr = testenv.Build(dir, "yte-host", "./cmd/yte-host")
+		hostBin, hostErr = testenv.Build(dir, "ytm-host", "./cmd/ytm-host")
 	})
 	if hostErr != nil {
 		t.Fatal(hostErr)
@@ -370,7 +370,7 @@ func TestDownloadSurvivesHost(t *testing.T) {
 	if j["missed"] != false {
 		t.Fatalf("missed must be reported once: %v", j)
 	}
-	ff := start(t, e, filepath.Join(e.home, "x.json"), "youtube-extension@chidi0716")
+	ff := start(t, e, filepath.Join(e.home, "x.json"), "yt-toolbar-master@chidi0716")
 	if jobs := ok(t, ff.request("jobs", nil, nil))["jobs"].([]any); len(jobs) != 0 {
 		t.Fatalf("firefox sees chrome jobs: %v", jobs)
 	}

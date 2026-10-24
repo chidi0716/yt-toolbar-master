@@ -40,7 +40,7 @@
   2. 從 yt-dlp 官方 GitHub 正式版本下載 yt-dlp 單一執行檔，驗證官方檢查碼。
   3. 從 deno 官方 GitHub 正式版本下載 deno，驗證官方檢查碼。
   4. 下載 ffmpeg 與 ffprobe（來源見 plan 4.9，只使用公開、有檢查碼的來源；已有可用的 ffmpeg 時跳過並沿用）。
-  5. 全部放在使用者資料夾內的一個專屬資料夾（macOS：`~/Library/Application Support/youtube-extension-host/`；Windows：`%LOCALAPPDATA%\youtube-extension-host\`），為 Chrome 與 Firefox（含 Zen）註冊。
+  5. 全部放在使用者資料夾內的一個專屬資料夾（macOS：`~/Library/Application Support/yt-toolbar-master/`；Windows：`%LOCALAPPDATA%\yt-toolbar-master\`），為 Chrome 與 Firefox（含 Zen）註冊。
   6. 印出「完成！回到瀏覽器即可下載」。
 - **FR-12**：不需要系統管理員權限或密碼，不修改系統設定、不安裝到使用者資料夾以外的地方、不修改 PATH。
 - **FR-13**：可以重複執行：已安裝且版本最新的部分跳過，其餘修復或更新。

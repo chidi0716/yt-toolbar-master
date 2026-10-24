@@ -10,12 +10,12 @@ func TestIdentifyCaller(t *testing.T) {
 	}{
 		{[]string{"chrome-extension://bkjlangdjfpllnkcpfpdlajchbginjdj/"}, "chrome", true},
 		{[]string{"chrome-extension://bkjlangdjfpllnkcpfpdlajchbginjdj/", "--parent-window=1234"}, "chrome", true},
-		{[]string{"/Users/me/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.youtube_extension.json", "youtube-extension@chidi0716"}, "firefox", true},
+		{[]string{"/Users/me/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.yt_toolbar_master.json", "yt-toolbar-master@chidi0716"}, "firefox", true},
 		{nil, "", false},
 		{[]string{"chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/"}, "", false},
 		{[]string{"x.json", "other@example"}, "", false},
 		{[]string{"--run-anything"}, "", false},
-		{[]string{"youtube-extension@chidi0716"}, "", false},
+		{[]string{"yt-toolbar-master@chidi0716"}, "", false},
 	}
 	for _, c := range cases {
 		got, ok := identifyCaller(c.args)

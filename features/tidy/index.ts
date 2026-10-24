@@ -10,7 +10,7 @@ import { applyPageClasses, pageClasses, PAGE_CLASS_TOGGLES, type ClassSource } f
 import { TIDY_OPTIONS, type TidyOptionId } from './options';
 import { ensureTidyStyles } from './styles';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 
 /** 需要程式的選項（005 NFR-2）。 */
 export interface TidyScriptFeature {

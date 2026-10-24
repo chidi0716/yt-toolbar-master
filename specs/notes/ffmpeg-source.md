@@ -2,7 +2,7 @@
 
 日期：2026-10-23　負責：實作方（甲）
 
-ffmpeg 與 ffprobe 由一行指令安裝時下載（系統上已有可用的 ffmpeg 與 ffprobe 時跳過）。本專案不轉存第三方檔案，`release/components.lock.json` 只記錄固定版本的官方網址、SHA256 與官方公布檢查碼的網址；發佈流程以 `yte-release lock-check -download` 下載每個檔案並與兩者比對。
+ffmpeg 與 ffprobe 由一行指令安裝時下載（系統上已有可用的 ffmpeg 與 ffprobe 時跳過）。本專案不轉存第三方檔案，`release/components.lock.json` 只記錄固定版本的官方網址、SHA256 與官方公布檢查碼的網址；發佈流程以 `ytm-release lock-check -download` 下載每個檔案並與兩者比對。
 
 ## macOS：Martin Riedl 的 FFmpeg Build Server
 
@@ -38,7 +38,7 @@ ffmpeg 與 ffprobe 由一行指令安裝時下載（系統上已有可用的 ffm
 
 1. 在上面兩個網站找到新的版本（macOS 用 Release Build；Windows 用某個月底的 `autobuild-*`）。
 2. 修改 `release/components.lock.json` 的 `url`、`sha256`（從官方檢查碼檔案複製）、`checksums` 與 `version`（Windows 的 `platforms.windows-amd64.version` 寫 FFmpeg 的 git 版本）。
-3. 執行 `cd host && go run ./cmd/yte-release lock-check -download`，確認官方檢查碼與實際下載的檔案都相符。
+3. 執行 `cd host && go run ./cmd/ytm-release lock-check -download`，確認官方檢查碼與實際下載的檔案都相符。
 
 ffmpeg 不會自動更新（008 FR-20）；lock 檔中的版本改變後，下一個小幫手版本的自動更新會依清單替換安裝資料夾中的 ffmpeg 與 ffprobe。
 

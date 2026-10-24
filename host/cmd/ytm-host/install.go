@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/installer"
-	"github.com/chidi0716/youtube-extension/host/internal/jobs"
-	"github.com/chidi0716/youtube-extension/host/internal/platform"
-	"github.com/chidi0716/youtube-extension/host/internal/release"
-	"github.com/chidi0716/youtube-extension/host/internal/ytdlp"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/installer"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/jobs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/release"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/ytdlp"
 )
 
 // UninstallRetry 是移除安裝資料夾時重試的時間（Windows 上剛結束的小幫手可能還鎖著檔案）。
@@ -53,7 +53,7 @@ func newInstaller() *installer.Installer {
 	}
 }
 
-const installUsage = "usage: yte-host --install [--manifest <components.json>] | --install --offline"
+const installUsage = "usage: ytm-host --install [--manifest <components.json>] | --install --offline"
 
 // runInstall 實作 --install。參數只接受固定的旗標，路徑必須是存在的檔案。
 func runInstall(args []string) int {
@@ -129,7 +129,7 @@ func runUninstall(args []string) int {
 		}
 		delay = n
 	default:
-		fmt.Fprintln(os.Stderr, "usage: yte-host --uninstall [--delay <seconds>]")
+		fmt.Fprintln(os.Stderr, "usage: ytm-host --uninstall [--delay <seconds>]")
 		return 2
 	}
 	l := platform.CurrentLayout()
@@ -154,7 +154,7 @@ func runUninstall(args []string) int {
 // spawnUninstallCopy 把自己複製到系統暫存資料夾並以脫離的方式執行 --uninstall。
 func spawnUninstallCopy(delay int) (int, error) {
 	src := selfPath()
-	dest := filepath.Join(os.TempDir(), fmt.Sprintf("yte-uninstall-%d.exe", time.Now().UnixNano()))
+	dest := filepath.Join(os.TempDir(), fmt.Sprintf("ytm-uninstall-%d.exe", time.Now().UnixNano()))
 	in, err := os.ReadFile(src)
 	if err != nil {
 		return 0, err

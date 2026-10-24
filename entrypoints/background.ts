@@ -1,4 +1,5 @@
 import { handleDownloadMessage } from '@/features/downloads/background';
+import { onMenuNotificationClicked, registerContextMenu } from '@/features/downloads/context-menu';
 import { handleHostMessage, onNotificationClicked, resumeDownloads } from '@/features/downloads/host-background';
 import { browserUpdateService } from '@/features/update/background';
 import { initI18n } from '@/utils/i18n';
@@ -29,7 +30,7 @@ export default defineBackground(() => {
         done.then(
           (view) => sendResponse({ ok: true, view }),
           (err: unknown) => {
-            console.info('[youtube-extension] update reminder failed', err);
+            console.info('[yt-toolbar-master] update reminder failed', err);
             sendResponse({ ok: false, error: 'UNKNOWN' });
           },
         );
@@ -42,7 +43,12 @@ export default defineBackground(() => {
     }
   });
   // 點下載完成的通知：在 Finder／檔案總管中顯示檔案（002 FR-5）。
-  browser.notifications.onClicked.addListener(onNotificationClicked);
+  // 右鍵下載的通知（009 FR-23、FR-24）：「需要安裝小幫手」打開設定頁的下載區。
+  browser.notifications.onClicked.addListener((id) => {
+    if (!onMenuNotificationClicked(id)) onNotificationClicked(id);
+  });
+  // 影片連結的右鍵選單（009 第三節）：安裝、啟動與設定改變時重建。
+  registerContextMenu();
   // 有進行中的下載時重新連線，繼續接收進度並補發通知（002 FR-7、plan 4.6）。
   void resumeDownloads();
   // 圖示的 NEW 標記：瀏覽器重新啟動或擴充功能更新後依記錄重新設定（更新到最新版本後消失，FR-29a）。

@@ -6,4 +6,4 @@ import { createDarkMode } from '@/features/viewing/dark-mode';
 
 const dark = createDarkMode();
 dark.start();
-(window as unknown as { __yteDark: typeof dark }).__yteDark = dark;
+(window as unknown as { __ytmDark: typeof dark }).__ytmDark = dark;

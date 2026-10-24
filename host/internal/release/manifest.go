@@ -59,7 +59,7 @@ func ExeName(name, platform string) string {
 
 // HelperFileName 回傳小幫手在 Release 中的檔名。
 func HelperFileName(platform string) string {
-	return ExeName("yte-host-"+platform, platform)
+	return ExeName("ytm-host-"+platform, platform)
 }
 
 // Asset 是一個可下載的檔案。

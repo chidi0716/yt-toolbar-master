@@ -8,7 +8,7 @@ export interface PipFeature extends ViewingFeature {
   toggle(): void;
 }
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 
 /** 瀏覽器是否支援原生子母畫面（例如 Firefox 沒有這個 API）。 */
 export function isPipSupported(doc: Document = document): boolean {

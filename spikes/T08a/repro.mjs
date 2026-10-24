@@ -48,7 +48,7 @@ if (real) {
   if (!(await link.count())) await stop('no video in search results');
   await link.click();
   try {
-    await page.waitForSelector('yte-toolbar', { state: 'attached', timeout: 20_000 });
+    await page.waitForSelector('ytm-toolbar', { state: 'attached', timeout: 20_000 });
   } catch {
     await stop('toolbar did not appear');
   }
@@ -67,15 +67,15 @@ const sample = () =>
   page.evaluate(() => {
     const c = document.querySelector('ytd-watch-flexy #player-container');
     const r = c.getBoundingClientRect();
-    const tb = document.querySelector('yte-toolbar');
+    const tb = document.querySelector('ytm-toolbar');
     const tr = tb?.getBoundingClientRect();
     const hit = tr ? document.elementFromPoint(tr.left + 20, tr.top + tr.height / 2) : null;
     return {
       t: Math.round(performance.now()),
-      floating: c.classList.contains('yte-floating'),
+      floating: c.classList.contains('ytm-floating'),
       rect: [r.left, r.top, r.width, r.height].map(Math.round).join(','),
-      cinema: document.documentElement.classList.contains('yte-cinema'),
-      toolbar: tb ? (hit?.closest('yte-toolbar') ? 'visible' : `covered by ${hit?.tagName.toLowerCase()}`) : 'missing',
+      cinema: document.documentElement.classList.contains('ytm-cinema'),
+      toolbar: tb ? (hit?.closest('ytm-toolbar') ? 'visible' : `covered by ${hit?.tagName.toLowerCase()}`) : 'missing',
       scrollY: Math.round(scrollY),
     };
   });

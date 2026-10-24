@@ -18,7 +18,7 @@ export interface SelectProps<V extends string> {
 /** 下拉選單：深色背景、細邊框、圓角，右側有向下箭頭（001 表單元件）。使用原生 <select>。 */
 export function Select<V extends string>({ value, options, onChange, id, label, disabled }: SelectProps<V>) {
   return (
-    <span class="yte-select">
+    <span class="ytm-select">
       <select
         id={id}
         aria-label={label}
@@ -32,7 +32,7 @@ export function Select<V extends string>({ value, options, onChange, id, label, 
           </option>
         ))}
       </select>
-      <span class="yte-select-arrow" aria-hidden="true">
+      <span class="ytm-select-arrow" aria-hidden="true">
         <Icon name="arrow_drop_down" />
       </span>
     </span>

@@ -4,9 +4,9 @@
 // 查詢只取最新正式版本的版本號、標題與網址，不帶任何自訂標頭、cookie 或 referrer，不送出任何識別資訊。
 
 /** 本專案最新正式版本（不含預先發行版本）。 */
-export const LATEST_RELEASE_API = 'https://api.github.com/repos/chidi0716/youtube-extension/releases/latest';
+export const LATEST_RELEASE_API = 'https://api.github.com/repos/chidi0716/yt-toolbar-master/releases/latest';
 /** 「前往下載」只會開啟這個前綴的網址（GitHub 的版本頁面）。 */
-export const RELEASE_PAGE_PREFIX = 'https://github.com/chidi0716/youtube-extension/releases/';
+export const RELEASE_PAGE_PREFIX = 'https://github.com/chidi0716/yt-toolbar-master/releases/';
 /** 查詢間隔：每 24 小時最多一次（FR-27）。 */
 export const CHECK_INTERVAL_MS = 24 * 60 * 60_000;
 /** 查詢逾時。 */
@@ -97,7 +97,7 @@ export function isReleaseUrl(value: unknown): value is string {
     url.username === '' &&
     url.password === '' &&
     url.href === value &&
-    url.pathname.startsWith('/chidi0716/youtube-extension/releases/') &&
+    url.pathname.startsWith('/chidi0716/yt-toolbar-master/releases/') &&
     !url.pathname.split('/').includes('..')
   );
 }
@@ -262,14 +262,14 @@ export async function fetchLatestRelease(fetchFn: typeof fetch = fetch): Promise
       signal: controller.signal,
     });
     if (!res.ok) {
-      console.info(`[youtube-extension] update check: HTTP ${res.status}`);
+      console.info(`[yt-toolbar-master] update check: HTTP ${res.status}`);
       return null;
     }
     const release = parseRelease(await res.json());
-    if (!release) console.info('[youtube-extension] update check: unexpected response');
+    if (!release) console.info('[yt-toolbar-master] update check: unexpected response');
     return release;
   } catch (err) {
-    console.info('[youtube-extension] update check failed', err);
+    console.info('[yt-toolbar-master] update check failed', err);
     return null;
   } finally {
     clearTimeout(timer);

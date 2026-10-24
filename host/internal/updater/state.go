@@ -1,5 +1,5 @@
 // Package updater 實作自動更新（plan 4.9、008 FR-20 至 FR-25）：狀態檔、24 小時限制、
-// 鎖檔，以及 yte-host --update 的流程。
+// 鎖檔，以及 ytm-host --update 的流程。
 package updater
 
 import (
@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/jobs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/jobs"
 )
 
 // 檔案名稱（都在安裝資料夾中）。

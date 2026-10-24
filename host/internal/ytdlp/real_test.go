@@ -14,19 +14,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/validate"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
 )
 
 // TestRealYtDlpLocal 用真正的 yt-dlp 對本機測試伺服器上的影片執行 DownloadArgs 組出的參數，
 // 確認 yt-dlp 接受全部選項、輸出格式與解析器一致。不連 YouTube。
 //
-// 只在設定 YTE_REAL_YTDLP（yt-dlp 的路徑）時執行，並需要系統上有 ffmpeg：
+// 只在設定 YTM_REAL_YTDLP（yt-dlp 的路徑）時執行，並需要系統上有 ffmpeg：
 //
-//	YTE_REAL_YTDLP=$PWD/../spikes/stage3/.cache/bin/yt-dlp go test ./internal/ytdlp -run Real -v
+//	YTM_REAL_YTDLP=$PWD/../spikes/stage3/.cache/bin/yt-dlp go test ./internal/ytdlp -run Real -v
 func TestRealYtDlpLocal(t *testing.T) {
-	bin := os.Getenv("YTE_REAL_YTDLP")
+	bin := os.Getenv("YTM_REAL_YTDLP")
 	if bin == "" {
-		t.Skip("YTE_REAL_YTDLP is not set")
+		t.Skip("YTM_REAL_YTDLP is not set")
 	}
 	ffmpeg, err := exec.LookPath("ffmpeg")
 	if err != nil {

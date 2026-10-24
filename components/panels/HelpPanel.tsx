@@ -10,7 +10,7 @@ import { FIXED, TOOLS } from '../toolbar/buttons';
 function openOptions() {
   const message: ContentMessage = { type: 'openOptions' };
   browser.runtime.sendMessage(message).catch((err: unknown) => {
-    console.info('[youtube-extension] failed to open settings', err);
+    console.info('[yt-toolbar-master] failed to open settings', err);
   });
 }
 
@@ -18,22 +18,22 @@ export function HelpPanel({ layout = defaultLayout() }: { layout?: ToolbarLayout
   const { left, right, hidden } = splitLayout(layout);
   const shown = [...left.map((id) => TOOLS[id]), ...right.map((id) => TOOLS[id]), FIXED.more, FIXED.close];
   return (
-    <div class="yte-help">
-      <ul class="yte-help-list">
+    <div class="ytm-help">
+      <ul class="ytm-help-list">
         {shown.map((b) => (
-          <li key={b.id} class="yte-help-item" data-button={b.id}>
-            <span class="yte-help-icon">
+          <li key={b.id} class="ytm-help-item" data-button={b.id}>
+            <span class="ytm-help-icon">
               <Icon name={b.icon} />
             </span>
-            <span class="yte-help-text">
-              <span class="yte-help-name">{t(b.label)}</span>
-              <span class="yte-help-desc">{t(b.description)}</span>
+            <span class="ytm-help-text">
+              <span class="ytm-help-name">{t(b.label)}</span>
+              <span class="ytm-help-desc">{t(b.description)}</span>
             </span>
           </li>
         ))}
       </ul>
-      {hidden.length > 0 && <p class="yte-muted yte-help-hidden">{t('helpHiddenTools')}</p>}
-      <button type="button" class="yte-link" onClick={openOptions}>
+      {hidden.length > 0 && <p class="ytm-muted ytm-help-hidden">{t('helpHiddenTools')}</p>}
+      <button type="button" class="ytm-link" onClick={openOptions}>
         <Icon name="settings" size={20} />
         <span>{t('helpOpenSettings')}</span>
       </button>

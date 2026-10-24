@@ -1,4 +1,4 @@
-// yte-host 是本專案的原生訊息橋接程式（plan 第 4 節）。
+// ytm-host 是本專案的原生訊息橋接程式（plan 第 4 節）。
 //
 // 執行模式：
 //   - 由瀏覽器以原生訊息（Native Messaging）啟動：經由 stdin/stdout 交換
@@ -21,15 +21,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/app"
-	"github.com/chidi0716/youtube-extension/host/internal/commands"
-	"github.com/chidi0716/youtube-extension/host/internal/installer"
-	"github.com/chidi0716/youtube-extension/host/internal/jobs"
-	"github.com/chidi0716/youtube-extension/host/internal/logx"
-	"github.com/chidi0716/youtube-extension/host/internal/platform"
-	"github.com/chidi0716/youtube-extension/host/internal/protocol"
-	"github.com/chidi0716/youtube-extension/host/internal/validate"
-	"github.com/chidi0716/youtube-extension/host/internal/ytdlp"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/app"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/commands"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/installer"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/jobs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/logx"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/protocol"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/ytdlp"
 )
 
 // version 在建置時以 -ldflags "-X main.version=..." 覆寫。
@@ -89,7 +89,7 @@ func main() {
 	}
 	client, ok := identifyCaller(args)
 	if !ok {
-		fmt.Fprintln(os.Stderr, "yte-host: this program is started by the browser extension; it does not accept command-line arguments")
+		fmt.Fprintln(os.Stderr, "ytm-host: this program is started by the browser extension; it does not accept command-line arguments")
 		os.Exit(2)
 	}
 	os.Exit(serve(client))

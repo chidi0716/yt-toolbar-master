@@ -1,4 +1,4 @@
-# youtube-extension
+# YT Toolbar Master
 
 [English](./README.md) | **繁體中文**
 
@@ -12,6 +12,8 @@
 
 **下載工具**
 
+- **一鍵下載**（預設開啟）：點「影片」或「MP3」就以預設畫質直接開始下載（未修改時為 1080p MP4；MP3 使用上次選擇的位元率）。面板顯示標題、畫質與大小（例如「1080p60 MP4，約 320 MB」）與進度；「改用其他畫質」會取消這次下載並顯示下方的完整清單。下載中再點一次不會重複下載。可以在設定頁關閉，改回每次先選再下載。
+- **右鍵下載**：在 YouTube 的影片連結（首頁、搜尋結果、推薦、播放清單）按右鍵 →「YT Toolbar Master」→「下載影片（1080p MP4）」或「下載 MP3（192 kbps）」，不用點進影片。開始與完成時會顯示通知；下載也會出現在每個 YouTube 分頁的影片與 MP3 面板中，可以取消。可以在設定頁關閉。
 - **影片**：由高到低的畫質清單（標示 8K／4K／2K／1080／HD）與檔案大小，預設為 MP4，「顯示更多格式」可選 WEBM。2K 以上 YouTube 沒有 H.264 版本，改以 AV1（或 VP9）合併成 MP4，並標示「部分播放器可能無法播放」。
 - **MP3**：64–320 kbps（記住上次選擇）。
 - 影片與 MP3 都可以設定**時間範圍**，只下載其中一段：區間滑桿、開始／結束輸入框、「與播放器同步」與「設為目前時間」。
@@ -69,7 +71,7 @@ YouTube 上的工具列  →  擴充功能背景腳本  →  本機橋接程式 
 1. 按 ⌘＋空白鍵，輸入「終端機」並按 Enter。
 2. 貼上這行指令並按 Enter：
    ```bash
-   curl -fsSL https://github.com/chidi0716/youtube-extension/releases/latest/download/install.sh | sh
+   curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.sh | sh
    ```
 3. 看到「完成」後回到瀏覽器，影片與 MP3 面板會自動切換成可下載的畫面。
 
@@ -78,7 +80,7 @@ YouTube 上的工具列  →  擴充功能背景腳本  →  本機橋接程式 
 1. 按開始鍵，輸入「PowerShell」並開啟。
 2. 貼上這行指令並按 Enter：
    ```powershell
-   irm https://github.com/chidi0716/youtube-extension/releases/latest/download/install.ps1 | iex
+   irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.ps1 | iex
    ```
 3. 看到「完成」後回到瀏覽器，影片與 MP3 面板會自動切換成可下載的畫面。
 
@@ -86,12 +88,12 @@ YouTube 上的工具列  →  擴充功能背景腳本  →  本機橋接程式 
 
 ### 這個指令會做什麼？
 
-1. 從本專案的 [GitHub 正式版本](https://github.com/chidi0716/youtube-extension/releases)下載對應系統的小幫手，並與發佈清單（`components.json`）核對 SHA-256。
+1. 從本專案的 [GitHub 正式版本](https://github.com/chidi0716/yt-toolbar-master/releases)下載對應系統的小幫手，並與發佈清單（`components.json`）核對 SHA-256。
 2. 小幫手檢查發佈清單（只接受以 HTTPS 從本專案 GitHub 正式版本取得的清單），再下載：
    - yt-dlp：[yt-dlp 官方正式版本](https://github.com/yt-dlp/yt-dlp/releases)，核對官方檢查碼；
    - deno：[deno 官方正式版本](https://github.com/denoland/deno/releases)，核對官方檢查碼；
    - ffmpeg 與 ffprobe：macOS 從 [Martin Riedl 的 FFmpeg Build Server](https://ffmpeg.martin-riedl.de)、Windows 從 [yt-dlp/FFmpeg-Builds](https://github.com/yt-dlp/FFmpeg-Builds) 下載，核對發佈時記錄的檢查碼。電腦上已經有 ffmpeg 與 ffprobe（例如 Homebrew）時沿用，不另外下載。
-3. 全部放在 `~/Library/Application Support/youtube-extension-host/`（macOS）或 `%LOCALAPPDATA%\youtube-extension-host\`（Windows），並為 Chrome 與 Firefox（含 Zen）註冊小幫手。
+3. 全部放在 `~/Library/Application Support/yt-toolbar-master/`（macOS）或 `%LOCALAPPDATA%\yt-toolbar-master\`（Windows），並為 Chrome 與 Firefox（含 Zen）註冊小幫手。
 
 每個下載的檔案都必須符合發佈清單中的 SHA-256，否則刪除且不替換任何東西。本專案的版本在 GitHub 上設為不可變更，發佈後檔案不能再被修改。
 
@@ -100,13 +102,13 @@ YouTube 上的工具列  →  擴充功能背景腳本  →  本機橋接程式 
 **想先看過腳本再執行？** 先下載、閱讀，再執行：
 
 ```bash
-curl -fsSL -o install.sh https://github.com/chidi0716/youtube-extension/releases/latest/download/install.sh
+curl -fsSL -o install.sh https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.sh
 less install.sh
 sh install.sh
 ```
 
 ```powershell
-irm https://github.com/chidi0716/youtube-extension/releases/latest/download/install.ps1 -OutFile install.ps1
+irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.ps1 -OutFile install.ps1
 notepad install.ps1
 powershell -ExecutionPolicy Bypass -File install.ps1
 ```
@@ -125,11 +127,11 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 擴充功能已經移除時，執行：
 
 ```bash
-curl -fsSL https://github.com/chidi0716/youtube-extension/releases/latest/download/uninstall.sh | sh
+curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.sh | sh
 ```
 
 ```powershell
-irm https://github.com/chidi0716/youtube-extension/releases/latest/download/uninstall.ps1 | iex
+irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.ps1 | iex
 ```
 
 ### 手動安裝
@@ -137,7 +139,7 @@ irm https://github.com/chidi0716/youtube-extension/releases/latest/download/unin
 想自己安裝 yt-dlp、ffmpeg、deno，或從原始碼建置小幫手時：
 
 1. 安裝這些工具，例如以 [Homebrew](https://brew.sh)（`brew install yt-dlp ffmpeg deno`）或 [winget](https://learn.microsoft.com/windows/package-manager/winget/)（`winget install yt-dlp.yt-dlp Gyan.FFmpeg DenoLand.Deno`）。
-2. 取得小幫手：從[版本頁面](https://github.com/chidi0716/youtube-extension/releases)下載 `youtube-extension-host-macos.zip` 或 `youtube-extension-host-windows.zip` 並解壓縮；或安裝 [Go](https://go.dev/dl/) 1.24 以上與 Node.js 後執行 `npm run build:host`（輸出在 `host/dist/`）。
+2. 取得小幫手：從[版本頁面](https://github.com/chidi0716/yt-toolbar-master/releases)下載 `yt-toolbar-master-host-macos.zip` 或 `yt-toolbar-master-host-windows.zip` 並解壓縮；或安裝 [Go](https://go.dev/dl/) 1.24 以上與 Node.js 後執行 `npm run build:host`（輸出在 `host/dist/`）。
 3. 在該資料夾執行腳本（不要加 `sudo`）：
    ```bash
    sh install.sh
@@ -145,7 +147,7 @@ irm https://github.com/chidi0716/youtube-extension/releases/latest/download/unin
    ```powershell
    powershell -ExecutionPolicy Bypass -File install.ps1
    ```
-   腳本會執行 `yte-host --install --offline`：小幫手把自己複製到上面的資料夾並為 Chrome 與 Firefox 註冊，不下載任何東西，並列出找到了哪些 yt-dlp、ffmpeg、deno。
+   腳本會執行 `ytm-host --install --offline`：小幫手把自己複製到上面的資料夾並為 Chrome 與 Firefox 註冊，不下載任何東西，並列出找到了哪些 yt-dlp、ffmpeg、deno。
 4. 重新啟動瀏覽器，在影片或 MP3 面板按「重新檢查」。
 
 手動安裝的移除方式：在同一個資料夾執行 `uninstall.sh` 或 `uninstall.ps1`（或上面的一行指令）。
@@ -155,8 +157,8 @@ irm https://github.com/chidi0716/youtube-extension/releases/latest/download/unin
 - **面板仍顯示找不到小幫手**：安裝後請重新啟動瀏覽器。Zen 等以 Firefox 為基礎的瀏覽器使用 Firefox 的註冊。
 - **指令顯示「失敗」後停止**：看印出的原因（網路、磁碟空間、檔案與檢查碼不符等），必要時排除後再執行一次同一個指令，會從停下的地方繼續。
 - **顯示「yt-dlp 版本過舊」或缺少部分畫質**：小幫手會自動更新 yt-dlp；也可以在設定頁按「立即檢查更新」。若使用自己安裝的 yt-dlp（Homebrew 或 winget），請以 `brew upgrade yt-dlp` 或 `winget upgrade --id yt-dlp.yt-dlp` 更新。
-- **記錄檔**：`~/Library/Logs/youtube-extension-host/host.log`（macOS）或 `%LOCALAPPDATA%\youtube-extension-host\logs\host.log`（Windows）。只記錄指令名稱與錯誤訊息，不含 cookie 或帳號資訊。
-- 關閉 YouTube 分頁或瀏覽器後，下載仍會繼續。未完成的檔案放在下載資料夾中隱藏的 `.yte-tmp-…` 資料夾，下載完成、失敗或取消時會刪除。
+- **記錄檔**：`~/Library/Logs/yt-toolbar-master/host.log`（macOS）或 `%LOCALAPPDATA%\yt-toolbar-master\logs\host.log`（Windows）。只記錄指令名稱與錯誤訊息，不含 cookie 或帳號資訊。
+- 關閉 YouTube 分頁或瀏覽器後，下載仍會繼續。未完成的檔案放在下載資料夾中隱藏的 `.ytm-tmp-…` 資料夾，下載完成、失敗或取消時會刪除。
 
 **小幫手能做的事**：只有擴充功能需要的固定指令（檢查狀態、讀取影片資訊、下載、取消、列出下載、顯示檔案、選擇資料夾、更新、移除）。只有本擴充功能能啟動它（註冊設定檔中的 `allowed_origins`／`allowed_extensions`）。它只接受 YouTube 影片 ID，不接受網址或命令列選項，不開啟任何網路連接埠。yt-dlp 會連到 YouTube；小幫手本身只為了安裝與更新連到 GitHub 與上面列出的 ffmpeg 下載網站。
 
@@ -172,13 +174,13 @@ YouTube 經常改版，yt-dlp 會很快跟上。以一行指令安裝時，小�
 在「終端機」以 `curl` 下載的檔案不會被標記為「來自網路」，所以一行指令安裝不會遇到這個問題。若是從瀏覽器下載 zip 手動安裝，請在該資料夾再執行一次 `sh install.sh`（會移除隔離屬性），或改用一行指令安裝；不要加 `sudo`。
 
 **Zen（或其他以 Firefox 為基礎的瀏覽器）找不到橋接程式**
-安裝程式為 Firefox 註冊小幫手，Zen 通常會讀取同一個位置。安裝後請完全結束 Zen 再開啟，並按「重新檢查」。若仍顯示尚未連接，請開 issue 回報 Zen 版本、macOS 或 Windows 版本，以及 `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.youtube_extension.json`（macOS）是否存在；擴充功能主控台（`about:debugging` 中找到本擴充功能，按「檢查」）裡 `[youtube-extension]` 開頭的訊息也很有幫助。
+安裝程式為 Firefox 註冊小幫手，Zen 通常會讀取同一個位置。安裝後請完全結束 Zen 再開啟，並按「重新檢查」。若仍顯示尚未連接，請開 issue 回報 Zen 版本、macOS 或 Windows 版本，以及 `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.yt_toolbar_master.json`（macOS）是否存在；擴充功能主控台（`about:debugging` 中找到本擴充功能，按「檢查」）裡 `[yt-toolbar-master]` 開頭的訊息也很有幫助。
 
 **下載失敗，顯示「無法寫入下載資料夾」**
 設定頁選擇的資料夾被移動或刪除、磁碟已滿，或資料夾沒有寫入權限。請在設定頁改選其他資料夾或按「使用預設」。macOS 上「桌面」「文件」等資料夾可能需要授權：出現詢問是否允許存取時請允許。
 
 **Firefox 重新啟動後擴充功能不見了**
-從 `about:debugging` 載入的是暫時附加元件，Firefox 重新啟動後會被移除。請改從[版本頁面](https://github.com/chidi0716/youtube-extension/releases)下載簽署過的 `.xpi` 安裝（見[手動載入擴充功能](#手動載入擴充功能)），它也會自動更新。
+從 `about:debugging` 載入的是暫時附加元件，Firefox 重新啟動後會被移除。請改從[版本頁面](https://github.com/chidi0716/yt-toolbar-master/releases)下載簽署過的 `.xpi` 安裝（見[手動載入擴充功能](#手動載入擴充功能)），它也會自動更新。
 
 ## 開發
 
@@ -204,7 +206,7 @@ npm run release:dry     # 不需要 Secret，產生所有發佈檔案 → releas
 
 ## 手動載入擴充功能
 
-[版本頁面](https://github.com/chidi0716/youtube-extension/releases)有打包好的 `youtube-extension-<版本>-chrome.zip` 與 `youtube-extension-<版本>-firefox.xpi`（尚未經 Mozilla 簽署的版本改附 `youtube-extension-<版本>-firefox-temporary.zip`，Firefox 與 Zen 只能以臨時附加元件載入）。使用自己建置的版本時，改用 `.output/chrome-mv3` 或 `.output/firefox-mv3`。
+[版本頁面](https://github.com/chidi0716/yt-toolbar-master/releases)有打包好的 `yt-toolbar-master-<版本>-chrome.zip` 與 `yt-toolbar-master-<版本>-firefox.xpi`（尚未經 Mozilla 簽署的版本改附 `yt-toolbar-master-<版本>-firefox-temporary.zip`，Firefox 與 Zen 只能以臨時附加元件載入）。使用自己建置的版本時，改用 `.output/chrome-mv3` 或 `.output/firefox-mv3`。
 
 - **Chrome**：把 Chrome 版解壓縮到一個會保留的資料夾，開啟 `chrome://extensions`，打開「開發人員模式」，點「載入未封裝項目」，選擇該資料夾（或 `.output/chrome-mv3`）。Chrome 無法自動更新這個擴充功能；有新版本時擴充功能會顯示提醒。更新方式：把新版本解壓縮覆蓋同一個資料夾，再到 `chrome://extensions` 按「重新載入」。
 - **Firefox（開發用）**：開啟 `about:debugging#/runtime/this-firefox`，點「載入臨時附加元件」，選擇 `.output/firefox-mv3/manifest.json`。臨時附加元件在 Firefox 重新啟動後會被移除。
@@ -230,14 +232,14 @@ npm run release:dry     # 不需要 Secret，產生所有發佈檔案 → releas
 
 1. **開啟不可變更版本**：repo 的 **Settings → General**，在 **Releases** 區開啟不可變更版本（immutable releases）。之後已發佈的版本與檔案就不能再修改。
 2. 在本機試跑整個流程：`npm run release:dry`（輸出在 `release/dist/`，Firefox 版不送簽署）。
-3. 建立第一個版本（見下方）。不需要任何 Secret：沒有 Mozilla API 金鑰時，Release 會附上未簽署的 `youtube-extension-<版本>-firefox-temporary.zip`（Firefox／Zen 只能以臨時附加元件載入）、不產生 `updates.json`，並在說明中註明。
+3. 建立第一個版本（見下方）。不需要任何 Secret：沒有 Mozilla API 金鑰時，Release 會附上未簽署的 `yt-toolbar-master-<版本>-firefox-temporary.zip`（Firefox／Zen 只能以臨時附加元件載入）、不產生 `updates.json`，並在說明中註明。
 
 **之後（選用）：Firefox／Zen 的 Mozilla 簽署**。在 <https://addons.mozilla.org/developers/addon/api/key/> 建立 API 金鑰，加到 repo 的 Secrets（**Settings → Secrets and variables → Actions → New repository secret**）：`AMO_JWT_ISSUER`（「JWT issuer」）與 `AMO_JWT_SECRET`（「JWT secret」）。下一個版本起 `.xpi` 會經過簽署，Firefox／Zen 也會自動更新。
 
 #### 發佈步驟
 
 1. 修改 `package.json` 的 `version`（例如 `0.2.0`）並 commit。
-2. 需要時更新 `release/components.lock.json` 中固定的第三方版本（見 [`specs/notes/ffmpeg-source.md`](./specs/notes/ffmpeg-source.md)），並以 `cd host && go run ./cmd/yte-release lock-check -download` 檢查。
+2. 需要時更新 `release/components.lock.json` 中固定的第三方版本（見 [`specs/notes/ffmpeg-source.md`](./specs/notes/ffmpeg-source.md)），並以 `cd host && go run ./cmd/ytm-release lock-check -download` 檢查。
 3. 建立並推送標籤：`git tag v0.2.0 && git push origin v0.2.0`（必須與 `package.json` 相同）。
 4. 流程完成後檢查版本頁面。簽署版的 Firefox／Zen 會自動更新；Chrome（與 Firefox 臨時附加元件）使用者會在擴充功能中看到附有版本連結的提醒。
 

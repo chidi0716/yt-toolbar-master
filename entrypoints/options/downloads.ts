@@ -6,7 +6,20 @@ import { componentState, componentVersion, HOST_COMPONENTS, INSTALL_GUIDE_URL, t
 import { INSTALL_POLL_MS } from '@/features/downloads/install-guide';
 import type { HostOs } from '@/features/downloads/logic';
 import { t, type MessageKey } from '@/utils/i18n';
-import { downloadDir, embedInfo, namePreset } from '@/utils/settings';
+import {
+  DEFAULT_VIDEO_CONTAINERS,
+  DEFAULT_VIDEO_HEIGHTS,
+  defaultVideoContainer,
+  defaultVideoHeight,
+  downloadContextMenu,
+  downloadDir,
+  embedInfo,
+  namePreset,
+  quickDownload,
+  toDefaultVideoContainer,
+  toDefaultVideoHeight,
+  type DefaultVideoHeight,
+} from '@/utils/settings';
 import { componentInfo, createMaintenance, extensionSource, sourceLabel } from './host-maintenance';
 import { installGuide, platformOs } from './install-guide';
 
@@ -32,6 +45,46 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLEl
   if (dataset) Object.assign(node.dataset, dataset);
   node.append(...children);
   return node;
+}
+
+/** 預設影片畫質的選項文字（009 FR-2）。 */
+function heightLabel(h: DefaultVideoHeight): string {
+  if (h === 'best') return t('quickHeightBest');
+  const text = h === 2160 ? '2160p (4K)' : h === 1440 ? '1440p (2K)' : `${h}p`;
+  return h === 1080 ? t('optionsDefaultMark', text) : text;
+}
+
+/** 開關一列：名稱、一行說明與開關（與頁面整理的開關相同的外觀）。 */
+function switchRow(id: string, name: MessageKey, desc: MessageKey, item: { getValue(): Promise<boolean>; setValue(v: boolean): Promise<void>; watch(cb: (v: boolean) => void): () => void }, cleanups: Array<() => void>) {
+  const input = el('input', { type: 'checkbox', id, className: 'switch' });
+  input.setAttribute('role', 'switch');
+  input.setAttribute('aria-describedby', `${id}-desc`);
+  input.disabled = true;
+  void item.getValue().then((v) => {
+    input.checked = v !== false;
+    input.disabled = false;
+  });
+  input.addEventListener('change', () => void item.setValue(input.checked));
+  cleanups.push(item.watch((v) => (input.checked = v !== false)));
+  return el(
+    'div',
+    { className: 'option', dataset: { option: id } },
+    el('label', { className: 'option-text', htmlFor: id }, el('span', { className: 'option-name', textContent: t(name) }), el('span', { className: 'option-desc', id: `${id}-desc`, textContent: t(desc) })),
+    input,
+  );
+}
+
+/** 下拉選單一列。 */
+function selectRow(id: string, name: MessageKey, desc: MessageKey | null, options: Array<{ value: string; label: string }>) {
+  const select = el('select', { id, className: 'select' });
+  select.append(...options.map((o) => el('option', { value: o.value, textContent: o.label })));
+  select.disabled = true;
+  const text = el('label', { className: 'option-text', htmlFor: id }, el('span', { className: 'option-name', textContent: t(name) }));
+  if (desc) {
+    text.append(el('span', { className: 'option-desc', id: `${id}-desc`, textContent: t(desc) }));
+    select.setAttribute('aria-describedby', `${id}-desc`);
+  }
+  return { row: el('div', { className: 'option', dataset: { option: id } }, text, select), select };
 }
 
 function group(id: string, title: MessageKey): HTMLFieldSetElement {
@@ -99,7 +152,43 @@ export function renderDownloads(root: HTMLElement): () => void {
     ),
   );
 
-  root.append(connection, ...maintenance.elements, folder, files);
+  // ---- 一鍵下載（009 FR-1、FR-2） ----
+  const cleanups: Array<() => void> = [];
+  const quick = group('quick', 'optionsQuickTitle');
+  const height = selectRow(
+    'downloads-default-height',
+    'optionsDefaultHeight',
+    'optionsDefaultHeightDesc',
+    DEFAULT_VIDEO_HEIGHTS.map((h) => ({ value: String(h), label: heightLabel(h) })),
+  );
+  const container = selectRow('downloads-default-container', 'optionsDefaultContainer', null, [
+    ...DEFAULT_VIDEO_CONTAINERS.map((c) => ({ value: c, label: c === 'mp4' ? t('optionsDefaultMark', t('optionsContainerMp4')) : t('optionsContainerAny') })),
+  ]);
+  quick.append(
+    switchRow('downloads-quick', 'optionsQuickDownload', 'optionsQuickDownloadDesc', quickDownload, cleanups),
+    height.row,
+    container.row,
+    // 右鍵下載（009 FR-25）：關閉時背景腳本移除選單項目。
+    switchRow('downloads-context-menu', 'optionsContextMenu', 'optionsContextMenuDesc', downloadContextMenu, cleanups),
+  );
+  const showHeight = (v: unknown) => (height.select.value = String(toDefaultVideoHeight(v)));
+  const showContainer = (v: unknown) => (container.select.value = toDefaultVideoContainer(v));
+  void defaultVideoHeight.getValue().then((v) => {
+    showHeight(v);
+    height.select.disabled = false;
+  });
+  void defaultVideoContainer.getValue().then((v) => {
+    showContainer(v);
+    container.select.disabled = false;
+  });
+  height.select.addEventListener('change', () => {
+    const v = height.select.value;
+    void defaultVideoHeight.setValue(toDefaultVideoHeight(v === 'best' ? 'best' : Number(v)));
+  });
+  container.select.addEventListener('change', () => void defaultVideoContainer.setValue(toDefaultVideoContainer(container.select.value)));
+  cleanups.push(defaultVideoHeight.watch(showHeight), defaultVideoContainer.watch(showContainer));
+
+  root.append(connection, ...maintenance.elements, quick, folder, files);
 
   const renderStatus = () => {
     list.replaceChildren();
@@ -238,5 +327,6 @@ export function renderDownloads(root: HTMLElement): () => void {
     setPolling(false);
     maintenance.dispose();
     unwatch();
+    cleanups.forEach((c) => c());
   };
 }

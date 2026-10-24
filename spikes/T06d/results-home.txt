@@ -24,10 +24,10 @@ PASS  light -> dark (zh-TW): 操作期間 YouTube 的選單沒有被看見
 PASS  light -> dark (zh-TW): YouTube 外觀選單的勾選改為新主題  (TOGGLE_DARK_THEME_ON)
 
 === option not found (bridge disabled)
-  console: [youtube-extension] dark mode: could not use YouTube's appearance menu (NO_THEME_OPTION); nothing changed
+  console: [yt-toolbar-master] dark mode: could not use YouTube's appearance menu (NO_THEME_OPTION); nothing changed
    {"frames":{"open":326,"visible":0,"total":533},"dark":false,"busyClass":false,"menuOpen":false,"notice":"darkModeUnavailable"} pref hl=en&f6=80000&tz=UTC -> hl=en&f6=80000&tz=UTC
 PASS  找不到選項：主題與偏好不變
 PASS  找不到選項：選單曾打開但沒有被看見，結束後已關閉、暫時的 class 已移除  ({"open":326,"visible":0,"total":533})
-PASS  找不到選項：在 console 記錄原因  ([youtube-extension] dark mode: could not use YouTube's appearance menu (NO_THEME_OPTION); nothing changed)
+PASS  找不到選項：在 console 記錄原因  ([yt-toolbar-master] dark mode: could not use YouTube's appearance menu (NO_THEME_OPTION); nothing changed)
 
 all passed

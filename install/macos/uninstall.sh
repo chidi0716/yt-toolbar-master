@@ -1,7 +1,7 @@
 #!/bin/sh
 # 移除下載功能（macOS）。plan 4.8、4.9、002 FR-77、008 FR-31。
 #
-#   curl -fsSL https://github.com/chidi0716/youtube-extension/releases/latest/download/uninstall.sh | sh
+#   curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/uninstall.sh | sh
 #   （或手動安裝的資料夾中：sh uninstall.sh）
 #
 # 移除安裝時建立的所有檔案：專屬資料夾（小幫手、yt-dlp、deno、ffmpeg、狀態）、
@@ -9,9 +9,9 @@
 # 不會移除已經下載的影片，也不會動到你自己安裝的 yt-dlp、ffmpeg、deno（例如 Homebrew）。
 set -eu
 
-NAME="com.chidi0716.youtube_extension"
-APP_DIR="$HOME/Library/Application Support/youtube-extension-host"
-LOG_DIR="$HOME/Library/Logs/youtube-extension-host"
+NAME="com.chidi0716.yt_toolbar_master"
+APP_DIR="$HOME/Library/Application Support/yt-toolbar-master"
+LOG_DIR="$HOME/Library/Logs/yt-toolbar-master"
 CHROME_MANIFEST="$HOME/Library/Application Support/Google/Chrome/NativeMessagingHosts/$NAME.json"
 FIREFOX_MANIFEST="$HOME/Library/Application Support/Mozilla/NativeMessagingHosts/$NAME.json"
 

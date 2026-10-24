@@ -7,9 +7,9 @@ import (
 
 // 原生訊息的名稱與允許呼叫的擴充功能（plan 4.8、specs/notes/extension-ids.md）。
 const (
-	NativeHostName = "com.chidi0716.youtube_extension"
+	NativeHostName = "com.chidi0716.yt_toolbar_master"
 	ChromeOrigin   = "chrome-extension://bkjlangdjfpllnkcpfpdlajchbginjdj/"
-	FirefoxID      = "youtube-extension@chidi0716"
+	FirefoxID      = "yt-toolbar-master@chidi0716"
 )
 
 // ManifestLocation 是一個瀏覽器的原生訊息設定檔位置。
@@ -34,9 +34,9 @@ type Layout struct {
 // HelperExeName 回傳小幫手的檔名。
 func HelperExeName(goos string) string {
 	if goos == "windows" {
-		return "yte-host.exe"
+		return "ytm-host.exe"
 	}
-	return "yte-host"
+	return "ytm-host"
 }
 
 func (e pathEnv) layout() Layout {

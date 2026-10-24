@@ -92,10 +92,10 @@ export async function launch({ lang = 'en-US', name = 'fixture', viewport, color
   if (nativeHost) {
     mkdirSync(join(profile, 'NativeMessagingHosts'), { recursive: true });
     writeFileSync(
-      join(profile, 'NativeMessagingHosts', 'com.chidi0716.youtube_extension.json'),
+      join(profile, 'NativeMessagingHosts', 'com.chidi0716.yt_toolbar_master.json'),
       JSON.stringify({
-        name: 'com.chidi0716.youtube_extension',
-        description: 'youtube-extension helper (test)',
+        name: 'com.chidi0716.yt_toolbar_master',
+        description: 'yt-toolbar-master helper (test)',
         path: nativeHost,
         type: 'stdio',
         allowed_origins: [`chrome-extension://${EXT_ID}/`],
@@ -224,15 +224,15 @@ export function reporter() {
 /** 等工具列出現並把它與 toolbar 內的按鈕準備好。 */
 export async function openWatch(page, url = WATCH) {
   await page.goto(url);
-  await page.waitForSelector('yte-toolbar', { state: 'attached', timeout: 10_000 });
+  await page.waitForSelector('ytm-toolbar', { state: 'attached', timeout: 10_000 });
   await page.waitForFunction(() => document.querySelector('video')?.readyState >= 1, null, { timeout: 10_000 });
 }
 
-export const button = (page, id) => page.locator(`yte-toolbar .yte-btn[data-button="${id}"]`);
+export const button = (page, id) => page.locator(`ytm-toolbar .ytm-btn[data-button="${id}"]`);
 
 export async function pressed(page, id) {
   return page.evaluate((id) => {
-    const b = document.querySelector('yte-toolbar').shadowRoot.querySelector(`.yte-btn[data-button="${id}"]`);
+    const b = document.querySelector('ytm-toolbar').shadowRoot.querySelector(`.ytm-btn[data-button="${id}"]`);
     return { pressed: b.getAttribute('aria-pressed'), on: b.hasAttribute('data-on'), disabled: b.getAttribute('aria-disabled') };
   }, id);
 }
@@ -243,8 +243,8 @@ export async function shot(page, name, clip) {
     clip ??
     (await page.evaluate(() => {
       const p = document.querySelector('#player').getBoundingClientRect();
-      const t = document.querySelector('yte-toolbar')?.getBoundingClientRect() ?? p;
-      const panel = document.querySelector('yte-toolbar')?.shadowRoot.querySelector('.yte-panel')?.getBoundingClientRect();
+      const t = document.querySelector('ytm-toolbar')?.getBoundingClientRect() ?? p;
+      const panel = document.querySelector('ytm-toolbar')?.shadowRoot.querySelector('.ytm-panel')?.getBoundingClientRect();
       const top = Math.max(0, Math.min(p.top, t.top) - 16);
       const bottom = Math.max(p.bottom, t.bottom + 40, panel ? panel.bottom + 16 : 0);
       return { x: 0, y: top, width: Math.ceil(Math.max(p.right, t.right) + 24), height: Math.ceil(Math.min(window.innerHeight, bottom) - top) };

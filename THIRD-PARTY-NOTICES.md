@@ -16,7 +16,7 @@ The one-line installer downloads these programs from their official sources and 
 
 If ffmpeg (or yt-dlp, or deno) is already installed on your computer, for example with Homebrew or winget, the helper uses that copy under its own license.
 
-## Code included in the helper (`yte-host`)
+## Code included in the helper (`ytm-host`)
 
 | Component | License |
 |---|---|
@@ -51,7 +51,7 @@ Build and test tools (TypeScript, Vite, Vitest, web-ext) are used only during de
 
 電腦上已經有 ffmpeg（或 yt-dlp、deno，例如以 Homebrew 或 winget 安裝）時，小幫手會沿用那一份，依其原本的授權使用。
 
-### 小幫手（`yte-host`）中包含的程式碼
+### 小幫手（`ytm-host`）中包含的程式碼
 
 | 元件 | 授權 |
 |---|---|

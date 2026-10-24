@@ -1,11 +1,11 @@
 /*
- * 共用表單元件（001 外觀規格「表單元件」）。顏色使用 toolbar.css 在 .yte-root 定義的 --yte-* 別名，
+ * 共用表單元件（001 外觀規格「表單元件」）。顏色使用 toolbar.css 在 .ytm-root 定義的 --ytm-* 別名，
  * 也就是 YouTube 頁面本身的 CSS 變數。
  */
 
 /* ---------- 按鈕 ---------- */
 
-.yte-button {
+.ytm-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -22,43 +22,43 @@
   outline: none;
 }
 
-.yte-button-primary {
+.ytm-button-primary {
   border: 0;
-  background: var(--yte-call-to-action);
-  color: var(--yte-on-call-to-action);
+  background: var(--ytm-call-to-action);
+  color: var(--ytm-on-call-to-action);
 }
 
-.yte-button-primary:hover:not(:disabled) {
+.ytm-button-primary:hover:not(:disabled) {
   filter: brightness(1.1);
 }
 
-.yte-button-secondary {
-  border: 1px solid var(--yte-outline);
+.ytm-button-secondary {
+  border: 1px solid var(--ytm-outline);
   background: transparent;
-  color: var(--yte-text-primary);
+  color: var(--ytm-text-primary);
 }
 
-.yte-button-secondary:hover:not(:disabled) {
-  background: var(--yte-hover-background);
+.ytm-button-secondary:hover:not(:disabled) {
+  background: var(--ytm-hover-background);
 }
 
-.yte-button:disabled {
+.ytm-button:disabled {
   cursor: default;
   opacity: 0.4;
 }
 
-.yte-button:focus-visible {
-  box-shadow: 0 0 0 2px var(--yte-menu-background), 0 0 0 4px var(--yte-text-primary);
+.ytm-button:focus-visible {
+  box-shadow: 0 0 0 2px var(--ytm-menu-background), 0 0 0 4px var(--ytm-text-primary);
 }
 
 /* ---------- 小標籤 ---------- */
 
-.yte-badge {
+.ytm-badge {
   display: inline-block;
   padding: 0 4px;
   border-radius: 2px;
-  background: var(--yte-badge-background);
-  color: var(--yte-badge-text);
+  background: var(--ytm-badge-background);
+  color: var(--ytm-badge-text);
   font-size: 10px;
   font-weight: 700;
   line-height: 16px;
@@ -68,7 +68,7 @@
 
 /* ---------- 開關 ---------- */
 
-.yte-switch {
+.ytm-switch {
   position: relative;
   flex: none;
   width: 36px;
@@ -76,17 +76,17 @@
   padding: 0;
   border: 0;
   border-radius: 10px;
-  background: var(--yte-switch-track);
+  background: var(--ytm-switch-track);
   cursor: pointer;
   outline: none;
   transition: background 0.15s;
 }
 
-.yte-switch[aria-checked='true'] {
-  background: var(--yte-call-to-action);
+.ytm-switch[aria-checked='true'] {
+  background: var(--ytm-call-to-action);
 }
 
-.yte-switch-thumb {
+.ytm-switch-thumb {
   position: absolute;
   top: 2px;
   left: 2px;
@@ -98,112 +98,112 @@
   transition: transform 0.15s;
 }
 
-.yte-switch[aria-checked='true'] .yte-switch-thumb {
+.ytm-switch[aria-checked='true'] .ytm-switch-thumb {
   transform: translateX(16px);
 }
 
-.yte-switch:disabled {
+.ytm-switch:disabled {
   cursor: default;
   opacity: 0.4;
 }
 
-.yte-switch:focus-visible {
-  box-shadow: 0 0 0 2px var(--yte-menu-background), 0 0 0 4px var(--yte-text-primary);
+.ytm-switch:focus-visible {
+  box-shadow: 0 0 0 2px var(--ytm-menu-background), 0 0 0 4px var(--ytm-text-primary);
 }
 
 /* ---------- 下拉選單 ---------- */
 
-.yte-select {
+.ytm-select {
   position: relative;
   display: inline-flex;
 }
 
-.yte-select select {
+.ytm-select select {
   appearance: none;
   height: 36px;
   padding: 0 36px 0 12px;
-  border: 1px solid var(--yte-outline);
+  border: 1px solid var(--ytm-outline);
   border-radius: 8px;
-  background: var(--yte-menu-background);
-  color: var(--yte-text-primary);
+  background: var(--ytm-menu-background);
+  color: var(--ytm-text-primary);
   font: inherit;
   font-size: 14px;
   cursor: pointer;
   outline: none;
 }
 
-.yte-select select:focus-visible {
-  border-color: var(--yte-call-to-action);
+.ytm-select select:focus-visible {
+  border-color: var(--ytm-call-to-action);
 }
 
-.yte-select select:disabled {
+.ytm-select select:disabled {
   cursor: default;
   opacity: 0.4;
 }
 
-.yte-select select option {
-  background: var(--yte-menu-background);
-  color: var(--yte-text-primary);
+.ytm-select select option {
+  background: var(--ytm-menu-background);
+  color: var(--ytm-text-primary);
 }
 
-.yte-select-arrow {
+.ytm-select-arrow {
   position: absolute;
   top: 50%;
   right: 6px;
   display: flex;
-  color: var(--yte-text-secondary);
+  color: var(--ytm-text-secondary);
   pointer-events: none;
   transform: translateY(-50%);
 }
 
 /* ---------- 文字輸入框 ---------- */
 
-.yte-input {
+.ytm-input {
   height: 36px;
   padding: 0 12px;
-  border: 1px solid var(--yte-outline);
+  border: 1px solid var(--ytm-outline);
   border-radius: 8px;
   background: transparent;
-  color: var(--yte-text-primary);
+  color: var(--ytm-text-primary);
   font: inherit;
   font-size: 14px;
   outline: none;
 }
 
-.yte-time-input {
+.ytm-time-input {
   width: 104px;
   font-variant-numeric: tabular-nums;
 }
 
-.yte-input:focus {
-  border-color: var(--yte-call-to-action);
+.ytm-input:focus {
+  border-color: var(--ytm-call-to-action);
 }
 
-.yte-input[aria-invalid='true'] {
-  border-color: var(--yte-error);
+.ytm-input[aria-invalid='true'] {
+  border-color: var(--ytm-error);
 }
 
-.yte-input:disabled {
+.ytm-input:disabled {
   opacity: 0.4;
 }
 
-.yte-field-error {
+.ytm-field-error {
   margin: 4px 0 0;
-  color: var(--yte-error);
+  color: var(--ytm-error);
   font-size: 12px;
   line-height: 16px;
 }
 
 /* ---------- 區間滑桿 ---------- */
 
-.yte-range {
+.ytm-range {
   position: relative;
   height: 24px;
   margin: 0 8px;
   touch-action: none;
 }
 
-.yte-range-track {
+.ytm-range-track {
   position: absolute;
   top: 50%;
   left: -8px;
@@ -213,26 +213,26 @@
   cursor: pointer;
 }
 
-.yte-range-rail {
+.ytm-range-rail {
   position: absolute;
   top: 50%;
   left: 8px;
   right: 8px;
   height: 4px;
   border-radius: 2px;
-  background: var(--yte-range-rail);
+  background: var(--ytm-range-rail);
   transform: translateY(-50%);
 }
 
-.yte-range-fill {
+.ytm-range-fill {
   position: absolute;
   top: 0;
   height: 100%;
   border-radius: 2px;
-  background: var(--yte-call-to-action);
+  background: var(--ytm-call-to-action);
 }
 
-.yte-range-thumb {
+.ytm-range-thumb {
   position: absolute;
   top: 50%;
   width: 16px;
@@ -246,15 +246,15 @@
   outline: none;
 }
 
-.yte-range-thumb:active {
+.ytm-range-thumb:active {
   cursor: grabbing;
 }
 
-.yte-range-thumb:focus-visible {
-  box-shadow: 0 0 0 2px var(--yte-menu-background), 0 0 0 4px var(--yte-call-to-action);
+.ytm-range-thumb:focus-visible {
+  box-shadow: 0 0 0 2px var(--ytm-menu-background), 0 0 0 4px var(--ytm-call-to-action);
 }
 
-.yte-range[data-disabled] {
+.ytm-range[data-disabled] {
   opacity: 0.4;
   pointer-events: none;
 }

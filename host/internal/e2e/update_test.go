@@ -15,7 +15,7 @@ func TestUpdateCommandsEndToEnd(t *testing.T) {
 		t.Skip("uses the Linux development locations")
 	}
 	e := newEnv(t)
-	installDir := filepath.Join(e.home, ".local", "state", "youtube-extension-host")
+	installDir := filepath.Join(e.home, ".local", "state", "yt-toolbar-master")
 	b := start(t, e, chromeOrigin)
 	defer func() { t.Logf("transcript:\n%s", b.log) }()
 

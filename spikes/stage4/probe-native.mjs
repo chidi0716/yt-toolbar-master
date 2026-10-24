@@ -17,11 +17,11 @@ rmSync(home, { recursive: true, force: true });
 mkdirSync(join(profile, 'NativeMessagingHosts'), { recursive: true });
 mkdirSync(join(home, 'Downloads'), { recursive: true });
 writeFileSync(
-  join(profile, 'NativeMessagingHosts', 'com.chidi0716.youtube_extension.json'),
+  join(profile, 'NativeMessagingHosts', 'com.chidi0716.yt_toolbar_master.json'),
   JSON.stringify({
-    name: 'com.chidi0716.youtube_extension',
+    name: 'com.chidi0716.yt_toolbar_master',
     description: 'test',
-    path: join(cache, 'bin', 'yte-host'),
+    path: join(cache, 'bin', 'ytm-host'),
     type: 'stdio',
     allowed_origins: ['chrome-extension://bkjlangdjfpllnkcpfpdlajchbginjdj/'],
   }),
@@ -39,7 +39,7 @@ const res = await page.evaluate(
   () =>
     new Promise((resolve) => {
       try {
-        const port = chrome.runtime.connectNative('com.chidi0716.youtube_extension');
+        const port = chrome.runtime.connectNative('com.chidi0716.yt_toolbar_master');
         const out = [];
         port.onMessage.addListener((m) => {
           out.push(m);

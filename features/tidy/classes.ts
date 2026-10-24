@@ -17,12 +17,12 @@ export interface PageClassToggle {
 
 export const PAGE_CLASS_TOGGLES: readonly PageClassToggle[] = [
   // 003 FR-64 隱藏留言
-  { className: 'yte-hide-comments', source: 'hideComments', requiresToolbar: true },
+  { className: 'ytm-hide-comments', source: 'hideComments', requiresToolbar: true },
   // 005 只靠樣式的選項（NFR-1）
-  { className: 'yte-hide-end-cards', source: 'hideEndCards', requiresToolbar: false },
-  { className: 'yte-no-thumbnail-preview', source: 'noThumbnailPreview', requiresToolbar: false },
-  { className: 'yte-hide-shorts', source: 'hideShorts', requiresToolbar: false },
-  { className: 'yte-full-titles', source: 'fullTitles', requiresToolbar: false },
+  { className: 'ytm-hide-end-cards', source: 'hideEndCards', requiresToolbar: false },
+  { className: 'ytm-no-thumbnail-preview', source: 'noThumbnailPreview', requiresToolbar: false },
+  { className: 'ytm-hide-shorts', source: 'hideShorts', requiresToolbar: false },
+  { className: 'ytm-full-titles', source: 'fullTitles', requiresToolbar: false },
 ];
 
 /** 依設定值計算 <html> 上應有的 class。 */

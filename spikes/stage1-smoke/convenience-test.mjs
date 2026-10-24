@@ -33,7 +33,7 @@ async function section(task, fn, options = {}) {
 }
 
 const openMore = async (page) => {
-  if ((await page.locator('yte-toolbar .yte-more').count()) === 0) await button(page, 'more').click();
+  if ((await page.locator('ytm-toolbar .ytm-more').count()) === 0) await button(page, 'more').click();
   await page.waitForTimeout(200);
 };
 const fixtureQuality = (page) => page.evaluate(() => window.__fixtureQuality());
@@ -43,7 +43,7 @@ const fixtureLog = (page, type) => page.evaluate((type) => window.__fixtureLog.f
 // T27 鎖定畫質（004 第 1 節）
 // ---------------------------------------------------------------------------
 await section('T27', async (page) => {
-  const select = page.locator('yte-toolbar #yte-more-qualityLock-select');
+  const select = page.locator('ytm-toolbar #ytm-more-qualityLock-select');
   await openMore(page);
   const options = await select.locator('option').allInnerTexts();
   check(
@@ -97,7 +97,7 @@ await section('T27', async (page) => {
 
   // 重新整理後仍生效
   await page.reload();
-  await page.waitForSelector('yte-toolbar', { state: 'attached' });
+  await page.waitForSelector('ytm-toolbar', { state: 'attached' });
   await page.waitForTimeout(800);
   const q6 = await fixtureQuality(page);
   await openMore(page);
@@ -105,7 +105,7 @@ await section('T27', async (page) => {
 
   // 最高可用畫質
   await page.goto(WATCH);
-  await page.waitForSelector('yte-toolbar', { state: 'attached' });
+  await page.waitForSelector('ytm-toolbar', { state: 'attached' });
   await openMore(page);
   await select.selectOption('max');
   await page.waitForTimeout(400);
@@ -126,12 +126,12 @@ await section('T27', async (page) => {
 // ---------------------------------------------------------------------------
 const linkRows = (page) =>
   page.evaluate(() =>
-    [...document.querySelector('yte-toolbar').shadowRoot.querySelectorAll('.yte-copylink-row')].map((row) => ({
+    [...document.querySelector('ytm-toolbar').shadowRoot.querySelectorAll('.ytm-copylink-row')].map((row) => ({
       kind: row.dataset.kind,
-      name: row.querySelector('.yte-copylink-name').textContent,
-      preview: row.querySelector('.yte-copylink-preview').textContent,
-      full: row.querySelector('.yte-copylink-preview').title,
-      status: row.querySelector('.yte-copylink-status').textContent,
+      name: row.querySelector('.ytm-copylink-name').textContent,
+      preview: row.querySelector('.ytm-copylink-preview').textContent,
+      full: row.querySelector('.ytm-copylink-preview').title,
+      status: row.querySelector('.ytm-copylink-status').textContent,
     })),
   );
 const clipboard = (page) => page.evaluate(() => navigator.clipboard.readText());
@@ -147,8 +147,8 @@ await section(
   'T28',
   async (page, context) => {
     const order = await page.evaluate(() =>
-      [...document.querySelector('yte-toolbar').shadowRoot.querySelectorAll('.yte-group')].map((g) =>
-        [...g.querySelectorAll('.yte-btn')].map((b) => b.dataset.button),
+      [...document.querySelector('ytm-toolbar').shadowRoot.querySelectorAll('.ytm-group')].map((g) =>
+        [...g.querySelectorAll('.ytm-btn')].map((b) => b.dataset.button),
       ),
     );
     check(
@@ -160,14 +160,14 @@ await section(
     await button(page, 'help').click();
     await page.waitForTimeout(200);
     const helpLink = await page.evaluate(() => {
-      const li = document.querySelector('yte-toolbar').shadowRoot.querySelector('.yte-help-item[data-button="link"]');
-      return li ? { name: li.querySelector('.yte-help-name').textContent, desc: li.querySelector('.yte-help-desc').textContent, icon: !!li.querySelector('svg path') } : null;
+      const li = document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-help-item[data-button="link"]');
+      return li ? { name: li.querySelector('.ytm-help-name').textContent, desc: li.querySelector('.ytm-help-desc').textContent, icon: !!li.querySelector('svg path') } : null;
     });
     check('說明面板同步列出「連結」（FR-30、001 FR-17）', helpLink?.name === 'Link' && helpLink.icon && helpLink.desc.length > 10, JSON.stringify(helpLink));
     await page.keyboard.press('Escape');
 
     await button(page, 'link').click();
-    await page.waitForSelector('yte-toolbar .yte-copylink-row');
+    await page.waitForSelector('ytm-toolbar .ytm-copylink-row');
     let rows = await linkRows(page);
     check(
       '連結面板有三個選項，順序為目前時間、Markdown、不含時間（FR-31）',
@@ -198,7 +198,7 @@ await section(
 
     // 複製
     await seek(page, 23.6);
-    await page.locator('yte-toolbar .yte-copylink-row[data-kind="markdown"]').click();
+    await page.locator('ytm-toolbar .ytm-copylink-row[data-kind="markdown"]').click();
     await page.waitForTimeout(150);
     const copiedMd = await clipboard(page);
     rows = await linkRows(page);
@@ -210,15 +210,15 @@ await section(
     await shot(page, 'T28-link-panel-copied.png');
     await page.waitForTimeout(2200);
     check('「已複製」約 2 秒後消失（FR-31）', (await linkRows(page))[1].status === '');
-    await page.locator('yte-toolbar .yte-copylink-row[data-kind="time"]').click();
+    await page.locator('ytm-toolbar .ytm-copylink-row[data-kind="time"]').click();
     await page.waitForTimeout(150);
     check('點目前時間的連結複製 https://youtu.be/ID?t=23（FR-31）', (await clipboard(page)) === 'https://youtu.be/jNQXAC9IVRw?t=23');
-    await page.locator('yte-toolbar .yte-copylink-row[data-kind="plain"]').click();
+    await page.locator('ytm-toolbar .ytm-copylink-row[data-kind="plain"]').click();
     await page.waitForTimeout(150);
     check('點不含時間的連結複製 https://youtu.be/ID（FR-31）', (await clipboard(page)) === 'https://youtu.be/jNQXAC9IVRw');
 
     // 換頁後（釘選面板）更新為新影片
-    await page.locator('yte-toolbar .yte-panel-pin, yte-toolbar [aria-label="Pin panel"]').first().click();
+    await page.locator('ytm-toolbar .ytm-panel-pin, ytm-toolbar [aria-label="Pin panel"]').first().click();
     await spaNavigate(page, 'next');
     await page.waitForTimeout(500);
     rows = await linkRows(page);
@@ -230,12 +230,12 @@ await section(
 
     // 播放清單中的影片：不帶播放清單參數
     await page.goto('https://www.youtube.com/watch?v=bbbbbbbbbbb&list=PLabcdefghijklmnop&index=3&pp=xyz');
-    await page.waitForSelector('yte-toolbar', { state: 'attached' });
+    await page.waitForSelector('ytm-toolbar', { state: 'attached' });
     await page.waitForFunction(() => document.querySelector('video')?.readyState >= 1);
     await seek(page, 12.2);
     await button(page, 'link').click();
-    await page.waitForSelector('yte-toolbar .yte-copylink-row');
-    await page.locator('yte-toolbar .yte-copylink-row[data-kind="time"]').click();
+    await page.waitForSelector('ytm-toolbar .ytm-copylink-row');
+    await page.locator('ytm-toolbar .ytm-copylink-row[data-kind="time"]').click();
     await page.waitForTimeout(150);
     const fromList = await clipboard(page);
     check('從播放清單打開的影片，複製的連結不含播放清單參數（FR-35）', fromList === 'https://youtu.be/bbbbbbbbbbb?t=12', fromList);
@@ -249,13 +249,13 @@ await section(
         origin: 'https://www.youtube.com',
       });
     }
-    await page.locator('yte-toolbar .yte-copylink-row[data-kind="markdown"]').click();
+    await page.locator('ytm-toolbar .ytm-copylink-row[data-kind="markdown"]').click();
     await page.waitForTimeout(300);
     const manual = await page.evaluate(() => {
-      const root = document.querySelector('yte-toolbar').shadowRoot;
-      const ta = root.querySelector('.yte-copylink-manual-text');
+      const root = document.querySelector('ytm-toolbar').shadowRoot;
+      const ta = root.querySelector('.ytm-copylink-manual-text');
       return {
-        error: root.querySelector('.yte-copylink-manual [role="alert"]')?.textContent ?? null,
+        error: root.querySelector('.ytm-copylink-manual [role="alert"]')?.textContent ?? null,
         value: ta?.value ?? null,
         selected: ta ? ta.value.slice(ta.selectionStart, ta.selectionEnd) : null,
         focused: root.activeElement === ta,
@@ -345,13 +345,13 @@ await section(
     // 003 的隱藏留言改用 CSS 開關機制：在 <html> 加上 class，並在 document_start 的內容腳本處理
     await page.bringToFront();
     await openMore(page);
-    await page.locator('yte-toolbar .yte-more-item[data-item="hideComments"] [role="switch"]').click();
+    await page.locator('ytm-toolbar .ytm-more-item[data-item="hideComments"] [role="switch"]').click();
     await page.waitForTimeout(300);
     const viaClass = await page.evaluate(() => ({
-      cls: document.documentElement.classList.contains('yte-hide-comments'),
+      cls: document.documentElement.classList.contains('ytm-hide-comments'),
       hidden: getComputedStyle(document.querySelector('#comments')).display === 'none',
-      style: !!document.getElementById('yte-tidy-styles'),
-      oldStyleRule: [...(document.getElementById('yte-page-styles')?.sheet?.cssRules ?? [])].some((r) => r.cssText.includes('yte-hide-comments')),
+      style: !!document.getElementById('ytm-tidy-styles'),
+      oldStyleRule: [...(document.getElementById('ytm-page-styles')?.sheet?.cssRules ?? [])].some((r) => r.cssText.includes('ytm-hide-comments')),
     }));
     check('「隱藏留言」改用 <html> class 開關機制（plan 3.7.2）', viaClass.cls && viaClass.hidden && viaClass.style && !viaClass.oldStyleRule, JSON.stringify(viaClass));
 
@@ -359,11 +359,11 @@ await section(
     await page.addInitScript(() => {
       document.addEventListener('DOMContentLoaded', () => {
         window.__classAtDomReady = document.documentElement.className;
-        window.__toolbarAtDomReady = !!document.querySelector('yte-toolbar');
+        window.__toolbarAtDomReady = !!document.querySelector('ytm-toolbar');
       });
     });
     await page.reload();
-    await page.waitForSelector('yte-toolbar', { state: 'attached' });
+    await page.waitForSelector('ytm-toolbar', { state: 'attached' });
     const early = await page.evaluate(() => ({ cls: window.__classAtDomReady, toolbar: window.__toolbarAtDomReady }));
     check(
       '重新整理後，頁面解析完成時（工具列出現之前）<html> 已有 class',
@@ -430,7 +430,7 @@ await section(
     const options = await openOptions(context);
 
     // ---- 開關立即生效（FR-3）：觀看頁開著時從設定頁開關 ----
-    const classes = { hideEndCards: 'yte-hide-end-cards', noThumbnailPreview: 'yte-no-thumbnail-preview', hideShorts: 'yte-hide-shorts', fullTitles: 'yte-full-titles' };
+    const classes = { hideEndCards: 'ytm-hide-end-cards', noThumbnailPreview: 'ytm-no-thumbnail-preview', hideShorts: 'ytm-hide-shorts', fullTitles: 'ytm-full-titles' };
     const immediate = {};
     for (const [id, cls] of Object.entries(classes)) {
       await setOption(options, id, true);
@@ -618,15 +618,15 @@ await section(
     await home.bringToFront();
     await home.waitForTimeout(400);
     const afterClose = await home.evaluate(() => ({
-      toolbar: !!document.querySelector('yte-toolbar'),
-      classes: ['yte-hide-end-cards', 'yte-no-thumbnail-preview', 'yte-hide-shorts', 'yte-full-titles'].filter((c) => document.documentElement.classList.contains(c)),
+      toolbar: !!document.querySelector('ytm-toolbar'),
+      classes: ['ytm-hide-end-cards', 'ytm-no-thumbnail-preview', 'ytm-hide-shorts', 'ytm-full-titles'].filter((c) => document.documentElement.classList.contains(c)),
     }));
     await home.reload();
     await home.waitForTimeout(600);
     const afterReload = await home.evaluate(() => document.documentElement.className);
     check(
       '關閉工具列（「啟用」關閉）後，頁面整理的選項仍照設定生效（005 FR-6）',
-      !afterClose.toolbar && afterClose.classes.length === 4 && afterReload.split(' ').filter((c) => c.startsWith('yte-')).length === 4,
+      !afterClose.toolbar && afterClose.classes.length === 4 && afterReload.split(' ').filter((c) => c.startsWith('ytm-')).length === 4,
       `${JSON.stringify(afterClose)} reload=${afterReload}`,
     );
   },
@@ -647,7 +647,7 @@ await section(
     // ---- 永遠使用原始語音（FR-10 至 FR-13）----
     await page.bringToFront();
     await page.goto('https://www.youtube.com/watch?v=aaaaaaaaaaa');
-    await page.waitForSelector('yte-toolbar', { state: 'attached' });
+    await page.waitForSelector('ytm-toolbar', { state: 'attached' });
     await page.evaluate(() => document.querySelector('video').play());
     await page.waitForTimeout(1500);
     const dubbedOff = await audioNow(page);
@@ -697,7 +697,7 @@ await section(
     );
     // 重新載入有自動配音的影片
     await page.goto('https://www.youtube.com/watch?v=ddddddddddd');
-    await page.waitForSelector('yte-toolbar', { state: 'attached' });
+    await page.waitForSelector('ytm-toolbar', { state: 'attached' });
     await page.evaluate(() => document.querySelector('video').play());
     await page.waitForTimeout(800);
     check('直接打開有自動配音的影片時播放原始語音（FR-10）', (await audioNow(page)).id === 'en.4');
@@ -757,7 +757,7 @@ await section(
     await page.waitForSelector('#contents ytd-rich-item-renderer');
     await page.goto('https://www.youtube.com/shorts/typedxxxxxx');
     await page.waitForURL((u) => u.pathname === '/watch', { timeout: 5000 });
-    await page.waitForSelector('yte-toolbar', { state: 'attached', timeout: 10_000 });
+    await page.waitForSelector('ytm-toolbar', { state: 'attached', timeout: 10_000 });
     check('直接輸入 Shorts 網址時以一般觀看頁播放，工具列可以使用（FR-50、FR-52）', page.url() === 'https://www.youtube.com/watch?v=typedxxxxxx', page.url());
     await page.screenshot({ path: `${shots}/T31-shorts-as-watch.png`, clip: { x: 0, y: 0, width: 1280, height: 700 } });
     await page.goBack();
@@ -768,7 +768,7 @@ await section(
     await page.locator('#fixture-shorts-section a.reel-item-endpoint').first().click();
     await page.waitForURL((u) => u.pathname === '/watch', { timeout: 5000 });
     const clicked = page.url();
-    await page.waitForSelector('yte-toolbar', { state: 'attached', timeout: 10_000 });
+    await page.waitForSelector('ytm-toolbar', { state: 'attached', timeout: 10_000 });
     await page.goBack();
     await page.waitForTimeout(800);
     const back1 = page.url();

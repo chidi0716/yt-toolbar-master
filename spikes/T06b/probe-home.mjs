@@ -35,7 +35,7 @@ async function open(pref, colorScheme = 'light') {
   if (pref !== null) await context.addCookies([{ name: 'PREF', value: pref, domain: '.youtube.com', path: '/' }]);
   const page = await context.newPage();
   page.on('console', (m) => {
-    if (m.text().includes('[youtube-extension]')) console.log('  console:', m.text());
+    if (m.text().includes('[yt-toolbar-master]')) console.log('  console:', m.text());
   });
   await page.goto('https://www.youtube.com/', { waitUntil: 'domcontentloaded', timeout: 60_000 });
   if (new URL(page.url()).hostname !== 'www.youtube.com' || (await page.locator('ytd-app').count()) === 0) {
@@ -75,7 +75,7 @@ const state = (page) =>
     watchFlexy: document.querySelector('ytd-watch-flexy')?.hasAttribute('is-dark-theme') ?? null,
     pref: (document.cookie.split('; ').find((c) => c.startsWith('PREF=')) ?? '').slice(5),
     appBg: getComputedStyle(document.querySelector('ytd-app')).backgroundColor,
-    button: window.__yteDark?.state.get().active ?? null,
+    button: window.__ytmDark?.state.get().active ?? null,
     alive: window.__probeMarker === 1,
   }));
 
@@ -90,7 +90,7 @@ const press = (page) =>
     () =>
       new Promise((resolve) => {
         const before = getComputedStyle(document.querySelector('ytd-app')).backgroundColor;
-        window.__yteDark.toggle();
+        window.__ytmDark.toggle();
         const sync = getComputedStyle(document.querySelector('ytd-app')).backgroundColor;
         requestAnimationFrame(() => {
           const frame1 = getComputedStyle(document.querySelector('ytd-app')).backgroundColor;

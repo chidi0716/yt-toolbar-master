@@ -5,8 +5,8 @@ import { Icon } from '../icons';
 
 export function PanelLoading() {
   return (
-    <div class="yte-status" role="status" aria-live="polite">
-      <span class="yte-spinner">
+    <div class="ytm-status" role="status" aria-live="polite">
+      <span class="ytm-spinner">
         <Icon name="progress_activity" />
       </span>
       <span>{t('loading')}</span>
@@ -16,7 +16,7 @@ export function PanelLoading() {
 
 export function PanelError({ message, onRetry }: { message?: string; onRetry: () => void }) {
   return (
-    <div class="yte-status yte-status-error" role="alert">
+    <div class="ytm-status ytm-status-error" role="alert">
       <Icon name="error" />
       <span>{message ?? t('errorGeneric')}</span>
       <Button variant="secondary" onClick={onRetry}>
@@ -28,5 +28,5 @@ export function PanelError({ message, onRetry }: { message?: string; onRetry: ()
 }
 
 export function ComingSoon() {
-  return <p class="yte-muted">{t('comingSoon')}</p>;
+  return <p class="ytm-muted">{t('comingSoon')}</p>;
 }

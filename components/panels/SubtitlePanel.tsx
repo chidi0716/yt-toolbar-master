@@ -76,8 +76,8 @@ export function SubtitlePanel({ videoId }: { videoId: string }) {
 
   if (video.status === 'loading' || tracks.status === 'loading') return <PanelLoading />;
   if (video.status === 'error' || tracks.status === 'error') return <PanelError onRetry={() => setAttempt((n) => n + 1)} />;
-  if (isLiveOrUpcoming(video.data)) return <p class="yte-muted">{t('liveUnavailable')}</p>;
-  if (!ordered || tracks.tracks.length === 0) return <p class="yte-muted">{t('subtitlesNone')}</p>;
+  if (isLiveOrUpcoming(video.data)) return <p class="ytm-muted">{t('liveUnavailable')}</p>;
+  if (!ordered || tracks.tracks.length === 0) return <p class="ytm-muted">{t('subtitlesNone')}</p>;
 
   const start = async () => {
     if (!selected) return;
@@ -121,14 +121,14 @@ export function SubtitlePanel({ videoId }: { videoId: string }) {
     const list = ordered.groups[key];
     if (list.length === 0) return null;
     return (
-      <fieldset class="yte-fieldset yte-subs-group" data-group={key}>
-        <legend class="yte-subs-legend">{t(title)}</legend>
+      <fieldset class="ytm-fieldset ytm-subs-group" data-group={key}>
+        <legend class="ytm-subs-legend">{t(title)}</legend>
         {list.map((track) => (
-          <label key={trackId(track)} class="yte-radio yte-subs-track" data-lang={track.languageCode} data-auto={track.isAuto ? '' : undefined}>
-            <input type="radio" name="yte-subs-track" checked={selected === track} onChange={() => setChosen(track)} />
+          <label key={trackId(track)} class="ytm-radio ytm-subs-track" data-lang={track.languageCode} data-auto={track.isAuto ? '' : undefined}>
+            <input type="radio" name="ytm-subs-track" checked={selected === track} onChange={() => setChosen(track)} />
             <span>{track.name}</span>
             {track.isAuto && (
-              <span class="yte-subs-auto" title={t('subtitlesAutoBadge')} aria-label={t('subtitlesAutoBadge')}>
+              <span class="ytm-subs-auto" title={t('subtitlesAutoBadge')} aria-label={t('subtitlesAutoBadge')}>
                 <Icon name="graphic_eq" size={18} />
               </span>
             )}
@@ -139,16 +139,16 @@ export function SubtitlePanel({ videoId }: { videoId: string }) {
   };
 
   return (
-    <div class="yte-subs">
-      <div class="yte-subs-list">
+    <div class="ytm-subs">
+      <div class="ytm-subs-list">
         {group('uploaded', 'subtitlesUploaded')}
         {group('auto', 'subtitlesAuto')}
       </div>
-      <div class="yte-subs-footer">
-        <label class="yte-field yte-subs-format">
+      <div class="ytm-subs-footer">
+        <label class="ytm-field ytm-subs-format">
           <span>{t('subtitlesFormat')}</span>
           <Select
-            id="yte-subs-format"
+            id="ytm-subs-format"
             value={format}
             options={CAPTION_FORMATS.map((value) => ({ value, label: t(FORMAT_LABELS[value]) }))}
             onChange={setFormat}
@@ -159,23 +159,23 @@ export function SubtitlePanel({ videoId }: { videoId: string }) {
           <span>{t('download')}</span>
         </Button>
       </div>
-      <p class="yte-subs-status" aria-live="polite">
+      <p class="ytm-subs-status" aria-live="polite">
         {download.state === 'saved' && (
-          <span class="yte-subs-saved">
+          <span class="ytm-subs-saved">
             <Icon name="check" size={18} />
             {t('downloadSaved')}
           </span>
         )}
       </p>
       {download.state === 'viaHost' && (
-        <p class="yte-hint yte-subs-via-host" role="status">
+        <p class="ytm-hint ytm-subs-via-host" role="status">
           {t('subtitlesViaHost')}
         </p>
       )}
       {download.state === 'hostFailed' && <ErrorBlock code={download.code} onRetry={() => void start()} />}
       <JobList videoId={videoId} kind="subtitle" />
       {download.state === 'failed' && (
-        <div class="yte-status yte-status-error yte-subs-error" role="alert">
+        <div class="ytm-status ytm-status-error ytm-subs-error" role="alert">
           <Icon name="error" />
           <span>{t('subtitlesDirectFailed')}</span>
           <Button variant="secondary" onClick={() => void start()}>

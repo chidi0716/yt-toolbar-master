@@ -42,7 +42,7 @@ var (
 	buildErr  error
 )
 
-// Build 編譯 host 模組內的一個套件（例如 ./cmd/yte-host）到 dir/name。
+// Build 編譯 host 模組內的一個套件（例如 ./cmd/ytm-host）到 dir/name。
 func Build(dir, name, pkg string) (string, error) {
 	if runtime.GOOS == "windows" {
 		name += ".exe"

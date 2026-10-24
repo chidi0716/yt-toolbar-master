@@ -1,4 +1,4 @@
-// Package installer 實作 yte-host --install、--uninstall（plan 4.9、008 FR-11 至 FR-15、FR-30）：
+// Package installer 實作 ytm-host --install、--uninstall（plan 4.9、008 FR-11 至 FR-15、FR-30）：
 // 從本專案 GitHub 取得並檢查發佈清單、下載 yt-dlp、deno、ffmpeg 並核對 SHA256、解壓、放進安裝資料夾，
 // 以及為 Chrome 與 Firefox 註冊小幫手。
 package installer
@@ -15,9 +15,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/chidi0716/youtube-extension/host/internal/errs"
-	"github.com/chidi0716/youtube-extension/host/internal/platform"
-	"github.com/chidi0716/youtube-extension/host/internal/release"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/release"
 )
 
 // Installer 是一次安裝。

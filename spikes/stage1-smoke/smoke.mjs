@@ -45,7 +45,7 @@ const check = (name, ok, detail = '') => {
 // 截圖只取工具列附近（播放器下緣到面板下方），避免收進不相關的推薦影片。
 const shot = async (page, name, { wide = false } = {}) => {
   const clip = await page.evaluate((wide) => {
-    const host = document.querySelector('yte-toolbar');
+    const host = document.querySelector('ytm-toolbar');
     const player = document.querySelector('#movie_player');
     if (!host || !player) return null;
     const t = host.getBoundingClientRect();
@@ -58,18 +58,18 @@ const shot = async (page, name, { wide = false } = {}) => {
 
 const page = context.pages()[0] ?? (await context.newPage());
 page.on('console', (msg) => {
-  if (msg.text().includes('[youtube-extension]')) console.log('  console:', msg.text());
+  if (msg.text().includes('[yt-toolbar-master]')) console.log('  console:', msg.text());
 });
 page.on('pageerror', (err) => console.log('  pageerror:', String(err).slice(0, 200)));
 
 // ---- 在頁面中讀取工具列狀態的小工具 ----
 const state = () =>
   page.evaluate(() => {
-    const hosts = document.querySelectorAll('yte-toolbar');
+    const hosts = document.querySelectorAll('ytm-toolbar');
     const host = hosts[0];
     const root = host?.shadowRoot;
-    const buttons = root ? [...root.querySelectorAll('.yte-btn')] : [];
-    const panel = root?.querySelector('.yte-panel');
+    const buttons = root ? [...root.querySelectorAll('.ytm-btn')] : [];
+    const panel = root?.querySelector('.ytm-panel');
     const rect = (el) => {
       if (!el) return null;
       const r = el.getBoundingClientRect();
@@ -87,7 +87,7 @@ const state = () =>
         ? { id: panel.id, rect: rect(panel), pinned: panel.hasAttribute('data-pinned'), visible: getComputedStyle(panel).visibility }
         : null,
       buttonRects: Object.fromEntries(buttons.map((b) => [b.dataset.button, rect(b)])),
-      toolbar: rect(root?.querySelector('.yte-toolbar')),
+      toolbar: rect(root?.querySelector('.ytm-toolbar')),
       player: rect(player),
       metadataTop: rect(document.querySelector('ytd-watch-metadata'))?.top ?? null,
       focused: active?.dataset?.button ?? active?.className ?? null,
@@ -96,12 +96,12 @@ const state = () =>
   });
 
 // Playwright 的 CSS 選擇器會穿透開放的 Shadow DOM，並在點擊前確認元素穩定、沒有被遮住。
-const clickButton = (id) => page.locator(`yte-toolbar .yte-btn[data-button="${id}"]`).click();
-const clickInPanel = (selector) => page.locator(`yte-toolbar .yte-panel ${selector}`).click();
+const clickButton = (id) => page.locator(`ytm-toolbar .ytm-btn[data-button="${id}"]`).click();
+const clickInPanel = (selector) => page.locator(`ytm-toolbar .ytm-panel ${selector}`).click();
 
 const waitToolbar = async (present = true, timeout = 15_000) => {
   try {
-    await page.waitForFunction((p) => !!document.querySelector('yte-toolbar') === p, present, { timeout });
+    await page.waitForFunction((p) => !!document.querySelector('ytm-toolbar') === p, present, { timeout });
     return true;
   } catch {
     return false;
@@ -173,15 +173,15 @@ try {
   await clickButton('video');
   await page.waitForTimeout(400);
   s = await state();
-  check('點按鈕展開面板', s.panel?.id === 'yte-panel-video' && s.expanded.join() === 'video');
+  check('點按鈕展開面板', s.panel?.id === 'ytm-panel-video' && s.expanded.join() === 'video');
   check('面板左緣對齊按鈕', s.panel && Math.abs(s.panel.rect.left - s.buttonRects.video.left) <= 1, `panel=${s.panel?.rect.left} button=${s.buttonRects.video.left}`);
-  check('展開後焦點在面板內', s.focused === 'yte-icon-btn', `focused=${s.focused}`);
+  check('展開後焦點在面板內', s.focused === 'ytm-icon-btn', `focused=${s.focused}`);
   await shot(page, 'T03-panel-video.png');
 
   await clickButton('mp3');
   await page.waitForTimeout(300);
   s = await state();
-  check('一次只有一個面板', s.panel?.id === 'yte-panel-mp3' && s.expanded.join() === 'mp3', `expanded=${s.expanded}`);
+  check('一次只有一個面板', s.panel?.id === 'ytm-panel-mp3' && s.expanded.join() === 'mp3', `expanded=${s.expanded}`);
 
   await clickButton('mp3');
   await page.waitForTimeout(300);
@@ -218,20 +218,20 @@ try {
   // ---------- 釘選 ----------
   await clickButton('loop');
   await page.waitForTimeout(300);
-  await clickInPanel('.yte-panel-header .yte-icon-btn');
+  await clickInPanel('.ytm-panel-header .ytm-icon-btn');
   await page.waitForTimeout(200);
   await clickOutside();
   await page.keyboard.press('Escape');
   await page.waitForTimeout(300);
   s = await state();
-  check('釘選後點外面、按 Esc 都不收起', s.panel?.id === 'yte-panel-loop' && s.panel.pinned);
+  check('釘選後點外面、按 Esc 都不收起', s.panel?.id === 'ytm-panel-loop' && s.panel.pinned);
   await shot(page, 'T03-panel-pinned.png');
 
   await spaNavigateToRelated();
   s = await state();
-  check('換頁後釘選的面板仍展開、工具列只有一條', s.count === 1 && s.panel?.id === 'yte-panel-loop' && s.panel.pinned, `url=${s.url}`);
+  check('換頁後釘選的面板仍展開、工具列只有一條', s.count === 1 && s.panel?.id === 'ytm-panel-loop' && s.panel.pinned, `url=${s.url}`);
 
-  await clickInPanel('.yte-panel-header .yte-icon-btn');
+  await clickInPanel('.ytm-panel-header .ytm-icon-btn');
   await page.waitForTimeout(300);
   s = await state();
   check('按取消釘選後收起', s.panel === null, JSON.stringify(s.panel));
@@ -251,14 +251,14 @@ try {
   check('連續換頁 5 次，工具列始終只有一條', navOk && seen.size === 5, `videos=${[...seen].join(',')}`);
 
   // ---------- 鍵盤 ----------
-  await page.evaluate(() => document.querySelector('yte-toolbar').shadowRoot.querySelector('.yte-btn').focus());
+  await page.evaluate(() => document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-btn').focus());
   await page.keyboard.press('Tab');
   s = await state();
   const tabOk = s.focused === 'mp3';
   await page.keyboard.press('Enter');
   await page.waitForTimeout(300);
   s = await state();
-  const enterOk = s.panel?.id === 'yte-panel-mp3' && s.focused === 'yte-icon-btn';
+  const enterOk = s.panel?.id === 'ytm-panel-mp3' && s.focused === 'ytm-icon-btn';
   await page.keyboard.press('Escape');
   await page.waitForTimeout(200);
   s = await state();
@@ -266,7 +266,7 @@ try {
   await page.keyboard.press('Space');
   await page.waitForTimeout(300);
   s = await state();
-  const spaceOk = s.panel?.id === 'yte-panel-mp3';
+  const spaceOk = s.panel?.id === 'ytm-panel-mp3';
   await page.keyboard.press('Escape');
   check('鍵盤：Tab 移動、Enter／空白鍵展開、焦點進出面板', tabOk && enterOk && backOk && spaceOk, `tab=${tabOk} enter=${enterOk} back=${backOk} space=${spaceOk}`);
 
@@ -288,7 +288,7 @@ try {
     try {
       await document.querySelector('#movie_player').requestFullscreen();
       await new Promise((r) => setTimeout(r, 500));
-      const host = document.querySelector('yte-toolbar');
+      const host = document.querySelector('ytm-toolbar');
       const hiddenInFs = !!document.fullscreenElement && (host.hidden || getComputedStyle(host).display === 'none');
       await document.exitFullscreen();
       await new Promise((r) => setTimeout(r, 500));
@@ -321,15 +321,15 @@ try {
   await waitToolbar(true, 20_000);
   await page.waitForTimeout(2000);
   const colors = await page.evaluate(() => {
-    const root = document.querySelector('yte-toolbar').shadowRoot;
+    const root = document.querySelector('ytm-toolbar').shadowRoot;
     return {
       dark: document.documentElement.hasAttribute('dark'),
-      icon: getComputedStyle(root.querySelector('.yte-btn')).color,
+      icon: getComputedStyle(root.querySelector('.ytm-btn')).color,
     };
   });
   await clickButton('video');
   await page.waitForTimeout(400);
-  const panelBg = await page.evaluate(() => getComputedStyle(document.querySelector('yte-toolbar').shadowRoot.querySelector('.yte-panel')).backgroundColor);
+  const panelBg = await page.evaluate(() => getComputedStyle(document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-panel')).backgroundColor);
   check('深色主題時顏色跟著變', colors.dark && colors.icon === 'rgb(241, 241, 241)' && panelBg === 'rgb(40, 40, 40)', `${JSON.stringify(colors)} panel=${panelBg}`);
   await page.evaluate(() => window.scrollTo(0, 0));
   await shot(page, 'T03-panel-video-dark.png');
@@ -339,16 +339,16 @@ try {
   await clickButton('help');
   await page.waitForTimeout(400);
   const help = await page.evaluate(() => {
-    const root = document.querySelector('yte-toolbar').shadowRoot;
+    const root = document.querySelector('ytm-toolbar').shadowRoot;
     return {
-      items: [...root.querySelectorAll('.yte-help-item')].map((li) => ({
+      items: [...root.querySelectorAll('.ytm-help-item')].map((li) => ({
         id: li.dataset.button,
-        name: li.querySelector('.yte-help-name')?.textContent,
-        desc: li.querySelector('.yte-help-desc')?.textContent,
+        name: li.querySelector('.ytm-help-name')?.textContent,
+        desc: li.querySelector('.ytm-help-desc')?.textContent,
         icon: !!li.querySelector('svg path'),
       })),
-      labels: [...root.querySelectorAll('.yte-btn')].map((b) => b.getAttribute('aria-label')),
-      link: root.querySelector('.yte-help .yte-link')?.textContent,
+      labels: [...root.querySelectorAll('.ytm-btn')].map((b) => b.getAttribute('aria-label')),
+      link: root.querySelector('.ytm-help .ytm-link')?.textContent,
     };
   });
   check(
@@ -359,7 +359,7 @@ try {
   );
   await shot(page, 'T05-help-panel-dark.png');
   const optionsPage = context.waitForEvent('page', { timeout: 10_000 });
-  await clickInPanel('.yte-link');
+  await clickInPanel('.ytm-link');
   const opened = await optionsPage.catch(() => null);
   if (opened) await opened.waitForLoadState();
   check('說明面板的連結開啟設定頁', opened?.url() === `chrome-extension://${EXT_ID}/options.html`, opened?.url());
@@ -411,12 +411,12 @@ try {
   const zp = zh.pages()[0] ?? (await zh.newPage());
   try {
     await zp.goto(WATCH, { waitUntil: 'domcontentloaded', timeout: 60_000 });
-    await zp.waitForSelector('yte-toolbar', { state: 'attached', timeout: 30_000 });
+    await zp.waitForSelector('ytm-toolbar', { state: 'attached', timeout: 30_000 });
     await zp.waitForTimeout(1500);
-    await zp.locator('yte-toolbar .yte-btn[data-button="help"]').click();
+    await zp.locator('ytm-toolbar .ytm-btn[data-button="help"]').click();
     await zp.waitForTimeout(400);
     const labels = await zp.evaluate(() =>
-      [...document.querySelector('yte-toolbar').shadowRoot.querySelectorAll('.yte-btn')].map((b) => b.getAttribute('aria-label')),
+      [...document.querySelector('ytm-toolbar').shadowRoot.querySelectorAll('.ytm-btn')].map((b) => b.getAttribute('aria-label')),
     );
     check('繁體中文介面', labels[0] === '影片' && labels[12] === '關閉', labels.join('、'));
     await shot(zp, 'T05-help-panel-zh-TW.png');

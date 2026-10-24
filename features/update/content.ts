@@ -9,7 +9,7 @@ import { updateCheck, updateReminder } from '@/utils/settings';
 import { isReleaseUrl, type ReminderAction, type ReminderView } from '@/utils/update-check';
 import { createReminderController, type ReminderController, type ReminderPhase } from './reminder';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 /** pointermove 很頻繁：最多每這麼久回報一次操作。 */
 const ACTIVITY_THROTTLE_MS = 500;
 

@@ -10,9 +10,9 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/chidi0716/youtube-extension/host/internal/errs"
-	"github.com/chidi0716/youtube-extension/host/internal/protocol"
-	"github.com/chidi0716/youtube-extension/host/internal/validate"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/protocol"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
 )
 
 // Backend 是各指令的實際執行者。傳進來的參數都已經通過驗證。

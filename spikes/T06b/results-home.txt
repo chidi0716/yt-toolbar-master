@@ -8,7 +8,7 @@ PASS  light -> dark: 下一個畫面就是新主題的背景（沒有閃一下�
 PASS  light -> dark: 按鈕狀態與主題偏好  (pref=f6=400&tz=UTC)
 PASS  light -> dark: 整頁顏色與 YouTube 以dark載入時相同  ({"compared":85,"mismatched":0,"examples":[],"approximate":[]})
 PASS  light -> dark: 10 秒後沒有被改回去  ({"url":"/","html":["dark"],"masthead":["dark","page-dark-theme"],"watchFlexy":true,"pref":"f6=400&tz=UTC","appBg":"rgb(15, 15, 15)","button":true,"alive":true} mismatched=0)
-  console: [youtube-extension] dark mode: theme preference was changed back by the page; restored
+  console: [yt-toolbar-master] dark mode: theme preference was changed back by the page; restored
 PASS  light -> dark: 站內換頁到 /shorts/7tuLNof_daA 後仍是dark  ({"url":"/shorts/7tuLNof_daA","html":["dark"],"masthead":["dark","page-dark-theme"],"watchFlexy":true,"pref":"f6=400&tz=UTC&f7=100","appBg":"rgba(0, 0, 0, 0)","button":true,"alive":true})
 PASS  light -> dark: 站內換頁到 /feed/you 後仍是dark  ({"url":"/feed/you","html":["dark"],"masthead":["dark","page-dark-theme"],"watchFlexy":true,"pref":"f6=400&tz=UTC&f7=100","appBg":"rgb(15, 15, 15)","button":true,"alive":true})
 PASS  light -> dark: 站內換頁到 / 後仍是dark  ({"url":"/","html":["dark"],"masthead":["dark","page-dark-theme"],"watchFlexy":true,"pref":"f6=400&tz=UTC&f7=100","appBg":"rgb(15, 15, 15)","button":true,"alive":true})
@@ -35,7 +35,7 @@ PASS  unset -> dark: 下一個畫面就是新主題的背景（沒有閃一下�
 PASS  unset -> dark: 按鈕狀態與主題偏好  (pref=tz=UTC&f6=400)
 PASS  unset -> dark: 整頁顏色與 YouTube 以dark載入時相同  ({"compared":87,"mismatched":0,"examples":[],"approximate":[]})
 PASS  unset -> dark: 10 秒後沒有被改回去  ({"url":"/","html":["dark"],"masthead":["dark","page-dark-theme"],"watchFlexy":true,"pref":"tz=UTC&f6=400","appBg":"rgb(15, 15, 15)","button":true,"alive":true} mismatched=0)
-  console: [youtube-extension] dark mode: theme preference was changed back by the page; restored
+  console: [yt-toolbar-master] dark mode: theme preference was changed back by the page; restored
 PASS  unset -> dark: 站內換頁到 /shorts/Ils0tmYDTdk 後仍是dark  ({"url":"/shorts/Ils0tmYDTdk","html":["dark"],"masthead":["dark","page-dark-theme"],"watchFlexy":true,"pref":"tz=UTC&f7=100&f6=400","appBg":"rgba(0, 0, 0, 0)","button":true,"alive":true})
 PASS  unset -> dark: 站內換頁到 /feed/you 後仍是dark  ({"url":"/feed/you","html":["dark"],"masthead":["dark","page-dark-theme"],"watchFlexy":true,"pref":"tz=UTC&f7=100&f6=400","appBg":"rgb(15, 15, 15)","button":true,"alive":true})
 PASS  unset -> dark: 站內換頁到 / 後仍是dark  ({"url":"/","html":["dark"],"masthead":["dark","page-dark-theme"],"watchFlexy":true,"pref":"tz=UTC&f7=100&f6=400","appBg":"rgb(15, 15, 15)","button":true,"alive":true})

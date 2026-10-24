@@ -20,8 +20,9 @@ import { Toolbar } from '@/components/toolbar/Toolbar';
 import controlsCss from '@/components/controls/controls.css?inline';
 import toolbarCss from '@/components/toolbar/toolbar.css?inline';
 import { createScreenshot } from '@/features/downloads/content';
-import { downloadJobs } from '@/features/downloads/host-client';
+import { downloadJobs, quickSettings } from '@/features/downloads/host-client';
 import { buttonProgress } from '@/features/downloads/jobs';
+import { quickTooltip } from '@/features/downloads/quick';
 import { createUpdateReminder } from '@/features/update/content';
 import { createViewingController } from '@/features/viewing';
 import { initI18n, onLocaleChange, t } from '@/utils/i18n';
@@ -30,7 +31,7 @@ import { normalizeLayout, type ToolbarLayout } from '@/utils/toolbar-layout';
 import { WATCH_HOSTS, findPlayer, findToolbarAnchor } from '@/utils/youtube/dom';
 import { getVideoId, isWatchPage, onNavigate } from '@/utils/youtube/page';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 /** 首次載入時等待錨點出現的上限；超過就安靜放棄（constitution 第 7 點）。 */
 const ANCHOR_WAIT_MS = 20_000;
 
@@ -65,7 +66,7 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
   };
 
   const ui = await createShadowRootUi<HTMLElement>(ctx, {
-    name: 'yte-toolbar',
+    name: 'ytm-toolbar',
     position: 'inline',
     anchor: () => findToolbarAnchor()?.before ?? null,
     append: 'before',
@@ -73,9 +74,9 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
     // 工具列內的按鍵不要冒泡到 YouTube，避免觸發 YouTube 的鍵盤快捷鍵（FR-19）。
     isolateEvents: true,
     onMount(container, _shadow, host) {
-      container.classList.add('yte-root');
+      container.classList.add('ytm-root');
       const anchor = findToolbarAnchor();
-      if (anchor) host.style.setProperty('--yte-font-family', getComputedStyle(anchor.parent).fontFamily);
+      if (anchor) host.style.setProperty('--ytm-font-family', getComputedStyle(anchor.parent).fontFamily);
       renderInto(container, host);
       return container;
     },
@@ -155,6 +156,13 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
     };
   };
 
+  // 一鍵下載（009 FR-7）：「影片」「MP3」的提示文字標明點下去會發生什麼；設定或語言改變時重新繪製。
+  const quick = quickSettings();
+  const downloadTooltips = () => {
+    const q = quick.get();
+    return q?.enabled ? { video: quickTooltip('video', q.defaults), mp3: quickTooltip('mp3', q.defaults) } : undefined;
+  };
+
   function renderInto(container: HTMLElement, host: HTMLElement) {
     if (!videoId) return;
     viewing.decorateToolbarHost(host);
@@ -171,6 +179,7 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
         layout={layout}
         onSaveLayout={saveLayout}
         reminder={reminder}
+        tooltips={downloadTooltips()}
       />,
       container,
     );
@@ -302,6 +311,7 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
   ctx.onInvalidated(viewing.subscribe(rerender));
   ctx.onInvalidated(screenshot.state.subscribe(rerender));
   ctx.onInvalidated(jobs.subscribe(rerender));
+  ctx.onInvalidated(quick.subscribe(rerender));
   ctx.onInvalidated(() => viewing.setActive(false));
   ctx.onInvalidated(() => reminder.dispose());
   ctx.addEventListener(document, 'fullscreenchange', applyFullscreen);

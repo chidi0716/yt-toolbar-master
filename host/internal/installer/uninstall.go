@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/platform"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
 )
 
 // Uninstall 移除下載功能（008 FR-30）：原生訊息設定檔、登錄機碼、安裝資料夾（小幫手、yt-dlp、

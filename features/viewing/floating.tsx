@@ -27,9 +27,9 @@ import {
 import { ensurePageStyles } from './page-styles';
 import { createStore, type ToggleState, type ViewingFeature } from './store';
 
-const FLOATING_CLASS = 'yte-floating';
-const POSITION_STYLE_ID = 'yte-floating-position';
-const CONTROLS_TAG = 'yte-floating-controls';
+const FLOATING_CLASS = 'ytm-floating';
+const POSITION_STYLE_ID = 'ytm-floating-position';
+const CONTROLS_TAG = 'ytm-floating-controls';
 
 export interface FloatingFeature extends ViewingFeature {
   state: ReturnType<typeof createStore<ToggleState>>;
@@ -247,7 +247,7 @@ export function createFloating(): FloatingFeature {
     container = next;
     const target = container?.parentElement ?? null;
     if (!target) {
-      console.info('[youtube-extension] floating player: player container not found');
+      console.info('[yt-toolbar-master] floating player: player container not found');
       disconnect();
       return;
     }

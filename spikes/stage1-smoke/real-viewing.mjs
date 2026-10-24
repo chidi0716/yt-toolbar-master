@@ -26,7 +26,7 @@ const context = await chromium.launchPersistentContext(profile, {
   args: [`--disable-extensions-except=${extDir}`, `--load-extension=${extDir}`],
 });
 const page = context.pages()[0] ?? (await context.newPage());
-const button = (id) => page.locator(`yte-toolbar .yte-btn[data-button="${id}"]`);
+const button = (id) => page.locator(`ytm-toolbar .ytm-btn[data-button="${id}"]`);
 const pressedOf = (id) => button(id).getAttribute('aria-pressed');
 
 try {
@@ -35,7 +35,7 @@ try {
     console.log('YouTube showed a verification page; stopping without retrying.', page.url());
     process.exit(2);
   }
-  await page.waitForSelector('yte-toolbar', { state: 'attached', timeout: 30_000 });
+  await page.waitForSelector('ytm-toolbar', { state: 'attached', timeout: 30_000 });
   await page.waitForTimeout(2000);
   const playerState = await page.evaluate(() => {
     const v = document.querySelector('#movie_player video');
@@ -48,7 +48,7 @@ try {
   const reloaded = page.waitForEvent('load', { timeout: 30_000 });
   await button('darkMode').click();
   await reloaded;
-  await page.waitForSelector('yte-toolbar', { state: 'attached', timeout: 30_000 });
+  await page.waitForSelector('ytm-toolbar', { state: 'attached', timeout: 30_000 });
   await page.waitForTimeout(1500);
   const dark = {
     attr: await page.evaluate(() => document.documentElement.hasAttribute('dark')),
@@ -68,14 +68,14 @@ try {
       const r = el.getBoundingClientRect();
       const top = document.elementFromPoint(r.left + r.width * fx, r.top + Math.min(r.height * fy, 20));
       if (!top) return null;
-      if (top.closest('yte-toolbar')) return 'toolbar';
-      if (top.classList.contains('yte-cinema-overlay')) return 'overlay';
+      if (top.closest('ytm-toolbar')) return 'toolbar';
+      if (top.classList.contains('ytm-cinema-overlay')) return 'overlay';
       if (top.closest('#movie_player')) return 'player';
       return top.tagName.toLowerCase();
     };
     return {
       player: at(document.querySelector('#movie_player')),
-      toolbar: at(document.querySelector('yte-toolbar'), 0.02),
+      toolbar: at(document.querySelector('ytm-toolbar'), 0.02),
       title: at(document.querySelector('ytd-watch-metadata #title'), 0.1),
       masthead: at(document.querySelector('#masthead-container'), 0.3),
       secondary: at(document.querySelector('#secondary'), 0.5, 0.05),
@@ -89,7 +89,7 @@ try {
   await page.screenshot({ path: join(shots, 'T07-real-cinema.png'), clip: { x: 0, y: 0, width: 1400, height: 760 } });
   await page.keyboard.press('Escape');
   await page.waitForTimeout(300);
-  check('真實 YouTube：Esc 關閉劇院模式', (await page.locator('.yte-cinema-overlay').count()) === 0 && (await pressedOf('cinema')) === 'false');
+  check('真實 YouTube：Esc 關閉劇院模式', (await page.locator('.ytm-cinema-overlay').count()) === 0 && (await pressedOf('cinema')) === 'false');
 
   // ---- 浮動播放器 ----
   await button('floating').click();
@@ -101,7 +101,7 @@ try {
     const v = document.querySelector('#movie_player video')?.getBoundingClientRect();
     return c
       ? {
-          floating: c.classList.contains('yte-floating'),
+          floating: c.classList.contains('ytm-floating'),
           rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)],
           video: v ? [Math.round(v.width), Math.round(v.height)] : null,
           vw: document.documentElement.clientWidth,
@@ -117,20 +117,20 @@ try {
   await page.screenshot({ path: join(shots, 'T08-real-floating.png') });
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(800);
-  check('真實 YouTube：捲回原位時恢復', !(await page.evaluate(() => document.querySelector('ytd-watch-flexy #player-container')?.classList.contains('yte-floating'))));
+  check('真實 YouTube：捲回原位時恢復', !(await page.evaluate(() => document.querySelector('ytd-watch-flexy #player-container')?.classList.contains('ytm-floating'))));
   await button('floating').click();
 
   // ---- 更多選單 ----
   await button('more').click();
   await page.waitForTimeout(400);
   const autoplay = await page.evaluate(() => {
-    const row = document.querySelector('yte-toolbar').shadowRoot.querySelector('.yte-more-item[data-item="autoplay"]');
+    const row = document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-more-item[data-item="autoplay"]');
     return { disabled: row?.hasAttribute('data-disabled'), checked: row?.querySelector('[role="switch"]')?.getAttribute('aria-checked') };
   });
   const ytToggle = await page.evaluate(() => document.querySelector('#movie_player .ytp-autonav-toggle-button')?.getAttribute('aria-checked') ?? null);
   if (ytToggle === null) skip('真實 YouTube：自動播放開關與 YouTube 同步（T10）', '這個頁面沒有 YouTube 的自動播放開關（未登入或影片無法播放）');
   else check('真實 YouTube：自動播放開關與 YouTube 同步（T10）', !autoplay.disabled && autoplay.checked === ytToggle, `${JSON.stringify(autoplay)} yt=${ytToggle}`);
-  await page.locator('yte-toolbar .yte-more-item[data-item="hideComments"] [role="switch"]').click();
+  await page.locator('ytm-toolbar .ytm-more-item[data-item="hideComments"] [role="switch"]').click();
   await page.waitForTimeout(300);
   const comments = await page.evaluate(() => {
     const c = document.querySelector('ytd-watch-flexy #comments');
@@ -138,7 +138,7 @@ try {
   });
   check('真實 YouTube：隱藏留言（T10）', comments === 'none', comments);
   await page.screenshot({ path: join(shots, 'T10-real-more-panel.png'), clip: { x: 0, y: 0, width: 1000, height: 1000 } });
-  await page.locator('yte-toolbar .yte-more-item[data-item="hideComments"] [role="switch"]').click();
+  await page.locator('ytm-toolbar .ytm-more-item[data-item="hideComments"] [role="switch"]').click();
 } catch (err) {
   check('real viewing script', false, String(err).split('\n')[0]);
 } finally {

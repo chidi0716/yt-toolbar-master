@@ -10,7 +10,7 @@ import { player } from '@/utils/youtube/player';
 import { isManualChange, pickQuality } from './quality-logic';
 import { createStore, type Store, type ViewingFeature } from './store';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 const VIDEO_EVENTS = ['loadedmetadata', 'playing', 'resize'] as const;
 const MENU_EVENTS = ['pointerdown', 'keydown'] as const;
 

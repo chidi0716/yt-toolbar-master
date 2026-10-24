@@ -26,7 +26,7 @@
 | 1. 主題偏好 | 與 T06a 相同：只改 `PREF` 的 `f6` 主題位元並確認寫入成功（失敗時不切換）。 |
 | 2. `<html>` | 深色：設定 `dark`、移除 `light`；淺色：移除 `dark`、設定 `light`。 |
 | 3. 元素屬性 | `THEMED_ELEMENTS`（`dom.ts`）中的元素：深色時設定、淺色時移除。 |
-| 4. 被固定的變數 | 讀取頁面樣式表，找出 `:root:root` 固定的變數，改用同一份樣式表中新主題（`[dark]` 或 `[light]`）的值，以 `:root:root:root` 的規則覆寫（`<style id="yte-theme-pinned">`，以 CSSOM `setProperty` 逐一設定）。切回載入時的主題時移除這個 `<style>`。掃描全部規則約 65 ms，只在按下按鈕與 YouTube 新增樣式表時進行。 |
+| 4. 被固定的變數 | 讀取頁面樣式表，找出 `:root:root` 固定的變數，改用同一份樣式表中新主題（`[dark]` 或 `[light]`）的值，以 `:root:root:root` 的規則覆寫（`<style id="ytm-theme-pinned">`，以 CSSOM `setProperty` 逐一設定）。切回載入時的主題時移除這個 `<style>`。掃描全部規則約 65 ms，只在按下按鈕與 YouTube 新增樣式表時進行。 |
 | 5. 確認與退回 | 600 ms 後檢查頁面背景色（`ytd-app`，透明時看 `<html>`）是否屬於新主題；不是時在 console 記錄 `instant switch did not take effect; reloading` 並退回 T06a 的「改偏好後重新載入」（FR-16）。 |
 
 切換後到頁面結束前持續維持（`createThemeKeeper`）：
@@ -86,7 +86,7 @@
 3. 重新整理、重新開啟瀏覽器後維持；YouTube「外觀」選單顯示對應的主題。
 4. 再按一次回到原本的主題。
 5. 從 YouTube「外觀」選單切換主題時，按鈕狀態跟著改變。
-6. 若有任何一步不符合，請記下瀏覽器、是否登入、開發者工具 console 中 `[youtube-extension]` 開頭的訊息，以及 `PREF` cookie 的值。
+6. 若有任何一步不符合，請記下瀏覽器、是否登入、開發者工具 console 中 `[yt-toolbar-master]` 開頭的訊息，以及 `PREF` cookie 的值。
 
 ## 檔案
 

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
 )
 
 // UpdateResult 是 updateYtDlp 指令的結果。

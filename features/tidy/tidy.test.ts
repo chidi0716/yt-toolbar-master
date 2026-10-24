@@ -49,9 +49,9 @@ function splitTopLevel(list: string): string[] {
 }
 
 describe('CSS 開關機制（plan 3.7.2）', () => {
-  it('每個 class 都有 yte- 前綴、不重複', () => {
+  it('每個 class 都有 ytm- 前綴、不重複', () => {
     const names = PAGE_CLASS_TOGGLES.map((t) => t.className);
-    expect(names.every((n) => /^yte-[a-z-]+$/.test(n))).toBe(true);
+    expect(names.every((n) => /^ytm-[a-z-]+$/.test(n))).toBe(true);
     expect(new Set(names).size).toBe(names.length);
   });
 
@@ -63,18 +63,18 @@ describe('CSS 開關機制（plan 3.7.2）', () => {
       .filter(Boolean)
       .flatMap(splitTopLevel);
     expect(selectors.length).toBeGreaterThan(0);
-    for (const sel of selectors) expect(sel).toMatch(/^html\.yte-[a-z-]+[\s.:[]/);
+    for (const sel of selectors) expect(sel).toMatch(/^html\.ytm-[a-z-]+[\s.:[]/);
   });
 
   it('隱藏留言只在工具列啟用時作用（003 FR-5）', () => {
-    expect(pageClasses({ hideComments: true }, true)).toContain('yte-hide-comments');
-    expect(pageClasses({ hideComments: true }, false)).not.toContain('yte-hide-comments');
-    expect(pageClasses({ hideComments: false }, true)).not.toContain('yte-hide-comments');
+    expect(pageClasses({ hideComments: true }, true)).toContain('ytm-hide-comments');
+    expect(pageClasses({ hideComments: true }, false)).not.toContain('ytm-hide-comments');
+    expect(pageClasses({ hideComments: false }, true)).not.toContain('ytm-hide-comments');
   });
 
   it('005 的樣式選項不受工具列影響（005 FR-6）', () => {
     const all = { hideEndCards: true, noThumbnailPreview: true, hideShorts: true, fullTitles: true };
-    const expected = ['yte-hide-end-cards', 'yte-no-thumbnail-preview', 'yte-hide-shorts', 'yte-full-titles'];
+    const expected = ['ytm-hide-end-cards', 'ytm-no-thumbnail-preview', 'ytm-hide-shorts', 'ytm-full-titles'];
     expect(pageClasses(all, true)).toEqual(expected);
     expect(pageClasses(all, false)).toEqual(expected);
     expect(pageClasses({}, true)).toEqual([]);
@@ -91,15 +91,15 @@ describe('CSS 開關機制（plan 3.7.2）', () => {
 
   it('applyPageClasses 只增減這個機制的 class，其他 class 不動', () => {
     // 測試環境沒有 DOM：以最小的 classList 代替。
-    const classes = new Set(['yte-cinema', 'something']);
+    const classes = new Set(['ytm-cinema', 'something']);
     const root = {
       classList: {
         toggle: (name: string, force: boolean) => (force ? classes.add(name) : classes.delete(name), force),
       },
     } as unknown as Element;
-    applyPageClasses(root, ['yte-hide-comments']);
-    expect(classes.has('yte-hide-comments')).toBe(true);
+    applyPageClasses(root, ['ytm-hide-comments']);
+    expect(classes.has('ytm-hide-comments')).toBe(true);
     applyPageClasses(root, []);
-    expect([...classes]).toEqual(['yte-cinema', 'something']);
+    expect([...classes]).toEqual(['ytm-cinema', 'something']);
   });
 });

@@ -1,9 +1,9 @@
 #!/bin/sh
 # 一行指令安裝下載功能（macOS）。plan 4.9、008 FR-10、FR-11。
 #
-#   curl -fsSL https://github.com/chidi0716/youtube-extension/releases/latest/download/install.sh | sh
+#   curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.sh | sh
 #
-# 這個腳本只做三件事，其餘全部由小幫手（yte-host --install）完成並逐步說明：
+# 這個腳本只做三件事，其餘全部由小幫手（ytm-host --install）完成並逐步說明：
 #   1. 以 HTTPS 從本專案同一個 GitHub Release（固定版本）下載 components.json 與這台 Mac 的小幫手；
 #   2. 確認小幫手的 SHA256 與 components.json 相同；
 #   3. 執行小幫手的 --install（小幫手檢查清單，並核對之後每個下載檔案的 SHA256）。
@@ -12,7 +12,7 @@
 set -eu
 
 TAG="@RELEASE_TAG@"
-BASE="https://github.com/chidi0716/youtube-extension/releases/download/$TAG"
+BASE="https://github.com/chidi0716/yt-toolbar-master/releases/download/$TAG"
 
 say() { printf '%s\n' "$1"; }
 fail() {
@@ -38,9 +38,9 @@ if [ "$(sysctl -n hw.optional.arm64 2>/dev/null || echo 0)" = "1" ]; then
 else
   PLATFORM="darwin-amd64"
 fi
-HELPER="yte-host-$PLATFORM"
+HELPER="ytm-host-$PLATFORM"
 
-TMP=$(mktemp -d "${TMPDIR:-/tmp}/yte-install.XXXXXX") || fail "could not create a temporary folder."
+TMP=$(mktemp -d "${TMPDIR:-/tmp}/ytm-install.XXXXXX") || fail "could not create a temporary folder."
 cleanup() { rm -rf "$TMP"; }
 trap cleanup EXIT INT TERM
 

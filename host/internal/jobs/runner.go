@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/errs"
-	"github.com/chidi0716/youtube-extension/host/internal/validate"
-	"github.com/chidi0716/youtube-extension/host/internal/ytdlp"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/ytdlp"
 )
 
 // Logger 是記錄檔介面。
@@ -40,7 +40,7 @@ const (
 // TmpDirName 回傳工作在下載資料夾中的暫存資料夾名稱。yt-dlp 的所有輸出（.part、.ytdl、
 // 合併前的影像與聲音、縮圖、字幕）都先放在這裡，完成後只把結果搬出來，
 // 取消或失敗時整個刪除（plan 4.6）。
-func TmpDirName(jobID string) string { return ".yte-tmp-" + jobID }
+func TmpDirName(jobID string) string { return ".ytm-tmp-" + jobID }
 
 // Runner 在執行程序中執行一個工作。
 type Runner struct {

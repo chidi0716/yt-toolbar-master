@@ -1,8 +1,8 @@
 ﻿# One-line installer for the download helper (Windows). plan 4.9, 008 FR-10, FR-11.
 #
-#   irm https://github.com/chidi0716/youtube-extension/releases/latest/download/install.ps1 | iex
+#   irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.ps1 | iex
 #
-# This script only does three things; the helper (yte-host --install) does the rest and explains each step:
+# This script only does three things; the helper (ytm-host --install) does the rest and explains each step:
 #   1. Download components.json and the helper over HTTPS from the same (fixed-version) GitHub release of this project.
 #   2. Check that the helper's SHA256 matches components.json.
 #   3. Run the helper with --install (the helper checks the list and the SHA256 of every file it downloads).
@@ -17,9 +17,9 @@
     $ErrorActionPreference = 'Stop'
     $ProgressPreference = 'SilentlyContinue'
     $Tag = '@RELEASE_TAG@'
-    $Base = "https://github.com/chidi0716/youtube-extension/releases/download/$Tag"
+    $Base = "https://github.com/chidi0716/yt-toolbar-master/releases/download/$Tag"
     $Platform = 'windows-amd64'
-    $Helper = 'yte-host-windows-amd64.exe'
+    $Helper = 'ytm-host-windows-amd64.exe'
 
     function Z([string]$s) { return [regex]::Unescape($s) }
     function Say([string]$s) { Write-Host $s }
@@ -45,7 +45,7 @@
     # Windows PowerShell 5.1 does not enable TLS 1.2 by default.
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
-    $Tmp = Join-Path ([IO.Path]::GetTempPath()) ('yte-install-' + [guid]::NewGuid().ToString('N'))
+    $Tmp = Join-Path ([IO.Path]::GetTempPath()) ('ytm-install-' + [guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $Tmp | Out-Null
     try {
         Say ((Z '下載功能安裝程式') + " $Tag / Download helper installer $Tag")

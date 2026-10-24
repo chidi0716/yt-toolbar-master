@@ -9,7 +9,7 @@ export default defineContentScript({
       await startToolbar(ctx);
     } catch (err) {
       // 不得讓 YouTube 頁面出錯（constitution 第 7 點）。
-      console.info('[youtube-extension] toolbar failed to start', err);
+      console.info('[yt-toolbar-master] toolbar failed to start', err);
     }
   },
 });

@@ -10,12 +10,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/chidi0716/youtube-extension/host/internal/errs"
-	"github.com/chidi0716/youtube-extension/host/internal/jobs"
-	"github.com/chidi0716/youtube-extension/host/internal/platform"
-	"github.com/chidi0716/youtube-extension/host/internal/testenv"
-	"github.com/chidi0716/youtube-extension/host/internal/updater"
-	"github.com/chidi0716/youtube-extension/host/internal/validate"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/jobs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/testenv"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/updater"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
 )
 
 type spawnRecorder struct {
@@ -219,7 +219,7 @@ func TestStatusComponents(t *testing.T) {
 	}
 	// 找不到的元件：found false。
 	a.Env = envWithPath(t.TempDir())
-	a.SelfPath = filepath.Join(t.TempDir(), "yte-host")
+	a.SelfPath = filepath.Join(t.TempDir(), "ytm-host")
 	v, _ = a.Status(context.Background())
 	for _, c := range v.(*StatusResult).Components {
 		if c.Name == "helper" {

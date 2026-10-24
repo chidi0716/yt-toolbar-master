@@ -21,8 +21,8 @@ import {
   type UpdateReminderState,
 } from './update-check';
 
-const URL_020 = 'https://github.com/chidi0716/youtube-extension/releases/tag/v0.2.0';
-const release = (version = '0.2.0') => ({ version, title: `v${version} title`, url: `https://github.com/chidi0716/youtube-extension/releases/tag/v${version}` });
+const URL_020 = 'https://github.com/chidi0716/yt-toolbar-master/releases/tag/v0.2.0';
+const release = (version = '0.2.0') => ({ version, title: `v${version} title`, url: `https://github.com/chidi0716/yt-toolbar-master/releases/tag/v${version}` });
 /** 本機時間（測試在任何時區都以本機的日期判斷「隔天」）。 */
 const at = (day: number, hour: number, minute = 0) => new Date(2026, 9, day, hour, minute).getTime();
 
@@ -55,20 +55,20 @@ describe('版本比較（plan 3.9）', () => {
 describe('版本頁面網址檢查', () => {
   it('只接受本專案 GitHub 的版本頁面', () => {
     expect(isReleaseUrl(URL_020)).toBe(true);
-    expect(isReleaseUrl('https://github.com/chidi0716/youtube-extension/releases/latest')).toBe(true);
+    expect(isReleaseUrl('https://github.com/chidi0716/yt-toolbar-master/releases/latest')).toBe(true);
   });
 
   it('其他網址一律拒絕', () => {
     for (const bad of [
-      'http://github.com/chidi0716/youtube-extension/releases/tag/v0.2.0',
-      'https://github.com/someone/youtube-extension/releases/tag/v0.2.0',
-      'https://github.com/chidi0716/youtube-extension/issues/1',
-      'https://github.com/chidi0716/youtube-extension/releases',
-      'https://github.com.evil.example/chidi0716/youtube-extension/releases/tag/v1',
-      'https://github.com/chidi0716/youtube-extension/releases/../../evil/x',
-      'https://user@github.com/chidi0716/youtube-extension/releases/tag/v1',
-      'javascript:alert(1)//https://github.com/chidi0716/youtube-extension/releases/',
-      `https://github.com/chidi0716/youtube-extension/releases/${'x'.repeat(400)}`,
+      'http://github.com/chidi0716/yt-toolbar-master/releases/tag/v0.2.0',
+      'https://github.com/someone/yt-toolbar-master/releases/tag/v0.2.0',
+      'https://github.com/chidi0716/yt-toolbar-master/issues/1',
+      'https://github.com/chidi0716/yt-toolbar-master/releases',
+      'https://github.com.evil.example/chidi0716/yt-toolbar-master/releases/tag/v1',
+      'https://github.com/chidi0716/yt-toolbar-master/releases/../../evil/x',
+      'https://user@github.com/chidi0716/yt-toolbar-master/releases/tag/v1',
+      'javascript:alert(1)//https://github.com/chidi0716/yt-toolbar-master/releases/',
+      `https://github.com/chidi0716/yt-toolbar-master/releases/${'x'.repeat(400)}`,
       undefined,
       42,
     ]) {
@@ -215,7 +215,7 @@ describe('查詢（plan 3.9）', () => {
     expect(fetchFn).toHaveBeenCalledTimes(1);
     const [url, init] = fetchFn.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe(LATEST_RELEASE_API);
-    expect(LATEST_RELEASE_API).toBe('https://api.github.com/repos/chidi0716/youtube-extension/releases/latest');
+    expect(LATEST_RELEASE_API).toBe('https://api.github.com/repos/chidi0716/yt-toolbar-master/releases/latest');
     expect(init.credentials).toBe('omit');
     expect(init.referrerPolicy).toBe('no-referrer');
     expect(init.headers).toBeUndefined();

@@ -6,7 +6,7 @@ import type { ContentMessage, MessageResponse, ThumbnailInfo } from '@/utils/mes
 import { THUMBNAIL_SIZES, thumbnailSizeUrl, validateCaptionUrl } from '@/utils/youtube/dom';
 import { isRealThumbnail } from './logic';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 /** 物件網址在下載完成（或逾時）後釋放。 */
 const OBJECT_URL_TTL_MS = 5 * 60_000;
 

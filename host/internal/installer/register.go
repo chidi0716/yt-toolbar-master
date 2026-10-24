@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/chidi0716/youtube-extension/host/internal/platform"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
 )
 
 // nativeManifest 是原生訊息設定檔（內容與 install/manifests/ 的範本相同，測試會比對）。
@@ -18,7 +18,7 @@ type nativeManifest struct {
 	AllowedExtensions []string `json:"allowed_extensions,omitempty"`
 }
 
-const manifestDescription = "youtube-extension download helper (runs yt-dlp and ffmpeg on this computer)"
+const manifestDescription = "YT Toolbar Master download helper (runs yt-dlp and ffmpeg on this computer)"
 
 // ManifestContent 回傳某個瀏覽器的原生訊息設定檔內容。
 func ManifestContent(browser, helperPath string) ([]byte, error) {

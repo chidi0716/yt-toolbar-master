@@ -19,7 +19,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/chidi0716/youtube-extension/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
 )
 
 var (
@@ -330,7 +330,7 @@ func Dir(dir string) (string, error) {
 	if !st.IsDir() {
 		return "", errs.New(errs.PermissionDenied, "dir: not a folder")
 	}
-	f, err := os.CreateTemp(clean, ".yte-write-test-*")
+	f, err := os.CreateTemp(clean, ".ytm-write-test-*")
 	if err != nil {
 		return "", errs.New(errs.PermissionDenied, "dir: folder is not writable")
 	}

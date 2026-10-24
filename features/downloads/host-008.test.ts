@@ -20,10 +20,10 @@ const FAKE_STATUS = {
   deno: { found: true, version: '2.5.4' },
   defaultDir: '/Users/me/Downloads',
   namePresets: [{ id: 'title-id', example: 'x' }],
-  installDir: '/Users/me/Library/Application Support/youtube-extension-host',
+  installDir: '/Users/me/Library/Application Support/yt-toolbar-master',
   components: [
     { name: 'ffprobe', version: '7.1', path: '/usr/local/bin/ffprobe', source: 'path' },
-    { name: 'helper', version: '0.2.0', path: '/x/yte-host', source: 'bundled' },
+    { name: 'helper', version: '0.2.0', path: '/x/ytm-host', source: 'bundled' },
     { name: 'yt-dlp', version: '2026.10.21', path: '/x/bin/yt-dlp', source: 'bundled' },
     { name: 'deno', version: '2.5.4', path: '/opt/homebrew/bin/deno', source: 'homebrew' },
     { name: 'ffmpeg', version: '7.1', path: 'C:\\ffmpeg.exe', source: 'winget' },

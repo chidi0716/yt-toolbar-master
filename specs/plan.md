@@ -22,7 +22,7 @@
 └───────────────┼────────────────────────────────────────────────┘
                 │ Native Messaging（stdin/stdout，JSON）
 ┌───────────────▼─────────────┐
-│ 橋接程式 yte-host（Go 單一執行檔）│ ──► yt-dlp ──► ffmpeg
+│ 橋接程式 ytm-host（Go 單一執行檔）│ ──► yt-dlp ──► ffmpeg
 └─────────────────────────────┘
 ```
 
@@ -97,8 +97,9 @@ host/                           橋接程式（Go），見第 4 節
 原生訊息設定檔必須寫明擴充功能 ID：
 
 - **Chrome**：在 `wxt.config.ts` 的 manifest 加入固定的 `key`（公鑰），讓未封裝載入的 ID 永遠相同。金鑰在實作時產生一次，只提交公鑰，私鑰不進 repo。
-- **Firefox**：`browser_specific_settings.gecko.id` 改為 `youtube-extension@chidi0716`。
+- **Firefox**：`browser_specific_settings.gecko.id` 改為 `yt-toolbar-master@chidi0716`。
 - Chrome 不打包 `.crx`（Chrome 不允許安裝商店以外的 `.crx`），因此不需要保留私鑰；只以「載入未封裝項目」安裝。
+- **改名**（T52）：專案改名為「YT Toolbar Master」（repo `chidi0716/yt-toolbar-master`）。因為還沒有發佈任何版本，內部識別碼也一併改名：Firefox `gecko.id` 為 `yt-toolbar-master@chidi0716`、原生訊息名稱 `com.chidi0716.yt_toolbar_master`、小幫手 `ytm-host`、發佈工具 `ytm-release`、安裝資料夾 `yt-toolbar-master`、暫存資料夾 `.ytm-tmp-<id>`，程式中的 `yte` 前綴（CSS class、DOM 屬性、事件名稱、輸出標記）改為 `ytm`。只有 Chrome 的 `key` 不變（擴充功能 ID 由金鑰決定，與名稱無關）。
 
 ### 3.3.1 Firefox 發佈方式
 
@@ -162,7 +163,7 @@ host/                           橋接程式（Go），見第 4 節
 ### 3.7.2 頁面整理（005）
 
 - **設定**：`utils/settings.ts` 新增各選項（預設 false，存在 `sync`）。設定頁以類別分組顯示（觀看頁、干擾、Shorts、介面），並保留原本的下載設定區。
-- **CSS 開關機制**：內容腳本在 `document_start` 就依設定在 `<html>` 加上對應的 class（例如 `yte-hide-end-cards`），並監聽設定變更即時增減 class（005 FR-3）。所有相關樣式放在同一個樣式檔，選擇器集中在 `utils/youtube/dom.ts`。這個機制取代各功能各自加樣式的做法，003 的「隱藏留言」也改用此機制。
+- **CSS 開關機制**：內容腳本在 `document_start` 就依設定在 `<html>` 加上對應的 class（例如 `ytm-hide-end-cards`），並監聽設定變更即時增減 class（005 FR-3）。所有相關樣式放在同一個樣式檔，選擇器集中在 `utils/youtube/dom.ts`。這個機制取代各功能各自加樣式的做法，003 的「隱藏留言」也改用此機制。
 - **內容腳本範圍**：頁面整理在所有 YouTube 頁面作用，工具列仍只在觀看頁掛載。
 - **需要程式的選項**：
   - **原始語音**：透過頁面橋接腳本讀取影片的語音軌清單並切換（新增 `getAudioTracks`、`setAudioTrack` 請求，`setAudioTrack` 只接受清單中存在的語音軌識別值）。在影片載入時檢查；偵測到使用者手動切換時，這部影片不再強制。實作前先以真實 YouTube 確認播放器提供的語音軌方法；不可用時在 QUESTIONS.md 回報。
@@ -253,7 +254,7 @@ host/                           橋接程式（Go），見第 4 節
 ```
 host/
   go.mod
-  cmd/yte-host/main.go          進入點
+  cmd/ytm-host/main.go          進入點
   internal/protocol/            原生訊息讀寫（4 位元組長度 + JSON）
   internal/commands/            指令分派與參數驗證
   internal/ytdlp/               尋找 yt-dlp/ffmpeg、組命令列參數、解析輸出
@@ -314,8 +315,8 @@ install/
   - SRT：加上 `--convert-subs srt`
   - TXT：由橋接程式把 VTT 轉成純文字（去掉時間碼與重複行），有單元測試。
 - **嵌入資訊**（004 第 2 節，設定開啟時）：`--embed-thumbnail --embed-metadata --embed-chapters`；WEBM 等不支援嵌入封面的格式不加 `--embed-thumbnail`。是否嵌入由 `download` 指令的布林參數 `embed` 決定。
-- **共通參數**：`--newline --no-colors --progress-template "download:YTE-PROGRESS %(progress)j" --print after_move:YTE-FILE:%(filepath)s -P <dir> -o <範本> --windows-filenames --no-playlist`
-- **進度**：解析 `YTE-PROGRESS` JSON 行得到百分比、速度、剩餘時間；遇到合併或轉檔階段時，回報狀態「處理中」。
+- **共通參數**：`--newline --no-colors --progress-template "download:YTM-PROGRESS %(progress)j" --print after_move:YTM-FILE:%(filepath)s -P <dir> -o <範本> --windows-filenames --no-playlist`
+- **進度**：解析 `YTM-PROGRESS` JSON 行得到百分比、速度、剩餘時間；遇到合併或轉檔階段時，回報狀態「處理中」。
 - **錯誤分類**：依 stderr 關鍵字對應錯誤代碼，例如登入、網路、空間不足、格式不存在。
 
 ### 4.6 工作與生命週期
@@ -328,25 +329,25 @@ install/
 
 ### 4.7 記錄檔
 
-- macOS：`~/Library/Logs/youtube-extension-host/host.log`
-- Windows：`%LOCALAPPDATA%\youtube-extension-host\logs\host.log`
+- macOS：`~/Library/Logs/yt-toolbar-master/host.log`
+- Windows：`%LOCALAPPDATA%\yt-toolbar-master\logs\host.log`
 
 只記錄指令名稱、錯誤代碼與 yt-dlp 的錯誤訊息，大小上限 5MB，超過就輪替。
 
 ### 4.8 安裝腳本
 
-- 原生訊息名稱：`com.chidi0716.youtube_extension`
+- 原生訊息名稱：`com.chidi0716.yt_toolbar_master`
 - **macOS**（`install.sh`，不需 sudo）：
-  - 複製執行檔到 `~/Library/Application Support/youtube-extension-host/`，並移除隔離屬性（`xattr -d com.apple.quarantine`）。
+  - 複製執行檔到 `~/Library/Application Support/yt-toolbar-master/`，並移除隔離屬性（`xattr -d com.apple.quarantine`）。
   - 寫入原生訊息設定檔到：
     - `~/Library/Application Support/Google/Chrome/NativeMessagingHosts/`
     - `~/Library/Application Support/Mozilla/NativeMessagingHosts/`
   - 檢查 yt-dlp、ffmpeg，缺少時提示 `brew install yt-dlp ffmpeg`。
 - **Windows**（`install.ps1`，不需系統管理員）：
-  - 複製執行檔到 `%LOCALAPPDATA%\youtube-extension-host\`。
+  - 複製執行檔到 `%LOCALAPPDATA%\yt-toolbar-master\`。
   - 寫入設定檔，並建立以下登錄機碼：
-    - `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.chidi0716.youtube_extension`
-    - `HKCU\Software\Mozilla\NativeMessagingHosts\com.chidi0716.youtube_extension`
+    - `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.chidi0716.yt_toolbar_master`
+    - `HKCU\Software\Mozilla\NativeMessagingHosts\com.chidi0716.yt_toolbar_master`
   - 缺少 yt-dlp、ffmpeg 時提示 `winget install yt-dlp.yt-dlp Gyan.FFmpeg`。
 - 解除安裝腳本移除上述所有檔案與機碼。
 - 執行檔由 `npm run build:host` 在本機交叉編譯，產出 `darwin-arm64`、`darwin-amd64`、`windows-amd64`；正式版本由 GitHub Actions 發布到 Releases（4.10 節）。
@@ -354,7 +355,7 @@ install/
 
 ### 4.9 輕量安裝與自動更新（008）
 
-**整體做法**：一行指令只下載一個很小的引導腳本；腳本只負責下載對應系統的小幫手並核對檢查碼，然後執行 `yte-host --install`。所有實際工作（下載 yt-dlp、deno、ffmpeg、核對、解壓、註冊瀏覽器）都在 Go 裡完成，方便測試且 macOS／Windows 共用。
+**整體做法**：一行指令只下載一個很小的引導腳本；腳本只負責下載對應系統的小幫手並核對檢查碼，然後執行 `ytm-host --install`。所有實際工作（下載 yt-dlp、deno、ffmpeg、核對、解壓、註冊瀏覽器）都在 Go 裡完成，方便測試且 macOS／Windows 共用。
 
 **發佈清單 `components.json`**（每個 GitHub Release 都附上；實際格式以 `specs/notes/T40-T43-install-and-release.md` 為準，下面是概念範例）：
 
@@ -379,7 +380,7 @@ install/
   - ffmpeg（含 ffprobe）：
     - macOS：Martin Riedl 的 FFmpeg Build Server（`ffmpeg.martin-riedl.de`）正式版本（非 snapshot），arm64 與 amd64 各自的 zip，以網站公布的 SHA256 比對。
     - Windows：`github.com/yt-dlp/FFmpeg-Builds`（yt-dlp 官方維護、專為 yt-dlp 調整）的固定版本 win64 GPL 版本；若沒有固定版本網址，改用 `github.com/BtbN/FFmpeg-Builds` 的固定版本。實作時確認並記錄在 `specs/notes/ffmpeg-source.md`。
-- **不使用自己的簽章**（008 FR-51，T49 移除原本的 Ed25519）：`host/cmd/yte-release` 保留 `lock-check`、`manifest`、`zip` 等不涉及金鑰的子指令。
+- **不使用自己的簽章**（008 FR-51，T49 移除原本的 Ed25519）：`host/cmd/ytm-release` 保留 `lock-check`、`manifest`、`zip` 等不涉及金鑰的子指令。
 
 **信任鏈**：
 - 第一次安裝：引導腳本從同一個 Release 以 HTTPS 下載 `components.json`，核對小幫手的 sha256 後執行。這與「執行從 GitHub 下載的腳本」本身的信任來源相同（引導腳本無法在 macOS／Windows 內建工具中可靠地驗證 Ed25519）。
@@ -390,13 +391,13 @@ install/
 **引導腳本**（`install/bootstrap/install.sh`、`install/bootstrap/install.ps1`，以發佈流程附在 Release）：
 - 偵測系統與晶片（Apple Silicon 在 Rosetta 下也選 arm64）。
 - 下載 `components.json` 與小幫手到暫存資料夾，核對 sha256；不符時停止。
-- 執行 `yte-host --install --manifest <components.json>`，把輸出原樣顯示。
+- 執行 `ytm-host --install --manifest <components.json>`，把輸出原樣顯示。
 - 腳本本身不需要 sudo／系統管理員，拒絕以 root 執行；PowerShell 版相容 Windows PowerShell 5.1（`Invoke-WebRequest -UseBasicParsing`、TLS 1.2）。
 - 舊的 `install/macos/install.sh`、`install/windows/install.ps1` 保留作為「手動安裝」（008 FR-16），改為呼叫 `--install --offline`（只註冊小幫手，沿用系統上已有的 yt-dlp／ffmpeg／deno）。
 
-**`yte-host --install`**（`host/internal/installer`）：
+**`ytm-host --install`**（`host/internal/installer`）：
 - 依 008 FR-11 依序執行並印出中英文進度，每一步標明來源網址。
-- 安裝資料夾：macOS `~/Library/Application Support/youtube-extension-host/`，Windows `%LOCALAPPDATA%\youtube-extension-host\`；工具放在 `bin/`。
+- 安裝資料夾：macOS `~/Library/Application Support/yt-toolbar-master/`，Windows `%LOCALAPPDATA%\yt-toolbar-master\`；工具放在 `bin/`。
 - 下載到 `bin/.download-<隨機>`，核對 sha256、解壓、設定執行權限後原子性改名；macOS 移除隔離屬性。zip 解壓要防止路徑穿越（只取需要的檔名）。
 - ffmpeg：系統上已有可用的 ffmpeg 與 ffprobe（4.5 節的尋找規則）時跳過下載。
 - yt-dlp：已存在時不覆蓋（之後由 `yt-dlp -U` 自行更新）。
@@ -407,13 +408,13 @@ install/
 **尋找工具的順序改為**：安裝資料夾 `bin/` → 4.5 節的既有規則。`status` 回報每個工具的來源。
 
 **自動更新**（`host/internal/updater`，狀態檔 `update-state.json` 放在安裝資料夾）：
-- `download` 指令成功建立工作後，若自動更新開啟且距上次檢查超過 24 小時，啟動分離的 `yte-host --update` 程序（與 `--run-job` 相同的分離方式），立即返回，不延遲下載。
+- `download` 指令成功建立工作後，若自動更新開啟且距上次檢查超過 24 小時，啟動分離的 `ytm-host --update` 程序（與 `--run-job` 相同的分離方式），立即返回，不延遲下載。
 - `--update`：
   1. 下載 `https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/components.json`，檢查格式與允許的網址。
   2. 等到沒有進行中的工作（每 10 秒檢查一次，最多 6 小時）。
   3. yt-dlp：執行 `yt-dlp -U`（只限安裝資料夾中的 yt-dlp；套件管理工具安裝的不動）。
   4. deno、ffmpeg（只限安裝資料夾中的）：版本與清單不同時依清單下載替換。
-  5. 小幫手：清單版本比自己新時，下載、核對 sha256，把自己改名為 `yte-host.old`（Windows 可以改名執行中的檔案）再放入新版本；下次啟動時刪除 `.old`。
+  5. 小幫手：清單版本比自己新時，下載、核對 sha256，把自己改名為 `ytm-host.old`（Windows 可以改名執行中的檔案）再放入新版本；下次啟動時刪除 `.old`。
   6. 寫入 `lastCheck`、結果、`consecutiveFailures`；用鎖檔避免同時執行兩個 `--update`。
 - 下載遇到 `YTDLP_OUTDATED`、`VERIFICATION_REQUIRED`（008 FR-22）：執行工作的程序在同一個工作內執行 `yt-dlp -U`（不受 24 小時限制，同一工作只試一次），發出 `{"event":"progress","jobId":...,"stage":"updating-ytdlp"}`，成功後重新下載一次。
 
@@ -424,7 +425,7 @@ install/
 | `status`（擴充） | — | 新增 `installDir`、`components: [{name: "helper"|"yt-dlp"|"deno"|"ffmpeg"|"ffprobe", version, path, source: "bundled"|"homebrew"|"winget"|"path"}]`、`update: {auto, lastCheck, lastResult: "ok"|"updated"|"failed"|null, consecutiveFailures, running}` |
 | `setAutoUpdate` | `enabled`（布林） | 寫入狀態檔 |
 | `checkUpdates` | — | 立即啟動 `--update`（不受 24 小時限制），回傳 `{started: true}`；已在執行時回傳 `{started: false}` |
-| `uninstall` | — | 有進行中的工作時回傳錯誤 `JOBS_RUNNING`；否則啟動分離的 `yte-host --uninstall --delay 2` 後回傳 `{ok: true}`，2 秒後刪除安裝資料夾（含工具與記錄檔）、原生訊息設定檔與登錄機碼 |
+| `uninstall` | — | 有進行中的工作時回傳錯誤 `JOBS_RUNNING`；否則啟動分離的 `ytm-host --uninstall --delay 2` 後回傳 `{ok: true}`，2 秒後刪除安裝資料夾（含工具與記錄檔）、原生訊息設定檔與登錄機碼 |
 
 新錯誤代碼：`JOBS_RUNNING`、`SIGNATURE_INVALID`、`CHECKSUM_MISMATCH`（擴充功能要有對應的中英文訊息）。
 
@@ -440,7 +441,7 @@ install/
 
 - `.github/workflows/release.yml`，在推送 `v*` 標籤時執行：
   1. `npm ci`、`npm test`、`npm run compile`、`go test ./...`。
-  2. 建置 Chrome 版 zip 與 Firefox 版；Firefox 以 `web-ext sign --channel unlisted` 送簽署（Secrets：`AMO_JWT_ISSUER`、`AMO_JWT_SECRET`，上傳原始碼同 3.3.1）。**Secrets 尚未設定時略過簽署**，附上未簽署的 `youtube-extension-<版本>-firefox-temporary.zip`，不產生 `updates.json`，Release 說明加註「Firefox／Zen 版本尚未簽署，只能以臨時附加元件載入」（008 FR-52）。
+  2. 建置 Chrome 版 zip 與 Firefox 版；Firefox 以 `web-ext sign --channel unlisted` 送簽署（Secrets：`AMO_JWT_ISSUER`、`AMO_JWT_SECRET`，上傳原始碼同 3.3.1）。**Secrets 尚未設定時略過簽署**，附上未簽署的 `yt-toolbar-master-<版本>-firefox-temporary.zip`，不產生 `updates.json`，Release 說明加註「Firefox／Zen 版本尚未簽署，只能以臨時附加元件載入」（008 FR-52）。
   3. 建置三種小幫手。
   4. 依 `release/components.lock.json` 產生並驗證 `components.json`。
   5. 產生 `updates.json`（Firefox 更新資訊，列出這個版本與 `.xpi` 的下載網址）。

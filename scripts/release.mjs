@@ -12,7 +12,7 @@
 // GitHub 以 HTTPS 取得，repo 開啟 GitHub 的「不可變更版本」。
 //
 // 沒有 Mozilla 金鑰（或預先發行版本、試跑）時照常完成（008 FR-52）：附上未簽署的
-// youtube-extension-<版本>-firefox-temporary.zip，不產生 updates.json，Release 說明加註。
+// yt-toolbar-master-<版本>-firefox-temporary.zip，不產生 updates.json，Release 說明加註。
 //
 // 輸出：release/dist/upload/（要附加到 Release 的檔案）與 release/dist/release-notes.md。
 // 選項：--skip-tests（GitHub Actions 已在前一步執行測試）。
@@ -40,8 +40,8 @@ const distDir = join(root, 'release', 'dist');
 const uploadDir = join(distDir, 'upload');
 const toolsDir = join(distDir, '.tools');
 
-const REPO = 'chidi0716/youtube-extension';
-const GECKO_ID = 'youtube-extension@chidi0716';
+const REPO = 'chidi0716/yt-toolbar-master';
+const GECKO_ID = 'yt-toolbar-master@chidi0716';
 
 // ---- 參數 ----
 const argv = process.argv.slice(2);
@@ -98,32 +98,32 @@ if (!skipTests) {
   run('go', ['test', './...'], { cwd: hostDir });
 }
 
-const yteRelease = join(toolsDir, isWindows ? 'yte-release.exe' : 'yte-release');
-run('go', ['build', '-o', yteRelease, './cmd/yte-release'], { cwd: hostDir });
+const ytmRelease = join(toolsDir, isWindows ? 'ytm-release.exe' : 'ytm-release');
+run('go', ['build', '-o', ytmRelease, './cmd/ytm-release'], { cwd: hostDir });
 const lockPath = join(root, 'release', 'components.lock.json');
 
 // lock 檔：正式發佈時下載每個檔案，與 lock 記錄的 SHA256 及官方檢查碼比對。
 step('2. third-party components (release/components.lock.json)');
-run(yteRelease, ['lock-check', '-lock', lockPath, ...(dry ? [] : ['-download'])]);
+run(ytmRelease, ['lock-check', '-lock', lockPath, ...(dry ? [] : ['-download'])]);
 if (dry) console.log('(dry run: not comparing with the official checksum files; the release workflow does)');
 
 // 第 3 步：三種小幫手與手動安裝的資料夾
 step('3. helper builds');
 run('node', [join(hostDir, 'build.mjs')]);
 const hostDist = join(hostDir, 'dist');
-for (const name of ['yte-host-darwin-arm64', 'yte-host-darwin-amd64', 'yte-host-windows-amd64.exe']) {
+for (const name of ['ytm-host-darwin-arm64', 'ytm-host-darwin-amd64', 'ytm-host-windows-amd64.exe']) {
   copyFileSync(join(hostDist, name), join(uploadDir, name));
   chmodSync(join(uploadDir, name), 0o755);
 }
-for (const pkg of ['youtube-extension-host-macos', 'youtube-extension-host-windows']) {
-  run(yteRelease, ['zip', '-dir', join(hostDist, pkg), '-out', join(uploadDir, `${pkg}.zip`)]);
+for (const pkg of ['yt-toolbar-master-host-macos', 'yt-toolbar-master-host-windows']) {
+  run(ytmRelease, ['zip', '-dir', join(hostDist, pkg), '-out', join(uploadDir, `${pkg}.zip`)]);
 }
 
 // 第 4 步：components.json（每個檔案的網址與 SHA256）
 step('4. components.json');
 const manifestPath = join(uploadDir, 'components.json');
-run(yteRelease, ['manifest', '-lock', lockPath, '-version', version, '-tag', tag, '-helpers', uploadDir, '-out', manifestPath]);
-run(yteRelease, ['check', '-in', manifestPath]);
+run(ytmRelease, ['manifest', '-lock', lockPath, '-version', version, '-tag', tag, '-helpers', uploadDir, '-out', manifestPath]);
+run(ytmRelease, ['check', '-in', manifestPath]);
 
 // 引導腳本與移除腳本
 step('5. install and uninstall scripts');
@@ -135,9 +135,9 @@ writeScript('install/windows/uninstall.ps1', 'uninstall.ps1');
 // 擴充功能
 step('6. extension packages');
 run('npm', ['run', 'zip']);
-copyFileSync(findOutput(`-${version}-chrome.zip`), join(uploadDir, `youtube-extension-${version}-chrome.zip`));
-const xpiName = `youtube-extension-${version}-firefox.xpi`;
-const temporaryName = `youtube-extension-${version}-firefox-temporary.zip`;
+copyFileSync(findOutput(`-${version}-chrome.zip`), join(uploadDir, `yt-toolbar-master-${version}-chrome.zip`));
+const xpiName = `yt-toolbar-master-${version}-firefox.xpi`;
+const temporaryName = `yt-toolbar-master-${version}-firefox-temporary.zip`;
 // web-ext lint：自行發佈（manifest 有 update_url），以 --self-hosted 檢查；有錯誤時停止。
 const lintFirefox = () =>
   run('npx', ['web-ext', 'lint', '--self-hosted', '--source-dir', join(root, '.output', 'firefox-mv3')]);
@@ -218,12 +218,12 @@ function firefoxSignedNotes() {
   return {
     en:
       '**Firefox / Zen (signed add-on):** updates install automatically. To update now, open `about:addons`, click the gear icon and choose **Check for Updates**.\n' +
-      'First install: download `youtube-extension-{{version}}-firefox.xpi` below and open it in Firefox or Zen.',
+      'First install: download `yt-toolbar-master-{{version}}-firefox.xpi` below and open it in Firefox or Zen.',
     zh:
       '**Firefox／Zen（簽署版）**：會自動更新。想立即更新：開啟 `about:addons`，按齒輪圖示選「檢查更新」。\n' +
-      '第一次安裝：下載下方的 `youtube-extension-{{version}}-firefox.xpi`，用 Firefox 或 Zen 開啟。',
+      '第一次安裝：下載下方的 `yt-toolbar-master-{{version}}-firefox.xpi`，用 Firefox 或 Zen 開啟。',
     files:
-      '| `youtube-extension-{{version}}-firefox.xpi` | Firefox / Zen add-on, signed by Mozilla |\n' +
+      '| `yt-toolbar-master-{{version}}-firefox.xpi` | Firefox / Zen add-on, signed by Mozilla |\n' +
       '| `updates.json` | Firefox update information |',
   };
 }
@@ -233,13 +233,13 @@ function firefoxUnsignedNotes() {
   return {
     en:
       '**Firefox / Zen:** this version is **not signed by Mozilla yet**, so it can only be loaded as a temporary add-on (it is removed when the browser restarts). ' +
-      'Download `youtube-extension-{{version}}-firefox-temporary.zip`, unzip it, open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on** and choose `manifest.json`. ' +
+      'Download `yt-toolbar-master-{{version}}-firefox-temporary.zip`, unzip it, open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on** and choose `manifest.json`. ' +
       'Signed versions that update themselves will be attached to later releases.',
     zh:
       '**Firefox／Zen**：這個版本**尚未經 Mozilla 簽署**，只能以臨時附加元件載入（瀏覽器重新啟動後會被移除）。' +
-      '下載 `youtube-extension-{{version}}-firefox-temporary.zip` 並解壓縮，開啟 `about:debugging#/runtime/this-firefox`，按「載入臨時附加元件」，選擇 `manifest.json`。' +
+      '下載 `yt-toolbar-master-{{version}}-firefox-temporary.zip` 並解壓縮，開啟 `about:debugging#/runtime/this-firefox`，按「載入臨時附加元件」，選擇 `manifest.json`。' +
       '之後的版本會附上會自動更新的簽署版。',
-    files: '| `youtube-extension-{{version}}-firefox-temporary.zip` | Firefox / Zen add-on, **not signed** (temporary add-on only) |',
+    files: '| `yt-toolbar-master-{{version}}-firefox-temporary.zip` | Firefox / Zen add-on, **not signed** (temporary add-on only) |',
   };
 }
 

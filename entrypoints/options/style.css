@@ -291,7 +291,7 @@ h2 {
   color: var(--text-secondary);
 }
 
-.toolbar-row[data-hidden] .toolbar-name .yte-icon {
+.toolbar-row[data-hidden] .toolbar-name .ytm-icon {
   opacity: 0.4;
 }
 

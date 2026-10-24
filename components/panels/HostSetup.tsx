@@ -34,7 +34,7 @@ import { hostUpdateHintDismissed } from '@/utils/settings';
 import { Button } from '../controls/Button';
 import { Icon } from '../icons';
 
-const LOG_PREFIX = '[youtube-extension]';
+const LOG_PREFIX = '[yt-toolbar-master]';
 
 const COMPONENT_LABELS: Record<HostComponent, MessageKey> = {
   host: 'hostComponentHelper',
@@ -154,15 +154,15 @@ export function CopyCommand({ command, id }: { command: string; id: string }) {
     );
   };
   return (
-    <div class="yte-command">
-      <code ref={codeRef} id={id} class="yte-code yte-command-text">
+    <div class="ytm-command">
+      <code ref={codeRef} id={id} class="ytm-code ytm-command-text">
         {command}
       </code>
       <Button variant="secondary" aria-describedby={id} onClick={copy} data-copied={copied === 'copied' ? '' : undefined}>
         <Icon name={copied === 'copied' ? 'check' : 'content_copy'} size={18} />
         <span>{copied === 'copied' ? t('installCopied') : t('installCopy')}</span>
       </Button>
-      <span class="yte-command-status" role="status">
+      <span class="ytm-command-status" role="status">
         {copied === 'failed' ? t('installCopyFailed') : ''}
       </span>
     </div>
@@ -172,29 +172,29 @@ export function CopyCommand({ command, id }: { command: string; id: string }) {
 /** 一行安裝指令、三步驟與「這個指令會做什麼？」（008 FR-1）。 */
 export function InstallGuide({ os, idPrefix }: { os: InstallOs; idPrefix: string }) {
   return (
-    <div class="yte-install" data-os={os}>
+    <div class="ytm-install" data-os={os}>
       <CopyCommand command={INSTALL_COMMANDS[os]} id={`${idPrefix}-command`} />
-      <ol class="yte-setup-steps">
+      <ol class="ytm-setup-steps">
         {INSTALL_STEPS[os].map((key) => (
           <li key={key}>{t(key)}</li>
         ))}
       </ol>
-      <details class="yte-install-details">
+      <details class="ytm-install-details">
         <summary>{t('installWhatTitle')}</summary>
-        <ol class="yte-install-detail-list">
+        <ol class="ytm-install-detail-list">
           {INSTALL_DETAILS.map((d) => {
             const source = detailSource(d, os);
             return (
               <li key={d.text}>
                 <span>{t(d.text)}</span>
-                {source && <code class="yte-inline-code">{source}</code>}
+                {source && <code class="ytm-inline-code">{source}</code>}
               </li>
             );
           })}
         </ol>
-        <p class="yte-install-note">{t('installWhatNote')}</p>
-        <p class="yte-install-note">{t('installReview')}</p>
-        <code class="yte-code">{REVIEW_COMMANDS[os].join('\n')}</code>
+        <p class="ytm-install-note">{t('installWhatNote')}</p>
+        <p class="ytm-install-note">{t('installReview')}</p>
+        <code class="ytm-code">{REVIEW_COMMANDS[os].join('\n')}</code>
       </details>
     </div>
   );
@@ -204,30 +204,30 @@ export function InstallGuide({ os, idPrefix }: { os: InstallOs; idPrefix: string
 export function HostSetup({ state, checking, recheck }: { state: HostState; checking: boolean; recheck: () => void }) {
   const os = usePlatformOs();
   return (
-    <div class="yte-setup" data-state={state.state}>
-      <p class="yte-setup-title">
+    <div class="ytm-setup" data-state={state.state}>
+      <p class="ytm-setup-title">
         <Icon name="error" />
         <span>{t(state.state === 'unreachable' ? 'hostMissingTitle' : 'hostToolsMissingTitle')}</span>
       </p>
-      <p class="yte-setup-intro">{t('installIntro')}</p>
-      <ul class="yte-setup-components">
+      <p class="ytm-setup-intro">{t('installIntro')}</p>
+      <ul class="ytm-setup-components">
         {HOST_COMPONENTS.map((c) => {
           const { text, missing } = stateText(state, c);
           return (
             <li key={c} data-component={c} data-missing={missing ? '' : undefined}>
               <span>{t(COMPONENT_LABELS[c])}</span>
-              <span class="yte-setup-state">{text}</span>
+              <span class="ytm-setup-state">{text}</span>
             </li>
           );
         })}
       </ul>
-      {os && <p class="yte-setup-os-title">{t(INSTALL_TITLES[os])}</p>}
-      {os === 'other' ? <p class="yte-muted yte-setup-os">{t('hostOtherOs')}</p> : os && <InstallGuide os={os} idPrefix="yte-install" />}
-      <p class="yte-muted yte-install-auto" role="status">
+      {os && <p class="ytm-setup-os-title">{t(INSTALL_TITLES[os])}</p>}
+      {os === 'other' ? <p class="ytm-muted ytm-setup-os">{t('hostOtherOs')}</p> : os && <InstallGuide os={os} idPrefix="ytm-install" />}
+      <p class="ytm-muted ytm-install-auto" role="status">
         {t('installAutoDetect')}
       </p>
-      <div class="yte-setup-actions">
-        <a class="yte-link" href={INSTALL_GUIDE_URL} target="_blank" rel="noopener noreferrer">
+      <div class="ytm-setup-actions">
+        <a class="ytm-link" href={INSTALL_GUIDE_URL} target="_blank" rel="noopener noreferrer">
           <Icon name="open_in_new" size={20} />
           <span>{t('hostInstallGuide')}</span>
         </a>
@@ -245,11 +245,11 @@ export function DenoHint({ state }: { state: HostState }) {
   const os = usePlatformOs();
   const command = os ? installCommand(state, os) : null;
   return (
-    <div class="yte-hint yte-deno-hint" role="note">
+    <div class="ytm-hint ytm-deno-hint" role="note">
       <Icon name="error" size={18} />
       <span>
         {t('hostDenoHint')}
-        {command && <CopyCommand command={command} id="yte-deno-command" />}
+        {command && <CopyCommand command={command} id="ytm-deno-command" />}
       </span>
     </div>
   );
@@ -267,17 +267,17 @@ export function UpdateFailureHint({ state, onOpenSettings }: { state: HostState;
   if (dismissed === undefined || !showUpdateFailureHint(state, dismissed)) return null;
   const lastCheck = state.state === 'connected' ? (state.status.update?.lastCheck ?? null) : null;
   return (
-    <div class="yte-hint yte-update-failed-hint" role="note">
+    <div class="ytm-hint ytm-update-failed-hint" role="note">
       <Icon name="error" size={18} />
-      <span class="yte-update-failed-text">
+      <span class="ytm-update-failed-text">
         {t('hostUpdateFailingHint')}{' '}
-        <button type="button" class="yte-inline-link" onClick={onOpenSettings}>
+        <button type="button" class="ytm-inline-link" onClick={onOpenSettings}>
           {t('helpOpenSettings')}
         </button>
       </span>
       <button
         type="button"
-        class="yte-icon-btn yte-hint-close"
+        class="ytm-icon-btn ytm-hint-close"
         aria-label={t('hintDismiss')}
         title={t('hintDismiss')}
         onClick={() => {

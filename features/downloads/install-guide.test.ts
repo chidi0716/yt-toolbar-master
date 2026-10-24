@@ -6,8 +6,8 @@ import { detailSource, INSTALL_COMMANDS, INSTALL_DETAILS, INSTALL_POLL_MS, INSTA
 
 describe('一行安裝指令（008 FR-1、FR-10，plan 3.10）', () => {
   it('指令與 plan 3.10 完全一致', () => {
-    expect(INSTALL_COMMANDS.mac).toBe('curl -fsSL https://github.com/chidi0716/youtube-extension/releases/latest/download/install.sh | sh');
-    expect(INSTALL_COMMANDS.windows).toBe('irm https://github.com/chidi0716/youtube-extension/releases/latest/download/install.ps1 | iex');
+    expect(INSTALL_COMMANDS.mac).toBe('curl -fsSL https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.sh | sh');
+    expect(INSTALL_COMMANDS.windows).toBe('irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/install.ps1 | iex');
   });
 
   it('不需要 sudo 或系統管理員', () => {
@@ -42,15 +42,15 @@ describe('一行安裝指令（008 FR-1、FR-10，plan 3.10）', () => {
     expect(INSTALL_STEPS.mac).toHaveLength(3);
     expect(INSTALL_STEPS.windows).toHaveLength(3);
     expect(INSTALL_DETAILS.map((d) => detailSource(d, 'mac'))).toEqual([
-      'github.com/chidi0716/youtube-extension',
+      'github.com/chidi0716/yt-toolbar-master',
       'github.com/yt-dlp/yt-dlp',
       'github.com/denoland/deno',
       'ffmpeg.martin-riedl.de',
-      '~/Library/Application Support/youtube-extension-host/',
+      '~/Library/Application Support/yt-toolbar-master/',
       null,
     ]);
     expect(detailSource(INSTALL_DETAILS[3]!, 'windows')).toBe('github.com/yt-dlp/FFmpeg-Builds');
-    expect(detailSource(INSTALL_DETAILS[4]!, 'windows')).toBe('%LOCALAPPDATA%\\youtube-extension-host\\');
+    expect(detailSource(INSTALL_DETAILS[4]!, 'windows')).toBe('%LOCALAPPDATA%\\yt-toolbar-master\\');
   });
 
   it('自動偵測的間隔為 3 秒', () => {

@@ -5,7 +5,7 @@ import type { HostOs } from './logic';
 
 export type InstallOs = Exclude<HostOs, 'other'>;
 
-const RELEASE_DOWNLOAD = 'https://github.com/chidi0716/youtube-extension/releases/latest/download';
+const RELEASE_DOWNLOAD = 'https://github.com/chidi0716/yt-toolbar-master/releases/latest/download';
 
 /** 安裝腳本（本專案 GitHub 正式版本附帶的引導腳本）。 */
 export const INSTALL_SCRIPT_URLS: Record<InstallOs, string> = {
@@ -39,13 +39,13 @@ export interface InstallDetail {
 }
 
 export const INSTALL_DETAILS: readonly InstallDetail[] = [
-  { text: 'installDetailHelper', source: 'github.com/chidi0716/youtube-extension' },
+  { text: 'installDetailHelper', source: 'github.com/chidi0716/yt-toolbar-master' },
   { text: 'installDetailYtDlp', source: 'github.com/yt-dlp/yt-dlp' },
   { text: 'installDetailDeno', source: 'github.com/denoland/deno' },
   { text: 'installDetailFfmpeg', source: { mac: 'ffmpeg.martin-riedl.de', windows: 'github.com/yt-dlp/FFmpeg-Builds' } },
   {
     text: 'installDetailFolder',
-    source: { mac: '~/Library/Application Support/youtube-extension-host/', windows: '%LOCALAPPDATA%\\youtube-extension-host\\' },
+    source: { mac: '~/Library/Application Support/yt-toolbar-master/', windows: '%LOCALAPPDATA%\\yt-toolbar-master\\' },
   },
   { text: 'installDetailDone' },
 ];

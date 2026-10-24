@@ -15,7 +15,7 @@ import (
 )
 
 // Repo 是本專案在 GitHub 上的位置。
-const Repo = "chidi0716/youtube-extension"
+const Repo = "chidi0716/yt-toolbar-master"
 
 // LatestBase 是最新正式版本的下載位置（不含預先發行版本）。
 // 自動更新從這裡取得 components.json。

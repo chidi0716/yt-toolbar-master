@@ -12,7 +12,7 @@ import { EXT_ID, WATCH, button, launch, openWatch, reporter, setUiLanguage, shot
 const here = dirname(fileURLToPath(import.meta.url));
 const cache = join(here, '.cache');
 const e2e = join(cache, 'e2e');
-const HOST = join(cache, 'bin', 'yte-host');
+const HOST = join(cache, 'bin', 'ytm-host');
 const LOG = join(e2e, 'yt-dlp.log');
 const { check, skip, summary } = reporter();
 const only = process.env.ONLY;
@@ -92,46 +92,46 @@ async function session(name, fn, { tools = 'tools', keepProfile = false, lang = 
 }
 
 // ---- 工具列與面板 ----
-const inToolbar = (page, fn, arg) => page.evaluate(([src, a]) => new Function('root', 'arg', src)(document.querySelector('yte-toolbar').shadowRoot, a), [fn, arg]);
-const panelText = (page) => inToolbar(page, "return root.querySelector('.yte-panel')?.innerText ?? ''");
+const inToolbar = (page, fn, arg) => page.evaluate(([src, a]) => new Function('root', 'arg', src)(document.querySelector('ytm-toolbar').shadowRoot, a), [fn, arg]);
+const panelText = (page) => inToolbar(page, "return root.querySelector('.ytm-panel')?.innerText ?? ''");
 async function openPanel(page, id) {
   await button(page, id).click();
   await page.waitForFunction(() => {
-    const panel = document.querySelector('yte-toolbar').shadowRoot.querySelector('.yte-panel');
-    return panel && !panel.querySelector('.yte-spinner');
+    const panel = document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-panel');
+    return panel && !panel.querySelector('.ytm-spinner');
   });
 }
 const closePanel = (page) => page.keyboard.press('Escape');
 const qualityRows = (page) =>
   inToolbar(
     page,
-    `return [...root.querySelectorAll('.yte-quality-row')].map((b) => ({
+    `return [...root.querySelectorAll('.ytm-quality-row')].map((b) => ({
       format: b.dataset.format,
-      container: b.querySelector('.yte-quality-container').textContent,
-      resolution: b.querySelector('.yte-quality-resolution').textContent,
-      badge: b.querySelector('.yte-quality-badge').textContent,
-      size: b.querySelector('.yte-quality-size').textContent,
-      note: b.querySelector('.yte-quality-note')?.textContent ?? '',
+      container: b.querySelector('.ytm-quality-container').textContent,
+      resolution: b.querySelector('.ytm-quality-resolution').textContent,
+      badge: b.querySelector('.ytm-quality-badge').textContent,
+      size: b.querySelector('.ytm-quality-size').textContent,
+      note: b.querySelector('.ytm-quality-note')?.textContent ?? '',
       disabled: b.disabled,
     }))`,
   );
 const jobRows = (page) =>
   inToolbar(
     page,
-    `return [...root.querySelectorAll('.yte-job')].map((j) => ({
+    `return [...root.querySelectorAll('.ytm-job')].map((j) => ({
       id: j.dataset.job,
       state: j.dataset.state,
-      label: j.querySelector('.yte-job-label')?.textContent,
-      stateText: j.querySelector('.yte-job-state')?.textContent,
-      details: j.querySelector('.yte-job-details')?.textContent ?? '',
-      file: j.querySelector('.yte-job-file')?.textContent ?? '',
-      indeterminate: j.querySelector('.yte-progress')?.hasAttribute('data-indeterminate') ?? null,
-      error: j.querySelector('.yte-job-error')?.dataset.code ?? null,
-      errorText: j.querySelector('.yte-job-error-text')?.textContent ?? '',
+      label: j.querySelector('.ytm-job-label')?.textContent,
+      stateText: j.querySelector('.ytm-job-state')?.textContent,
+      details: j.querySelector('.ytm-job-details')?.textContent ?? '',
+      file: j.querySelector('.ytm-job-file')?.textContent ?? '',
+      indeterminate: j.querySelector('.ytm-progress')?.hasAttribute('data-indeterminate') ?? null,
+      error: j.querySelector('.ytm-job-error')?.dataset.code ?? null,
+      errorText: j.querySelector('.ytm-job-error-text')?.textContent ?? '',
       buttons: [...j.querySelectorAll('button')].map((b) => b.textContent.trim()),
     }))`,
   );
-const buttonProgress = (page, id) => inToolbar(page, `return root.querySelector('.yte-btn[data-button="' + arg + '"]').dataset.progress ?? null`, id);
+const buttonProgress = (page, id) => inToolbar(page, `return root.querySelector('.ytm-btn[data-button="' + arg + '"]').dataset.progress ?? null`, id);
 async function waitJob(page, predicate, timeout = 15000) {
   const deadline = Date.now() + timeout;
   let rows = [];
@@ -154,9 +154,9 @@ async function waitFile(path, timeout = 15000) {
 const listDir = (dir) => (existsSync(dir) ? readdirSync(dir).sort() : []);
 
 async function setClip(page, id, start, end) {
-  await page.locator(`yte-toolbar #${id}-start`).fill(start);
-  await page.locator(`yte-toolbar #${id}-end`).fill(end);
-  await page.locator(`yte-toolbar #${id}-end`).blur();
+  await page.locator(`ytm-toolbar #${id}-start`).fill(start);
+  await page.locator(`ytm-toolbar #${id}-end`).fill(end);
+  await page.locator(`ytm-toolbar #${id}-end`).blur();
   await sleep(100);
 }
 
@@ -190,7 +190,7 @@ await session('connected', async ({ page, context, home, downloads }) => {
 
   // ---- T19 影片面板 ----
   await openPanel(page, 'video');
-  await page.waitForSelector('yte-toolbar .yte-quality-row', { timeout: 10_000 });
+  await page.waitForSelector('ytm-toolbar .ytm-quality-row', { timeout: 10_000 });
   let rows = await qualityRows(page);
   check(
     'T16/T19：影片面板經由橋接程式取得格式，預設只列 MP4（002 FR-10、FR-11）',
@@ -209,7 +209,7 @@ await session('connected', async ({ page, context, home, downloads }) => {
     JSON.stringify(rows[0]),
   );
   await shot(page, 'T19-video-panel.png');
-  await page.locator('yte-toolbar .yte-more-formats').click();
+  await page.locator('ytm-toolbar .ytm-more-formats').click();
   rows = await qualityRows(page);
   check(
     '「顯示更多格式」列出 WEBM（VP9／AV1 加 Opus）（FR-11、FR-13）',
@@ -217,10 +217,10 @@ await session('connected', async ({ page, context, home, downloads }) => {
     rows.map((r) => `${r.resolution} ${r.container} ${r.format}`).join(' | '),
   );
   await shot(page, 'T19-video-panel-more.png');
-  await page.locator('yte-toolbar .yte-more-formats').click();
+  await page.locator('ytm-toolbar .ytm-more-formats').click();
   // 4K（AV1＋M4A）下載成 MP4
   resetLog();
-  await page.locator('yte-toolbar .yte-quality-row[data-format="401+140"]').click();
+  await page.locator('ytm-toolbar .ytm-quality-row[data-format="401+140"]').click();
   const uhd = await waitJob(page, (j) => j.state === 'done' && /2160p/.test(j.label));
   const uhdRun = ytRuns().find((a) => a.includes('-f'));
   check(
@@ -233,7 +233,7 @@ await session('connected', async ({ page, context, home, downloads }) => {
   // 整部影片下載（1080p MP4），慢慢送出進度
   scenario('ok', 250);
   resetLog();
-  await page.locator('yte-toolbar .yte-quality-row[data-format="137+140"]').click();
+  await page.locator('ytm-toolbar .ytm-quality-row[data-format="137+140"]').click();
   const running = await waitJob(page, (j) => j.state === 'downloading' && /%/.test(j.details));
   check('T22：下載中顯示百分比、速度、剩餘時間與「取消」（FR-3、FR-4）', !!running && /\d+%/.test(running.details) && /KB\/s|B\/s/.test(running.details) && /left/.test(running.details) && running.buttons.includes('Cancel'), JSON.stringify(running));
   const ring = await buttonProgress(page, 'video');
@@ -252,84 +252,84 @@ await session('connected', async ({ page, context, home, downloads }) => {
   );
   await sleep(300);
   let n = await notes(context);
-  check('T16：完成時建立通知，標題「Download complete」、內容為檔名（FR-5）', n.some((x) => x.id === `yte-job:${done?.id}` && x.title === 'Download complete' && x.message === file), JSON.stringify(n));
+  check('T16：完成時建立通知，標題「Download complete」、內容為檔名（FR-5）', n.some((x) => x.id === `ytm-job:${done?.id}` && x.title === 'Download complete' && x.message === file), JSON.stringify(n));
   await shot(page, 'T22-done.png');
 
   // 「Show file」：Linux 上橋接程式回應 UNSUPPORTED_PLATFORM（macOS／Windows 才會開 Finder／檔案總管）
-  await page.locator(`yte-toolbar .yte-job[data-job="${done.id}"] .yte-job-foot button`).click();
+  await page.locator(`ytm-toolbar .ytm-job[data-job="${done.id}"] .ytm-job-foot button`).click();
   await sleep(500);
-  const logDir = join(home, '.local', 'state', 'youtube-extension-host');
+  const logDir = join(home, '.local', 'state', 'yt-toolbar-master');
   const hostLog = existsSync(logDir) ? listDir(join(logDir, 'logs')).map((f) => readFileSync(join(logDir, 'logs', f), 'utf8')).join('\n') : '';
   check('T16：「Show file」送出 reveal 指令（Linux 上回應 UNSUPPORTED_PLATFORM，由記錄檔確認）', /reveal/.test(hostLog), hostLog.split('\n').filter((l) => /reveal/.test(l)).slice(-1)[0] ?? `no log in ${logDir}`);
 
   // ---- T19 時間範圍（004 §3）----
   scenario('ok');
   resetLog();
-  await setClip(page, 'yte-video-clip', '1:00', '1:30');
+  await setClip(page, 'ytm-video-clip', '1:00', '1:30');
   rows = await qualityRows(page);
-  const hint = await inToolbar(page, "return root.querySelector('.yte-clip-hint')?.textContent ?? null");
+  const hint = await inToolbar(page, "return root.querySelector('.ytm-clip-hint')?.textContent ?? null");
   check('T19：裁切時大小依比例估計並標「~」（004 FR-23）', rows.find((r) => r.format === '137+140')?.size === '~17.0 MB', rows.map((r) => `${r.format}=${r.size}`).join(', '));
   check('T19：第一次選擇部分範圍時顯示一次「裁切需要額外處理時間」（004 FR-24）', hint === 'Cutting a part needs extra processing time.', hint);
   await shot(page, 'T19-clip.png');
-  await page.locator('yte-toolbar .yte-quality-row[data-format="136+140"]').click();
+  await page.locator('ytm-toolbar .ytm-quality-row[data-format="136+140"]').click();
   const clipDone = await waitJob(page, (j) => j.state === 'done' && /720p/.test(j.label));
   const clipFile = `${TITLE} [jNQXAC9IVRw] 01m00s-01m30s.mp4`;
   check('T19：裁切下載完成，檔名標示時間範圍（004 FR-21、Q37）', !!clipDone && existsSync(join(downloads, clipFile)), listDir(downloads).join(', '));
   run = ytRuns().find((a) => a.includes('-f'));
   check('T19：yt-dlp 以 --download-sections *60-90 裁切', !!run && argValue(run, '--download-sections') === '*60-90' && run.includes('--force-keyframes-at-cuts'), JSON.stringify(run));
-  check('T19：裁切下載後不再顯示提示', (await inToolbar(page, "return !!root.querySelector('.yte-clip-hint')")) === false);
+  check('T19：裁切下載後不再顯示提示', (await inToolbar(page, "return !!root.querySelector('.ytm-clip-hint')")) === false);
   check('T22：工作清單的標籤含範圍', /720p MP4 01:00–01:30/.test(clipDone?.label ?? ''), clipDone?.label);
   // 不合法的範圍：畫質按鈕停用
-  await setClip(page, 'yte-video-clip', '2:00', '1:00');
+  await setClip(page, 'ytm-video-clip', '2:00', '1:00');
   rows = await qualityRows(page);
   check('T19：開始晚於結束時無法下載（004 FR-25）', rows.every((r) => r.disabled), (await panelText(page)).split('\n').filter((l) => /must|after|before/i.test(l)).join(' / '));
-  await setClip(page, 'yte-video-clip', '0:00', '4:05');
+  await setClip(page, 'ytm-video-clip', '0:00', '4:05');
   rows = await qualityRows(page);
   check('T19：回到整部影片時大小不再是估計值', rows.find((r) => r.format === '137+140')?.size === '138.8 MB' && rows.every((r) => !r.disabled));
   await closePanel(page);
 
   // ---- T20 MP3 ----
   await openPanel(page, 'mp3');
-  await page.waitForSelector('yte-toolbar #yte-mp3-bitrate');
-  check('T20：MP3 面板預設 192 kbps，含時間範圍（FR-20、FR-21）', (await page.locator('yte-toolbar #yte-mp3-bitrate').inputValue()) === '192' && (await page.locator('yte-toolbar #yte-mp3-clip').count()) === 1);
-  await page.locator('yte-toolbar #yte-mp3-bitrate').selectOption('320');
+  await page.waitForSelector('ytm-toolbar #ytm-mp3-bitrate');
+  check('T20：MP3 面板預設 192 kbps，含時間範圍（FR-20、FR-21）', (await page.locator('ytm-toolbar #ytm-mp3-bitrate').inputValue()) === '192' && (await page.locator('ytm-toolbar #ytm-mp3-clip').count()) === 1);
+  await page.locator('ytm-toolbar #ytm-mp3-bitrate').selectOption('320');
   // 與播放器同步：「設為目前時間」
   await page.evaluate(() => {
     const v = document.querySelector('video');
     v.pause();
     v.currentTime = 2;
   });
-  await page.locator('yte-toolbar #yte-mp3-clip .yte-clip-sync [role="switch"]').click();
-  const nowButtons = await page.locator('yte-toolbar #yte-mp3-clip .yte-clip-now').count();
-  await page.locator('yte-toolbar #yte-mp3-clip .yte-clip-now[data-which="start"]').click();
+  await page.locator('ytm-toolbar #ytm-mp3-clip .ytm-clip-sync [role="switch"]').click();
+  const nowButtons = await page.locator('ytm-toolbar #ytm-mp3-clip .ytm-clip-now').count();
+  await page.locator('ytm-toolbar #ytm-mp3-clip .ytm-clip-now[data-which="start"]').click();
   await sleep(200);
-  const startValue = await page.locator('yte-toolbar #yte-mp3-clip-start').inputValue();
+  const startValue = await page.locator('ytm-toolbar #ytm-mp3-clip-start').inputValue();
   check('T20：開啟「與播放器同步」後出現「設為目前時間」，按下後開始時間為播放器目前時間（FR-23）', nowButtons === 2 && startValue === '00:00:02', `${nowButtons} buttons, start=${startValue}`);
   // 拖動把手：播放器跟著跳轉（FR-23）
   {
-    const thumb = page.locator('yte-toolbar #yte-mp3-clip .yte-range-thumb').nth(1);
-    const track = await page.locator('yte-toolbar #yte-mp3-clip .yte-range-track').boundingBox();
+    const thumb = page.locator('ytm-toolbar #ytm-mp3-clip .ytm-range-thumb').nth(1);
+    const track = await page.locator('ytm-toolbar #ytm-mp3-clip .ytm-range-track').boundingBox();
     const tb = await thumb.boundingBox();
     await page.mouse.move(tb.x + tb.width / 2, tb.y + tb.height / 2);
     await page.mouse.down();
     await page.mouse.move(track.x + track.width * 0.6, tb.y + tb.height / 2, { steps: 5 });
     await page.mouse.up();
     await sleep(400);
-    const end = await page.locator('yte-toolbar #yte-mp3-clip-end').inputValue();
+    const end = await page.locator('ytm-toolbar #ytm-mp3-clip-end').inputValue();
     const now = await page.evaluate(() => document.querySelector('video').currentTime);
     const [h, m, sec] = end.split(':').map(Number);
     check('T20：開啟同步時拖動結束把手，播放器跳到該時間點（FR-23）', Math.abs(h * 3600 + m * 60 + sec - now) < 1.01 && end !== '00:00:30', `end=${end} currentTime=${now}`);
   }
   // 不合法的時間（FR-22）
-  await page.locator('yte-toolbar #yte-mp3-clip-end').fill('00:99:00');
+  await page.locator('ytm-toolbar #ytm-mp3-clip-end').fill('00:99:00');
   await sleep(100);
-  const invalid = await inToolbar(page, "return { disabled: root.querySelector('.yte-mp3-footer .yte-button-primary').disabled, error: root.querySelector('#yte-mp3-clip-end-error')?.textContent ?? null }");
+  const invalid = await inToolbar(page, "return { disabled: root.querySelector('.ytm-mp3-footer .ytm-button-primary').disabled, error: root.querySelector('#ytm-mp3-clip-end-error')?.textContent ?? null }");
   check('T20：輸入「00:99:00」時輸入框標示錯誤、「下載」停用（FR-22）', invalid.disabled && !!invalid.error, JSON.stringify(invalid));
-  await page.locator('yte-toolbar #yte-mp3-clip-end').fill('00:00:30');
+  await page.locator('ytm-toolbar #ytm-mp3-clip-end').fill('00:00:30');
   await sleep(100);
   await shot(page, 'T20-mp3-panel.png');
   resetLog();
-  await page.locator('yte-toolbar .yte-mp3-footer .yte-button-primary').click();
+  await page.locator('ytm-toolbar .ytm-mp3-footer .ytm-button-primary').click();
   const mp3Done = await waitJob(page, (j) => j.state === 'done');
   const mp3Files = listDir(downloads).filter((f) => f.endsWith('.mp3'));
   check('T20：MP3 下載完成（含範圍的檔名）', !!mp3Done && mp3Files.length === 1 && / 00m02s-/.test(mp3Files[0]), mp3Files.join(', '));
@@ -338,22 +338,22 @@ await session('connected', async ({ page, context, home, downloads }) => {
   await closePanel(page);
   await openPanel(page, 'mp3');
   await sleep(300);
-  check('T20：重新開啟後記得位元率 320 kbps（FR-20）', (await page.locator('yte-toolbar #yte-mp3-bitrate').inputValue()) === '320');
+  check('T20：重新開啟後記得位元率 320 kbps（FR-20）', (await page.locator('ytm-toolbar #ytm-mp3-bitrate').inputValue()) === '320');
   await closePanel(page);
 
   // ---- T22 取消 ----
   scenario('slow');
   await openPanel(page, 'video');
-  await page.waitForSelector('yte-toolbar .yte-quality-row');
-  await page.locator('yte-toolbar .yte-quality-row[data-format="18"]').click();
+  await page.waitForSelector('ytm-toolbar .ytm-quality-row');
+  await page.locator('ytm-toolbar .ytm-quality-row[data-format="18"]').click();
   const slow = await waitJob(page, (j) => j.state === 'downloading' && /%/.test(j.details));
   check('T22：慢速下載進行中', !!slow, JSON.stringify(slow));
-  await page.locator(`yte-toolbar .yte-job[data-job="${slow?.id}"] .yte-job-foot button`).click();
+  await page.locator(`ytm-toolbar .ytm-job[data-job="${slow?.id}"] .ytm-job-foot button`).click();
   await sleep(1500);
   const afterCancel = await jobRows(page);
   const leftovers = listDir(downloads).filter((f) => f.endsWith('.part') || f.endsWith('.ytdl'));
   check('T22：取消後工作從清單移除，暫存檔刪除（FR-4）', !afterCancel.some((j) => j.id === slow?.id) && leftovers.length === 0, `${JSON.stringify(afterCancel.map((j) => j.state))} leftovers=${leftovers.join(',')}`);
-  check('T22：取消不建立通知', !(await notes(context)).some((x) => x.id === `yte-job:${slow?.id}`));
+  check('T22：取消不建立通知', !(await notes(context)).some((x) => x.id === `ytm-job:${slow?.id}`));
 
   // ---- T22 錯誤訊息（FR-6a）----
   const errorCases = [
@@ -368,7 +368,7 @@ await session('connected', async ({ page, context, home, downloads }) => {
   ];
   for (const [name, code, text, expect] of errorCases) {
     scenario(name);
-    await page.locator('yte-toolbar .yte-quality-row[data-format="136+140"]').click();
+    await page.locator('ytm-toolbar .ytm-quality-row[data-format="136+140"]').click();
     const failed = await waitJob(page, (j) => j.state === 'failed' && j.error === code, 10_000);
     const ok =
       !!failed &&
@@ -384,16 +384,16 @@ await session('connected', async ({ page, context, home, downloads }) => {
   n = await notes(context);
   check('T16：失敗時建立「Download failed」通知（FR-6）', n.filter((x) => x.title === 'Download failed').length >= errorCases.length, `${n.filter((x) => x.title === 'Download failed').length} failed notifications`);
   // 更新 yt-dlp（假 yt-dlp -U：已是最新版本）
-  await page.locator('yte-toolbar .yte-job[data-state="failed"] .yte-update button').first().click();
-  await page.waitForFunction(() => document.querySelector('yte-toolbar').shadowRoot.querySelector('.yte-update[data-state="done"]'), null, { timeout: 15_000 });
-  const updateText = await inToolbar(page, "return root.querySelector('.yte-update[data-state=\"done\"]').textContent");
+  await page.locator('ytm-toolbar .ytm-job[data-state="failed"] .ytm-update button').first().click();
+  await page.waitForFunction(() => document.querySelector('ytm-toolbar').shadowRoot.querySelector('.ytm-update[data-state="done"]'), null, { timeout: 15_000 });
+  const updateText = await inToolbar(page, "return root.querySelector('.ytm-update[data-state=\"done\"]').textContent");
   check('T22：「更新 yt-dlp」呼叫 updateYtDlp 並顯示結果', updateText === 'yt-dlp is already up to date.', updateText);
   check('T22：yt-dlp 以 -U 執行', ytRuns().some((a) => a.includes('-U')));
   // 重試（network 失敗的那一個）
   scenario('ok');
   const beforeIds = new Set((await jobRows(page)).map((j) => j.id));
   const retryRow = (await jobRows(page)).find((j) => j.error === 'NETWORK');
-  await page.locator(`yte-toolbar .yte-job[data-job="${retryRow.id}"] .yte-job-error button:has-text("Retry")`).click();
+  await page.locator(`ytm-toolbar .ytm-job[data-job="${retryRow.id}"] .ytm-job-error button:has-text("Retry")`).click();
   const retried = await waitJob(page, (j) => !beforeIds.has(j.id) && j.state === 'done');
   check('T22：「重試」以同樣的設定（720p MP4）重新下載並完成', !!retried && retried.label === retryRow.label, `${retryRow.label} → ${retried?.label}`);
   await closePanel(page);
@@ -403,9 +403,9 @@ await session('connected', async ({ page, context, home, downloads }) => {
   await sleep(300);
   resetLog();
   await openPanel(page, 'subtitles');
-  await page.locator('yte-toolbar .yte-subs-group[data-group="uploaded"] .yte-subs-track[data-lang="fr"] input').check();
-  await page.locator('yte-toolbar .yte-subs .yte-button-primary').click();
-  await page.waitForSelector('yte-toolbar .yte-subs-via-host', { timeout: 10_000 });
+  await page.locator('ytm-toolbar .ytm-subs-group[data-group="uploaded"] .ytm-subs-track[data-lang="fr"] input').check();
+  await page.locator('ytm-toolbar .ytm-subs .ytm-button-primary').click();
+  await page.waitForSelector('ytm-toolbar .ytm-subs-via-host', { timeout: 10_000 });
   const subDone = await waitJob(page, (j) => j.state === 'done');
   const subFiles = listDir(downloads).filter((f) => /\.(srt|vtt|txt)$/.test(f));
   run = ytRuns().find((a) => a.includes('--skip-download'));
@@ -415,9 +415,9 @@ await session('connected', async ({ page, context, home, downloads }) => {
   await shot(page, 'T21-subtitles-via-host.png');
   // 自動字幕（subAuto）＋沒有字幕
   scenario('nosubs');
-  await page.locator('yte-toolbar .yte-subs-group[data-group="auto"] .yte-subs-track[data-lang="ja"] input').check();
+  await page.locator('ytm-toolbar .ytm-subs-group[data-group="auto"] .ytm-subs-track[data-lang="ja"] input').check();
   resetLog();
-  await page.locator('yte-toolbar .yte-subs .yte-button-primary').click();
+  await page.locator('ytm-toolbar .ytm-subs .ytm-button-primary').click();
   const noSubs = await waitJob(page, (j) => j.state === 'failed', 10_000);
   run = ytRuns().find((a) => a.includes('--skip-download'));
   check('T21：自動字幕以 --write-auto-subs 下載（subAuto）', !!run && run.includes('--write-auto-subs') && argValue(run, '--sub-langs') === 'ja', JSON.stringify(run));
@@ -428,9 +428,9 @@ await session('connected', async ({ page, context, home, downloads }) => {
   await page.evaluate(() => window.__fixtureNavigate('jNQXAC9IVRw'));
   await sleep(300);
   await openPanel(page, 'video');
-  await page.waitForSelector('yte-toolbar .yte-quality-row');
+  await page.waitForSelector('ytm-toolbar .ytm-quality-row');
   scenario('live');
-  await page.locator('yte-toolbar .yte-quality-row[data-format="18"]').click();
+  await page.locator('ytm-toolbar .ytm-quality-row[data-format="18"]').click();
   const live = await waitJob(page, (j) => j.state === 'failed' && j.error === 'LIVE_NOT_SUPPORTED', 10_000);
   check('T22：下載時 yt-dlp 判定為直播：顯示無法下載（FR-1、FR-6a）', live?.errorText === "Live and upcoming videos can't be downloaded." && !live.buttons.includes('Retry'), JSON.stringify(live));
   await closePanel(page);
@@ -440,12 +440,12 @@ await session('connected', async ({ page, context, home, downloads }) => {
   await page.evaluate(() => window.__fixtureNavigate('jNQXAC9IVRw'));
   await sleep(300);
   await openPanel(page, 'mp3');
-  await page.locator('yte-toolbar #yte-mp3-bitrate').selectOption('128');
-  await setClip(page, 'yte-mp3-clip', '0:00', '0:00');
+  await page.locator('ytm-toolbar #ytm-mp3-bitrate').selectOption('128');
+  await setClip(page, 'ytm-mp3-clip', '0:00', '0:00');
   const fullRange = await page.evaluate(() => Math.floor(document.querySelector('video').duration));
-  await setClip(page, 'yte-mp3-clip', '0:00', `0:${String(fullRange).padStart(2, '0')}`);
+  await setClip(page, 'ytm-mp3-clip', '0:00', `0:${String(fullRange).padStart(2, '0')}`);
   const mp3Count = listDir(downloads).filter((f) => f.endsWith('.mp3')).length;
-  await page.locator('yte-toolbar .yte-mp3-footer .yte-button-primary').click();
+  await page.locator('ytm-toolbar .ytm-mp3-footer .ytm-button-primary').click();
   await waitJob(page, (j) => j.state === 'downloading');
   const other = await context.newPage();
   await other.goto('chrome-extension://' + EXT_ID + '/options.html');
@@ -493,10 +493,10 @@ await session('connected', async ({ page, context, home, downloads }) => {
     await openWatch(w, WATCH);
     scenario('ok');
     await openPanel(w, 'video');
-    await w.waitForSelector('yte-toolbar .yte-quality-row');
-    await w.locator('yte-toolbar .yte-quality-row[data-format="18"]').click();
-    await w.waitForSelector('yte-toolbar .yte-video > .yte-job-error', { timeout: 10_000 });
-    const e = await inToolbar(w, "const x = root.querySelector('.yte-video > .yte-job-error'); return { code: x.dataset.code, text: x.querySelector('.yte-job-error-text').textContent, buttons: [...x.querySelectorAll('button')].map((b) => b.textContent) }");
+    await w.waitForSelector('ytm-toolbar .ytm-quality-row');
+    await w.locator('ytm-toolbar .ytm-quality-row[data-format="18"]').click();
+    await w.waitForSelector('ytm-toolbar .ytm-video > .ytm-job-error', { timeout: 10_000 });
+    const e = await inToolbar(w, "const x = root.querySelector('.ytm-video > .ytm-job-error'); return { code: x.dataset.code, text: x.querySelector('.ytm-job-error-text').textContent, buttons: [...x.querySelectorAll('button')].map((b) => b.textContent) }");
     check('T23：設定的資料夾不存在時顯示「無法寫入下載資料夾」並提供「開啟設定頁」（FR-6a）', e.code === 'PERMISSION_DENIED' && e.text === "Couldn't write to the download folder." && e.buttons.includes('Open settings'), JSON.stringify(e));
     await w.close();
   }
@@ -509,8 +509,8 @@ await session('connected', async ({ page, context, home, downloads }) => {
   scenario('ok');
   resetLog();
   await openPanel(watch, 'video');
-  await watch.waitForSelector('yte-toolbar .yte-quality-row');
-  await watch.locator('yte-toolbar .yte-quality-row[data-format="18"]').click();
+  await watch.waitForSelector('ytm-toolbar .ytm-quality-row');
+  await watch.locator('ytm-toolbar .ytm-quality-row[data-format="18"]').click();
   const customDone = await waitJob(watch, (j) => j.state === 'done' && /360p/.test(j.label));
   run = ytRuns().find((a) => a.includes('-f'));
   const customFiles = listDir(custom);
@@ -530,8 +530,8 @@ await session('connected', async ({ page, context, home, downloads }) => {
 await session('restart', async ({ page, downloads }) => {
   scenario('ok', 700);
   await openPanel(page, 'video');
-  await page.waitForSelector('yte-toolbar .yte-quality-row');
-  await page.locator('yte-toolbar .yte-quality-row[data-format="137+140"]').click();
+  await page.waitForSelector('ytm-toolbar .ytm-quality-row');
+  await page.locator('ytm-toolbar .ytm-quality-row[data-format="137+140"]').click();
   const job = await waitJob(page, (j) => j.state === 'downloading');
   check('restart：下載開始', !!job);
   globalThis.__restartJob = job?.id;
@@ -553,7 +553,7 @@ await session(
       if (Object.keys(ids).length) break;
       await sleep(200);
     }
-    check('restart：重新啟動瀏覽器後補發完成通知（missed）', Object.keys(ids).includes(`yte-job:${globalThis.__restartJob}`), JSON.stringify(ids));
+    check('restart：重新啟動瀏覽器後補發完成通知（missed）', Object.keys(ids).includes(`ytm-job:${globalThis.__restartJob}`), JSON.stringify(ids));
   },
   { keepProfile: true, open: false },
 );
@@ -567,10 +567,10 @@ await session(
     await openPanel(page, 'video');
     const s = await inToolbar(
       page,
-      `const setup = root.querySelector('.yte-setup');
-       return setup && { state: setup.dataset.state, title: setup.querySelector('.yte-setup-title').textContent,
-         components: [...setup.querySelectorAll('.yte-setup-components li')].map((li) => li.dataset.component + ':' + li.querySelector('.yte-setup-state').textContent),
-         commands: [...setup.querySelectorAll('.yte-command-text')].map((c) => c.textContent) }`,
+      `const setup = root.querySelector('.ytm-setup');
+       return setup && { state: setup.dataset.state, title: setup.querySelector('.ytm-setup-title').textContent,
+         components: [...setup.querySelectorAll('.ytm-setup-components li')].map((li) => li.dataset.component + ':' + li.querySelector('.ytm-setup-state').textContent),
+         commands: [...setup.querySelectorAll('.ytm-command-text')].map((c) => c.textContent) }`,
     );
     check(
       'T16/T22：已連線但缺 yt-dlp：標題「Some download tools are missing」，列出各元件狀態（FR-2）',
@@ -580,8 +580,8 @@ await session(
     // 008（T45）：缺少元件時也顯示一行安裝指令（可以重複執行，已安裝的部分會跳過）。作業系統以 runtime.getPlatformInfo 為準，
     // 測試環境是 Linux，所以沒有指令（只有說明）；不會依 user agent 顯示 macOS 的指令。
     await page.waitForTimeout(500);
-    const commands = await inToolbar(page, `return [...root.querySelectorAll('.yte-setup .yte-command-text')].map((c) => c.textContent)`);
-    const other = await inToolbar(page, `return root.querySelector('.yte-setup-os')?.textContent ?? null`);
+    const commands = await inToolbar(page, `return [...root.querySelectorAll('.ytm-setup .ytm-command-text')].map((c) => c.textContent)`);
+    const other = await inToolbar(page, `return root.querySelector('.ytm-setup-os')?.textContent ?? null`);
     check('T16/T45：缺少元件時不顯示套件管理工具的指令或舊的安裝腳本（Linux：只有說明）', commands.length === 0 && /macOS/.test(other ?? ''), JSON.stringify({ commands, other }));
     await shot(page, 'T22-tools-missing.png');
   },
@@ -592,11 +592,11 @@ await session(
   async ({ page, downloads }) => {
     scenario('ok');
     await openPanel(page, 'video');
-    await page.waitForSelector('yte-toolbar .yte-quality-row');
-    const hint = await inToolbar(page, "return root.querySelector('.yte-deno-hint')?.innerText ?? null");
+    await page.waitForSelector('ytm-toolbar .ytm-quality-row');
+    const hint = await inToolbar(page, "return root.querySelector('.ytm-deno-hint')?.innerText ?? null");
     check('T16：只缺 deno 時仍可下載，顯示建議安裝 deno 的提示（T15a）', !!hint && /deno is not installed/.test(hint), hint);
     await shot(page, 'T22-deno-hint.png');
-    await page.locator('yte-toolbar .yte-quality-row[data-format="18"]').click();
+    await page.locator('ytm-toolbar .ytm-quality-row[data-format="18"]').click();
     const done = await waitJob(page, (j) => j.state === 'done');
     check('T16：只缺 deno 時下載完成', !!done && listDir(downloads).length === 1, listDir(downloads).join(', '));
   },
@@ -610,40 +610,40 @@ await session('hiddenTool', async ({ page }) => {
   scenario('slow');
   // 編輯工具列：隱藏「影片」
   await button(page, 'more').click();
-  await page.waitForSelector('yte-toolbar .yte-more-edit');
-  await page.locator('yte-toolbar .yte-more-edit').click();
-  await page.waitForSelector('yte-toolbar .yte-toolbar[data-editing]');
-  await page.locator('yte-toolbar .yte-edit-item[data-item="video"] .yte-edit-eye').click();
-  await page.locator('yte-toolbar .yte-edit-actions .yte-button-primary').click();
+  await page.waitForSelector('ytm-toolbar .ytm-more-edit');
+  await page.locator('ytm-toolbar .ytm-more-edit').click();
+  await page.waitForSelector('ytm-toolbar .ytm-toolbar[data-editing]');
+  await page.locator('ytm-toolbar .ytm-edit-item[data-item="video"] .ytm-edit-eye').click();
+  await page.locator('ytm-toolbar .ytm-edit-actions .ytm-button-primary').click();
   await sleep(300);
   check('T32：「影片」隱藏後不在工具列上', (await button(page, 'video').count()) === 0);
   // 從「更多」的其他工具開啟影片面板
   await button(page, 'more').click();
-  await page.locator('yte-toolbar .yte-other-item[data-tool="video"] button').click();
-  await page.waitForSelector('yte-toolbar .yte-quality-row', { timeout: 10_000 });
+  await page.locator('ytm-toolbar .ytm-other-item[data-tool="video"] button').click();
+  await page.waitForSelector('ytm-toolbar .ytm-quality-row', { timeout: 10_000 });
   const align = await inToolbar(
     page,
-    `const p = root.querySelector('.yte-panel').getBoundingClientRect(); const m = root.querySelector('.yte-btn[data-button="more"]').getBoundingClientRect(); return { pr: p.right, mr: m.right, pl: p.left, ml: m.left }`,
+    `const p = root.querySelector('.ytm-panel').getBoundingClientRect(); const m = root.querySelector('.ytm-btn[data-button="more"]').getBoundingClientRect(); return { pr: p.right, mr: m.right, pl: p.left, ml: m.left }`,
   );
   check('T32：從「其他工具」開啟影片面板，面板對齊「更多」按鈕（006 FR-15）', Math.abs(align.pr - align.mr) <= 1 || Math.abs(align.pl - align.ml) <= 1, JSON.stringify(align));
-  await page.locator('yte-toolbar .yte-quality-row[data-format="18"]').click();
+  await page.locator('ytm-toolbar .ytm-quality-row[data-format="18"]').click();
   const job = await waitJob(page, (j) => j.state === 'downloading');
   await page.keyboard.press('Escape');
   await sleep(300);
-  const dot = await inToolbar(page, `const b = root.querySelector('.yte-btn[data-button="more"]'); return { dot: b.hasAttribute('data-dot'), label: b.getAttribute('aria-label') }`);
+  const dot = await inToolbar(page, `const b = root.querySelector('.ytm-btn[data-button="more"]'); return { dot: b.hasAttribute('data-dot'), label: b.getAttribute('aria-label') }`);
   check('T32：隱藏的「影片」下載中，「更多」按鈕顯示提示圓點（006 FR-17、驗收 7）', !!job && dot.dot, JSON.stringify(dot));
   await shot(page, 'T32-more-dot-download.png');
   await button(page, 'more').click();
-  const busy = await inToolbar(page, `return !!root.querySelector('.yte-other-item[data-tool="video"] .yte-other-dot')`);
+  const busy = await inToolbar(page, `return !!root.querySelector('.ytm-other-item[data-tool="video"] .ytm-other-dot')`);
   check('T32：「其他工具」中下載中的「影片」有圓點', busy);
   // 取消後圓點消失
-  await page.locator('yte-toolbar .yte-other-item[data-tool="video"] button').click();
-  await page.waitForSelector(`yte-toolbar .yte-job[data-job="${job?.id}"]`);
-  await page.locator(`yte-toolbar .yte-job[data-job="${job?.id}"] .yte-job-foot button`).click();
+  await page.locator('ytm-toolbar .ytm-other-item[data-tool="video"] button').click();
+  await page.waitForSelector(`ytm-toolbar .ytm-job[data-job="${job?.id}"]`);
+  await page.locator(`ytm-toolbar .ytm-job[data-job="${job?.id}"] .ytm-job-foot button`).click();
   await sleep(1500);
   await page.keyboard.press('Escape');
   await sleep(300);
-  check('T32：取消下載後提示圓點消失', !(await inToolbar(page, `return root.querySelector('.yte-btn[data-button="more"]').hasAttribute('data-dot')`)));
+  check('T32：取消下載後提示圓點消失', !(await inToolbar(page, `return root.querySelector('.ytm-btn[data-button="more"]').hasAttribute('data-dot')`)));
   scenario('ok');
 });
 
@@ -654,11 +654,11 @@ await session('language', async ({ page, context }) => {
   await recordNotifications(context);
   scenario('slow');
   await page.evaluate(() => {
-    document.querySelector('yte-toolbar').__marker = 'same-host';
+    document.querySelector('ytm-toolbar').__marker = 'same-host';
   });
   await openPanel(page, 'video');
-  await page.waitForSelector('yte-toolbar .yte-quality-row');
-  await page.locator('yte-toolbar .yte-quality-row[data-format="18"]').click();
+  await page.waitForSelector('ytm-toolbar .ytm-quality-row');
+  await page.locator('ytm-toolbar .ytm-quality-row[data-format="18"]').click();
   const before = await waitJob(page, (j) => j.state === 'downloading' && /%/.test(j.details));
   const ringBefore = await buttonProgress(page, 'video');
   await setUiLanguage(context, 'zh_TW');
@@ -667,7 +667,7 @@ await session('language', async ({ page, context }) => {
   const after = rows.find((j) => j.id === before?.id);
   const state = await inToolbar(
     page,
-    `return { panel: root.querySelector('.yte-panel-title')?.textContent, sameHost: document.querySelectorAll('yte-toolbar').length === 1 && document.querySelector('yte-toolbar').__marker === 'same-host', ring: root.querySelector('.yte-btn[data-button="video"]').dataset.progress ?? null }`,
+    `return { panel: root.querySelector('.ytm-panel-title')?.textContent, sameHost: document.querySelectorAll('ytm-toolbar').length === 1 && document.querySelector('ytm-toolbar').__marker === 'same-host', ring: root.querySelector('.ytm-btn[data-button="video"]').dataset.progress ?? null }`,
   );
   check(
     'T36：下載中切換語言，進度與面板狀態不變，文字換成新語言（007 驗收 2、NFR-1）',
@@ -676,22 +676,22 @@ await session('language', async ({ page, context }) => {
   );
   await shot(page, 'T35-download-zh-TW-switched.png');
   // 取消後改為一般下載，確認完成通知的語言
-  await page.locator(`yte-toolbar .yte-job[data-job="${before?.id}"] .yte-job-foot button`).click();
+  await page.locator(`ytm-toolbar .ytm-job[data-job="${before?.id}"] .ytm-job-foot button`).click();
   await sleep(1500);
   scenario('ok');
-  await page.locator('yte-toolbar .yte-quality-row[data-format="136+140"]').click();
+  await page.locator('ytm-toolbar .ytm-quality-row[data-format="136+140"]').click();
   const done = await waitJob(page, (j) => j.state === 'done' && j.id !== before?.id);
   await sleep(500);
   const n = await notes(context);
-  const note = n.find((x) => x.id === `yte-job:${done?.id}`);
+  const note = n.find((x) => x.id === `ytm-job:${done?.id}`);
   check('T36：下載完成的通知使用所選語言（007 FR-3、驗收 4）', note?.title === '下載完成', JSON.stringify(note));
   // 錯誤訊息依錯誤代碼轉成所選語言（007 FR-7）
   scenario('network');
-  await page.locator('yte-toolbar .yte-quality-row[data-format="18"]').click();
+  await page.locator('ytm-toolbar .ytm-quality-row[data-format="18"]').click();
   const failed = await waitJob(page, (j) => j.state === 'failed', 10_000);
   check('T36：錯誤訊息依錯誤代碼以所選語言顯示，不顯示 yt-dlp 的原始訊息（007 FR-7）', failed?.errorText === '網路連線問題，請重試。' && !/urlopen|ERROR/.test(failed.errorText), failed?.errorText);
   await sleep(500);
-  const failNote = (await notes(context)).find((x) => x.id === `yte-job:${failed?.id}`);
+  const failNote = (await notes(context)).find((x) => x.id === `ytm-job:${failed?.id}`);
   check('T36：失敗通知使用所選語言', failNote?.title === '下載失敗' && /網路連線問題/.test(failNote.message), JSON.stringify(failNote));
   // 切回英文
   await setUiLanguage(context, 'en');
@@ -709,14 +709,14 @@ await session(
   async ({ page }) => {
     scenario('network');
     await openPanel(page, 'video');
-    await page.waitForSelector('yte-toolbar .yte-quality-row, yte-toolbar .yte-job-error', { timeout: 10_000 });
+    await page.waitForSelector('ytm-toolbar .ytm-quality-row, ytm-toolbar .ytm-job-error', { timeout: 10_000 });
     const text = await panelText(page);
     check('T22：繁體中文的錯誤訊息（NFR-4）', text.includes('網路連線問題，請重試。') && text.includes('重試'), text.slice(0, 160));
     await shot(page, 'T22-error-zh-TW.png');
     scenario('ok');
-    await page.locator('yte-toolbar .yte-job-error button').click();
-    await page.waitForSelector('yte-toolbar .yte-quality-row', { timeout: 10_000 });
-    await page.locator('yte-toolbar .yte-more-formats').click();
+    await page.locator('ytm-toolbar .ytm-job-error button').click();
+    await page.waitForSelector('ytm-toolbar .ytm-quality-row', { timeout: 10_000 });
+    await page.locator('ytm-toolbar .ytm-more-formats').click();
     await shot(page, 'T19-video-panel-zh-TW.png');
     check('T19：繁體中文的「只顯示 MP4」', (await panelText(page)).includes('只顯示 MP4'));
     await page.goto(`chrome-extension://${EXT_ID}/options.html`);
