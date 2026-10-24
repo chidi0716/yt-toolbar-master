@@ -1,7 +1,7 @@
 // 橋接程式的連線狀態（002 FR-2，tasks T16、T22）：由背景腳本以 status 指令查詢。
 // 必要元件為橋接程式、yt-dlp、ffmpeg、deno；ready（yt-dlp 與 ffmpeg 可用）時可以下載，只缺 deno 時顯示建議安裝的提示。
 import { t, type MessageKey } from '@/utils/i18n';
-import type { ComponentName, HostComponentInfo, HostStatusResult } from '@/utils/native-protocol';
+import type { ComponentName, ComponentSource, HostComponentInfo, HostStatusResult } from '@/utils/native-protocol';
 
 /** 面板與設定頁列出的元件（ffprobe 與 ffmpeg 一起安裝，不另外列出）。 */
 export const HOST_COMPONENTS = ['helper', 'yt-dlp', 'ffmpeg', 'deno'] as const satisfies readonly ComponentName[];
@@ -48,6 +48,16 @@ export function componentText(s: HostState, name: HostComponent): { text: string
   if (!ok) return { text: t(name === 'helper' ? 'hostStatusNotInstalled' : ok === null ? 'hostStatusUnknown' : 'hostStatusMissing'), missing: true };
   return { text: version ? t('hostStatusVersion', version) : t('hostStatusFound'), missing: false };
 }
+
+const SOURCE_LABELS: Record<ComponentSource, MessageKey> = {
+  bundled: 'componentSourceBundled',
+  homebrew: 'componentSourceHomebrew',
+  winget: 'componentSourceWinget',
+  path: 'componentSourcePath',
+};
+
+/** 元件的來源文字（008 FR-24，例如「小幫手安裝」「Homebrew」）；不明時為 null。 */
+export const sourceLabel = (info: HostComponentInfo | null): string | null => (info?.source ? t(SOURCE_LABELS[info.source]) : null);
 
 /** 只缺 deno（可以下載，但建議安裝，T15a）。 */
 export const missingOnlyDeno = (s: HostState) => canDownload(s) && component(s, 'deno').ok === false;

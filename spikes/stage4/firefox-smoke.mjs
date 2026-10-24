@@ -186,7 +186,7 @@ try {
   await sleep(1000);
   let rows = [];
   for (let i = 0; i < 50; i++) {
-    rows = JSON.parse(await evaluate(`JSON.stringify([...document.querySelectorAll('#downloads-groups .status-row')].map((r) => r.dataset.component + ':' + r.dataset.ok))`));
+    rows = JSON.parse(await evaluate(`JSON.stringify([...document.querySelectorAll('#downloads-groups .ytm-setup-components li:not([data-component=extension])')].map((r) => r.dataset.component + ':' + !r.hasAttribute('data-missing')))`));
     if (rows.length === 4 && rows.every((r) => r.endsWith('true'))) break;
     await sleep(200);
   }

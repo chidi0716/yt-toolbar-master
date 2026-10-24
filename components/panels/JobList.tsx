@@ -28,8 +28,8 @@ export function openSettings() {
   browser.runtime.sendMessage(message).catch(() => {});
 }
 
-/** 「更新 yt-dlp」：直接更新，或顯示可以複製的更新指令（由套件管理工具安裝時）。 */
-export function UpdateYtDlp() {
+/** 「更新 yt-dlp」：直接更新，或顯示可以複製的更新指令（由套件管理工具安裝時）。onDone 在指令結束後呼叫。 */
+export function UpdateYtDlp({ onDone }: { onDone?: () => void }) {
   const [state, setState] = useState<{ status: 'idle' | 'running' | 'error' } | { status: 'done'; result: UpdateResult }>({ status: 'idle' });
   const run = async () => {
     setState({ status: 'running' });
@@ -38,6 +38,7 @@ export function UpdateYtDlp() {
     } catch {
       setState({ status: 'error' });
     }
+    onDone?.();
   };
   if (state.status === 'done') {
     const r = state.result;

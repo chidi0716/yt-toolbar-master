@@ -33,7 +33,7 @@ const isLiveInfo = (info: HostInfo) => info.isLive || info.liveStatus === 'is_li
 function DownloadGate({ videoId, children }: { videoId: string; children: (title: string, installed: boolean) => ComponentChildren }) {
   const [attempt, setAttempt] = useState(0);
   const video = useVideoData(videoId, attempt);
-  const host = useHostState({ pollWhileMissing: true });
+  const host = useHostState();
   const settings = useStore(quickSettings());
   const shownSetup = useRef(false);
   if (video.status === 'loading' || host.state === null || settings === null) return <PanelLoading />;
@@ -42,7 +42,7 @@ function DownloadGate({ videoId, children }: { videoId: string; children: (title
   if (!canDownload(host.state)) {
     // 只顯示安裝引導，不記住、也不自動開始這次下載（009 FR-10）。
     shownSetup.current = true;
-    return <HostSetup state={host.state} checking={host.checking} recheck={host.recheck} />;
+    return <HostSetup host={{ ...host, state: host.state }} />;
   }
   return (
     <>

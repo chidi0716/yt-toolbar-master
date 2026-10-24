@@ -208,11 +208,6 @@
   min-width: 0;
 }
 
-.ytm-muted {
-  margin: 0;
-  color: var(--ytm-text-secondary);
-}
-
 /* ---------- 面板共通狀態（FR-14） ---------- */
 
 .ytm-status {
@@ -287,30 +282,6 @@
   font-size: 13px;
   line-height: 18px;
   white-space: normal;
-}
-
-.ytm-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 8px 0 0 -8px;
-  padding: 6px 8px;
-  border: 0;
-  border-radius: 18px;
-  background: transparent;
-  color: var(--ytm-call-to-action);
-  font: inherit;
-  font-weight: 500;
-  cursor: pointer;
-  outline: none;
-}
-
-.ytm-link:hover {
-  background: var(--ytm-hover-background);
-}
-
-.ytm-link:focus-visible {
-  box-shadow: 0 0 0 2px var(--ytm-call-to-action);
 }
 
 /* 劇院模式時頁面背景是黑色：不論 YouTube 主題，工具列按鈕改用深色背景上的文字色，維持可見（003 FR-20a）。 */

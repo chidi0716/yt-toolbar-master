@@ -7,7 +7,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { EXT_ID, WATCH, button, launch, openWatch, reporter, setUiLanguage, shot, shots } from '../stage1-smoke/lib.mjs';
+import { EXT_ID, WATCH, button, extensionWorker, launch, openWatch, reporter, setUiLanguage, shot, shots } from '../stage1-smoke/lib.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const cache = join(here, '.cache');
@@ -78,6 +78,14 @@ async function session(name, fn, { tools = 'tools', keepProfile = false, lang = 
       PATH: `${join(cache, 'bin', tools)}:/usr/bin:/bin`,
     },
   });
+  // 這份測試檢查完整的畫質清單；一鍵下載（009，預設開啟）由 stage1-smoke/downloads-test.mjs 檢查。
+  for (let i = 0; ; i++) {
+    const ok = await (await extensionWorker(context))
+      .evaluate(() => (globalThis.chrome?.storage?.sync ? chrome.storage.sync.set({ quickDownload: false }).then(() => true) : false))
+      .catch(() => false);
+    if (ok || i >= 50) break;
+    await sleep(100);
+  }
   const page = context.pages()[0] ?? (await context.newPage());
   page.on('pageerror', (err) => console.log('  pageerror:', String(err).slice(0, 200)));
   try {
@@ -465,9 +473,9 @@ await session('connected', async ({ page, context, home, downloads }) => {
   // ---- T23 設定頁 ----
   const opt = other;
   await opt.reload();
-  await opt.waitForSelector('#downloads-groups .status-row[data-component="deno"]');
-  await opt.waitForFunction(() => document.querySelector('#downloads-groups .status-row[data-component="yt-dlp"]')?.dataset.ok === 'true', null, { timeout: 10_000 });
-  const status = await opt.evaluate(() => [...document.querySelectorAll('#downloads-groups .status-row[data-component]:not([data-component="extension"])')].map((r) => `${r.dataset.component}:${r.dataset.ok}:${r.lastElementChild.textContent}`));
+  await opt.waitForSelector('#downloads-groups .ytm-setup-components li[data-component="deno"]');
+  await opt.waitForFunction(() => document.querySelector('#downloads-groups li[data-component="yt-dlp"]:not([data-missing])'), null, { timeout: 10_000 });
+  const status = await opt.evaluate(() => [...document.querySelectorAll('#downloads-groups .ytm-setup-components li[data-component]:not([data-component="extension"])')].map((r) => `${r.dataset.component}:${!r.hasAttribute('data-missing')}:${r.lastElementChild.textContent}`));
   check('T23：連線狀態列出橋接程式、yt-dlp、ffmpeg、deno 與版本', status.length === 4 && status.every((s) => s.split(':')[1] === 'true') && status[1].includes('2026.10.21'), status.join(' | '));
   const folder = await opt.locator('#downloads-folder').textContent();
   check('T23：下載資料夾顯示預設的系統「下載」資料夾路徑', folder === `System Downloads folder (${downloads})`, folder);
@@ -479,9 +487,9 @@ await session('connected', async ({ page, context, home, downloads }) => {
   await opt.locator('#downloads-choose').click();
   await opt.waitForFunction(() => document.querySelector('#downloads-folder-error').textContent !== '', null, { timeout: 5000 });
   check('T23：選擇資料夾（Linux 不支援 pickFolder 時顯示說明）', (await opt.locator('#downloads-folder-error').textContent()) === "Choosing a folder isn't supported on this system.");
-  await opt.locator('#downloads-update').click();
-  await opt.waitForFunction(() => /up to date|updated|Couldn/.test(document.querySelector('#downloads-update-result').textContent), null, { timeout: 15_000 });
-  check('T23：「更新 yt-dlp」顯示結果', (await opt.locator('#downloads-update-result').textContent()) === 'yt-dlp is already up to date.');
+  await opt.locator('#downloads-groups .ytm-update button').click();
+  await opt.waitForFunction(() => /up to date|updated|Couldn/.test(document.querySelector('#downloads-groups .ytm-update').textContent), null, { timeout: 15_000 });
+  check('T23：「更新 yt-dlp」顯示結果', (await opt.locator('#downloads-groups .ytm-update').textContent()) === 'yt-dlp is already up to date.');
   await opt.locator('#downloads-name-preset').selectOption('channel-title');
   await opt.locator('#downloads-embed').uncheck();
   // 以 storage 指定下載資料夾（等同 pickFolder 的結果），確認之後的下載使用設定
@@ -720,9 +728,9 @@ await session(
     await shot(page, 'T19-video-panel-zh-TW.png');
     check('T19：繁體中文的「只顯示 MP4」', (await panelText(page)).includes('只顯示 MP4'));
     await page.goto(`chrome-extension://${EXT_ID}/options.html`);
-    await page.waitForFunction(() => document.querySelector('#downloads-groups .status-row[data-component="deno"]')?.dataset.ok === 'true', null, { timeout: 10_000 });
+    await page.waitForFunction(() => document.querySelector('#downloads-groups li[data-component="deno"]:not([data-missing])'), null, { timeout: 10_000 });
     const legends = await page.evaluate(() => [...document.querySelectorAll('#downloads-groups legend')].map((l) => l.textContent));
-    check('T23：繁體中文的設定頁下載區', legends.join('|') === '連線狀態|更新|移除下載功能|下載資料夾|下載的檔案', legends.join('|'));
+    check('T23：繁體中文的設定頁下載區', legends.join('|') === '連線狀態|更新|移除下載功能|一鍵下載|下載資料夾|下載的檔案', legends.join('|'));
     const box = await page.locator('#downloads').boundingBox();
     await page.screenshot({ path: join(shots, 'T23-options-downloads-zh-TW.png'), clip: { x: 0, y: box.y - 16, width: 1280, height: box.height + 32 }, fullPage: true });
   },

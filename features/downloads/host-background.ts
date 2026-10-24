@@ -12,6 +12,7 @@ import {
   parseJobs,
   parseStatus,
   parseUpdate,
+  type HostCommand,
   type HostErrorCode,
   type HostInfo,
   type HostStatusResult,
@@ -58,6 +59,15 @@ const client = new NativeClient({
   // 還有進行中的下載時自動重連，才能繼續收到進度與完成事件。
   shouldReconnect: () => jobs.some(isActive),
 });
+
+/** 會改變 status 結果的指令：回應後清除狀態快取（009 FR-10a）。 */
+const STATUS_CHANGING: readonly HostCommand[] = ['updateYtDlp', 'setAutoUpdate', 'checkUpdates', 'uninstall'];
+
+const hostRequest: NativeClient['request'] = (cmd, ...rest) => {
+  const done = client.request(cmd, ...rest);
+  if (STATUS_CHANGING.includes(cmd)) void done.finally(() => statusCache.clear()).catch(() => {});
+  return done;
+};
 
 let idleTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -122,7 +132,7 @@ async function onHostEvent(event: HostEvent) {
 async function syncJobs() {
   await load();
   try {
-    const host = parseJobs(await client.request('jobs'));
+    const host = parseJobs(await hostRequest('jobs'));
     let next = mergeHostJobs(jobs, host, Date.now());
     next = markMissing(next, host, Date.now());
     await setJobs(next);
@@ -167,7 +177,7 @@ export function onNotificationClicked(notificationId: string): void {
   void browser.notifications.clear(notificationId);
   void load().then(() => {
     if (jobs.find((j) => j.jobId === jobId)?.state !== 'done') return;
-    client.request('reveal', { jobId }).catch((err: unknown) => console.info(`${LOG_PREFIX} reveal failed`, err));
+    hostRequest('reveal', { jobId }).catch((err: unknown) => console.info(`${LOG_PREFIX} reveal failed`, err));
   });
 }
 
@@ -176,7 +186,7 @@ export async function getStatus(refresh: boolean): Promise<HostStatusResult> {
   const cached = refresh ? null : statusCache.get();
   if (cached) return cached;
   try {
-    const value = parseStatus(await client.request('status'));
+    const value = parseStatus(await hostRequest('status'));
     statusCache.put(value);
     return value;
   } catch (err) {
@@ -188,7 +198,7 @@ export async function getStatus(refresh: boolean): Promise<HostStatusResult> {
 function getInfo(videoId: string): Promise<HostInfo> {
   const cached = infoCache.get(videoId);
   if (cached && Date.now() - cached.at < INFO_TTL_MS) return cached.promise;
-  const promise = client.request('getInfo', { videoId }).then(parseInfo);
+  const promise = hostRequest('getInfo', { videoId }).then(parseInfo);
   infoCache.set(videoId, { at: Date.now(), promise });
   promise.catch(() => infoCache.delete(videoId));
   if (infoCache.size > 30) infoCache.delete(infoCache.keys().next().value!);
@@ -227,7 +237,7 @@ async function startDownload(request: DownloadRequest, estimate: JobRecord['esti
     embed: (await embedInfo.getValue()) !== false,
   };
   // 設定的下載資料夾不存在或無法寫入時，橋接程式回應 PERMISSION_DENIED（T15b）。
-  const result = await client.request('download', downloadArgs(request, settings));
+  const result = await hostRequest('download', downloadArgs(request, settings));
   const jobId = typeof result.jobId === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(result.jobId) ? result.jobId : null;
   if (!jobId) throw new HostRequestError('UNKNOWN', 'download returned no jobId');
   // 事件有時比 download 的回應早到：已經有紀錄時保留進度，只補上請求內容。
@@ -335,13 +345,13 @@ async function handle(message: Extract<ContentMessage, { type: HostMessageType }
     case 'quickDownload':
       return { ok: true, result: await quickDownload(message.videoId, message.kind, { source: 'toolbar', title: message.title }) };
     case 'cancelJob': {
-      const result = await client.request('cancel', { jobId: message.jobId });
+      const result = await hostRequest('cancel', { jobId: message.jobId });
       await load();
       await setJobs(jobs.map((j) => (j.jobId === message.jobId && isActive(j) ? { ...j, state: result.state === 'cancelled' ? 'cancelled' : j.state, speed: null, eta: null, updatedAt: Date.now() } : j)));
       return { ok: true };
     }
     case 'revealJob':
-      await client.request('reveal', { jobId: message.jobId });
+      await hostRequest('reveal', { jobId: message.jobId });
       return { ok: true };
     case 'getJobs':
       await load();
@@ -352,28 +362,23 @@ async function handle(message: Extract<ContentMessage, { type: HostMessageType }
       if (jobs.some(isActive) && !client.connected) client.connect();
       return { ok: true, jobs };
     case 'pickFolder': {
-      const result = await client.request('pickFolder');
+      const result = await hostRequest('pickFolder');
       return { ok: true, path: typeof result.path === 'string' ? result.path : null };
     }
     case 'updateYtDlp': {
-      const result = parseUpdate(await client.request('updateYtDlp'));
-      statusCache.clear();
-      return { ok: true, update: result };
+      return { ok: true, update: parseUpdate(await hostRequest('updateYtDlp')) };
     }
     // 008（plan 4.9、3.10）
     case 'hostSetAutoUpdate':
-      await client.request('setAutoUpdate', { enabled: message.enabled });
-      statusCache.clear();
+      await hostRequest('setAutoUpdate', { enabled: message.enabled });
       return { ok: true };
     case 'hostCheckUpdates': {
-      const result = await client.request('checkUpdates');
-      statusCache.clear();
+      const result = await hostRequest('checkUpdates');
       return { ok: true, started: result.started === true };
     }
     case 'hostUninstall':
-      // 有進行中的下載時，小幫手回應 JOBS_RUNNING。成功後小幫手 2 秒後刪除自己與瀏覽器的註冊。
-      await client.request('uninstall');
-      statusCache.clear();
+      // 有進行中的下載時，小幫手回應 JOBS_RUNNING。成功時小幫手在這個程序結束後刪除自己與瀏覽器的註冊。
+      await hostRequest('uninstall');
       infoCache.clear();
       // 關閉這次的連線：正在執行的小幫手隨之結束，下一次查詢會重新連線（註冊已被刪除時為未安裝）。
       client.close();

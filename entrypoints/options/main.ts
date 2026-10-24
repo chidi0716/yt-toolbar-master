@@ -1,3 +1,6 @@
+// 連線狀態區掛載面板的元件，使用相同的樣式；設定頁自己的樣式在後面，可以覆寫。
+import '@/components/controls/controls.css';
+import '@/components/panels/panels.css';
 import './style.css';
 import { TIDY_CATEGORIES, type TidyOption } from '@/features/tidy/options';
 import { applyI18n, initI18n, onLocaleChange, resolveLocale, setLocale, t, UI_LANGUAGES } from '@/utils/i18n';
