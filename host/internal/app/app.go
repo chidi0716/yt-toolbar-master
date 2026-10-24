@@ -133,60 +133,41 @@ func (a *App) Status(ctx context.Context) (any, error) {
 	if a.SelfPath != "" && platform.SameFile(a.SelfPath, l.HelperPath) {
 		helper.Source = "bundled"
 	}
-	ytDlp, deno, ffmpeg, ffprobe := a.component("yt-dlp", t.YtDlp), a.component("deno", t.Deno), a.component("ffmpeg", t.FFmpeg), a.component("ffprobe", t.FFprobe)
-	setVersion := func(c *Component, v string, err error) {
-		c.Version = v
-		if err != nil {
-			c.Error = string(errs.From(err).Code)
-		}
+	tools := []struct {
+		name, path string
+		version    func(context.Context) (string, error)
+	}{
+		{"yt-dlp", t.YtDlp, t.YtDlpVersion},
+		{"deno", t.Deno, t.DenoVersion},
+		{"ffmpeg", t.FFmpeg, t.FFmpegVersion},
+		{"ffprobe", t.FFprobe, t.FFprobeVersion},
 	}
+	res.Components = make([]Component, 1+len(tools))
+	res.Components[0] = helper
 	a.versions.sync(l.InstallDir)
 	var wg sync.WaitGroup
-	if ytDlp.Found {
+	for i, tool := range tools {
+		c := &res.Components[i+1]
+		c.Name = tool.name
+		if tool.path == "" {
+			continue
+		}
+		c.Found, c.Path, c.Source = true, tool.path, a.Env.Source(tool.path)
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			v, err := a.versions.version(ctx, t.YtDlp, t.YtDlpVersion)
-			setVersion(&ytDlp, v, err)
-		}()
-	}
-	if ffmpeg.Found {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			v, err := a.versions.version(ctx, t.FFmpeg, t.FFmpegVersion)
-			setVersion(&ffmpeg, v, err)
-		}()
-	}
-	if deno.Found {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			v, err := a.versions.version(ctx, t.Deno, t.DenoVersion)
-			setVersion(&deno, v, err)
-		}()
-	}
-	if ffprobe.Found {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			v, err := a.versions.version(ctx, t.FFprobe, t.FFprobeVersion)
-			setVersion(&ffprobe, v, err)
+			v, err := a.versions.version(ctx, tool.path, tool.version)
+			c.Version = v
+			if err != nil {
+				c.Error = string(errs.From(err).Code)
+			}
 		}()
 	}
 	wg.Wait()
-	res.Components = []Component{helper, ytDlp, deno, ffmpeg, ffprobe}
+	ytDlp, deno, ffmpeg := res.Components[1], res.Components[2], res.Components[3]
 	res.Ready = ytDlp.usable() && ffmpeg.usable()
 	res.Complete = res.Ready && deno.usable()
 	return res, nil
-}
-
-// component 回傳在 path 找到的工具（版本另外填入）；path 為空字串代表找不到。
-func (a *App) component(name, path string) Component {
-	if path == "" {
-		return Component{Name: name}
-	}
-	return Component{Name: name, Found: true, Path: path, Source: a.Env.Source(path)}
 }
 
 // maxInfoResult 是 getInfo 結果的大小上限，比 1MB 的訊息上限略小，保留外層欄位的空間。
