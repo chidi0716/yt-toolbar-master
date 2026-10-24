@@ -1,4 +1,4 @@
-// 鎖定畫質的純邏輯（004 第 1 節、plan 3.7.1）：選擇畫質、決定要不要切換、判斷是不是使用者手動改的。
+// 鎖定畫質的純邏輯（004 第 1 節、plan 3.7.1）：選擇畫質、判斷是不是使用者手動改的。
 import type { QualityLock } from '@/utils/settings';
 import { QUALITY_HEIGHTS, type QualityCode } from '@/utils/youtube/dom';
 
@@ -22,21 +22,6 @@ export function pickQuality(lock: QualityLock, available: readonly QualityCode[]
   if (limit === null || available.length === 0) return null;
   const sorted = [...new Set(available)].sort((a, b) => QUALITY_HEIGHTS[b] - QUALITY_HEIGHTS[a]);
   return sorted.find((q) => QUALITY_HEIGHTS[q] <= limit) ?? sorted[sorted.length - 1]!;
-}
-
-export interface QualityCheck {
-  lock: QualityLock;
-  available: readonly QualityCode[];
-  current: QualityCode | null;
-  /** 使用者已在這部影片手動改過畫質（FR-4）。 */
-  userChose: boolean;
-}
-
-/** 這次檢查要切換到哪個畫質；不需要切換時回傳 null。 */
-export function qualityToApply({ lock, available, current, userChose }: QualityCheck): QualityCode | null {
-  if (userChose) return null;
-  const target = pickQuality(lock, available);
-  return target && target !== current ? target : null;
 }
 
 /**

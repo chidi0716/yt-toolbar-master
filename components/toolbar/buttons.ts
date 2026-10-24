@@ -13,7 +13,6 @@ export type ButtonKind = 'panel' | 'toggle' | 'action';
 
 /** 固定工具：不能隱藏、也不能移動，永遠在工具列最右邊（006）。 */
 export type FixedId = 'more' | 'close';
-export const FIXED_IDS: readonly FixedId[] = ['more', 'close'];
 
 export type ButtonId = ToolId | FixedId;
 

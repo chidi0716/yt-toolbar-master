@@ -8,7 +8,6 @@ import { isActive, MP3_BITRATES, type DownloadRequest, type JobRecord, type Mp3B
 
 /** 可以一鍵下載的種類（字幕不支援）。 */
 export type QuickKind = 'video' | 'mp3';
-export const QUICK_KINDS: readonly QuickKind[] = ['video', 'mp3'];
 
 /** 一鍵下載與右鍵下載使用的預設值（009 FR-2、FR-3）。 */
 export interface QuickDefaults {

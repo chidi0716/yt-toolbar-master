@@ -63,12 +63,6 @@ export type JobStage = 'updating-ytdlp';
 const STAGES: readonly string[] = ['updating-ytdlp'];
 const toStage = (v: unknown): JobStage | null => (typeof v === 'string' && STAGES.includes(v) ? (v as JobStage) : null);
 
-export interface HostRequest {
-  id: string;
-  cmd: HostCommand;
-  args?: Record<string, unknown>;
-}
-
 export type JobKind = 'video' | 'mp3' | 'subtitle';
 export type JobState = 'queued' | 'downloading' | 'processing' | 'done' | 'failed' | 'cancelled';
 export const FINAL_STATES: readonly JobState[] = ['done', 'failed', 'cancelled'];
