@@ -16,8 +16,6 @@ export interface QuickDefaults {
   bitrate: Mp3Bitrate;
 }
 
-export const DEFAULT_QUICK_DEFAULTS: QuickDefaults = { height: 1080, container: 'mp4', bitrate: 192 };
-
 const toBitrate = (v: unknown): Mp3Bitrate => (isMp3Bitrate(v) ? v : 192);
 
 /** 從設定讀到的值整理成預設值（不合法的值改用預設）。 */

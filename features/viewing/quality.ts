@@ -3,7 +3,7 @@
 //
 // 只在必要的時機檢查（不輪詢）：影片載入（loadedmetadata）、開始播放（playing）、畫面尺寸改變（resize，
 // 畫質改變時 <video> 會發出）、換頁與改變設定時。
-import { qualityLock, QUALITY_LOCK_VALUES, type QualityLock } from '@/utils/settings';
+import { qualityLock, QUALITY_LOCK_VALUES, watchSettings, type QualityLock } from '@/utils/settings';
 import { AUTO_QUALITY, CONVENIENCE_SELECTORS, SELECTORS, type QualityCode } from '@/utils/youtube/dom';
 import { getVideoId, isWatchPage } from '@/utils/youtube/page';
 import { player } from '@/utils/youtube/player';
@@ -129,12 +129,12 @@ export function createQualityLock(): QualityLockFeature {
       // 媒體事件不會冒泡，但會經過 document 的捕獲階段；YouTube 換掉 <video> 時也不用重新掛監聽。
       for (const type of VIDEO_EVENTS) document.addEventListener(type, onVideoEvent, true);
       for (const type of MENU_EVENTS) document.addEventListener(type, onMenuInput, true);
-      // 其他分頁改變設定時同步（FR-5）。
-      unwatch = qualityLock.watch((value) => {
-        if (running && isLock(value) && value !== state.get().value) apply(value);
-      });
-      void qualityLock.getValue().then((value) => {
-        if (running) apply(isLock(value) ? value : 'off');
+      // 讀到設定時套用；其他分頁改變設定時同步（FR-5）。
+      let first = true;
+      unwatch = watchSettings([qualityLock] as const, ([value]) => {
+        if (first) apply(isLock(value) ? value : 'off');
+        else if (isLock(value) && value !== state.get().value) apply(value);
+        first = false;
       });
     },
     stop() {

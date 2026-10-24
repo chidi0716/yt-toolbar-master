@@ -1,6 +1,7 @@
 // 所有設定的 storage 定義集中於此（plan 3.1）。
 // 檔案位於 utils/，WXT 會自動匯入這裡的 export。
 // 設定都存在 sync 區：跨分頁、跨重新開機，並跟著使用者的瀏覽器帳號同步。
+import type { WxtStorageItem } from 'wxt/utils/storage';
 import type { PageThemePreference, Theme } from './page-theme';
 import type { ToolbarLayout } from './toolbar-layout';
 
@@ -130,3 +131,50 @@ export const updateReminder = storage.defineItem<unknown>('local:updateReminder'
  * 之後再有新的失敗（檢查時間改變）時再顯示。設定頁可以清除（重新顯示）。
  */
 export const hostUpdateHintDismissed = storage.defineItem<number | null>('local:hostUpdateHintDismissed', { fallback: null });
+
+// ---------------------------------------------------------------------------
+// 讀取與監看
+// ---------------------------------------------------------------------------
+
+type AnyItem = WxtStorageItem<any, any>;
+type Values<T extends readonly AnyItem[]> = { -readonly [K in keyof T]: T[K] extends WxtStorageItem<infer V, any> ? V : never };
+
+/** 一次讀取多個設定（同一個儲存區只讀一次）；讀不到時為各自的預設值。 */
+export async function readSettings<const T extends readonly AnyItem[]>(items: T): Promise<Values<T>> {
+  try {
+    return (await storage.getItems([...items])).map((r) => r.value) as Values<T>;
+  } catch (err) {
+    console.info('[yt-toolbar-master] failed to read settings', err);
+    return items.map((item) => item.fallback) as Values<T>;
+  }
+}
+
+/**
+ * 讀取並監看多個設定：讀到時、以及之後任何一個改變時，以全部的目前值呼叫 onChange。
+ * 回傳釋放的函式（取消監聽；之後不再呼叫）。
+ */
+export function watchSettings<const T extends readonly AnyItem[]>(items: T, onChange: (values: Values<T>) => void): () => void {
+  let values: unknown[] | null = null;
+  let released = false;
+  const early = new Map<number, unknown>();
+  const unwatch = items.map((item, i) =>
+    item.watch((value: unknown) => {
+      if (released) return;
+      if (!values) {
+        early.set(i, value);
+        return;
+      }
+      values = values.map((v, j) => (j === i ? value : v));
+      onChange(values as Values<T>);
+    }),
+  );
+  void readSettings(items).then((read) => {
+    if (released) return;
+    values = read.map((v, i) => (early.has(i) ? early.get(i) : v));
+    onChange(values as Values<T>);
+  });
+  return () => {
+    released = true;
+    unwatch.forEach((off) => off());
+  };
+}

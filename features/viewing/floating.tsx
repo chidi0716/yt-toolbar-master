@@ -7,7 +7,7 @@ import { Icon } from '@/components/icons';
 import { useLocale } from '@/components/useLocale';
 import { t } from '@/utils/i18n';
 import { ensureStyle } from '@/utils/style';
-import { floatingCorner, floatingPlayer } from '@/utils/settings';
+import { floatingCorner, floatingPlayer, readSettings } from '@/utils/settings';
 import { findPlayerContainer, findVideo, mastheadHeight } from '@/utils/youtube/dom';
 import { isWatchPage } from '@/utils/youtube/page';
 import {
@@ -275,7 +275,7 @@ export function createFloating(): FloatingFeature {
       running = true;
       document.addEventListener('fullscreenchange', onFullscreen);
       window.addEventListener('resize', onResize);
-      void Promise.all([floatingPlayer.getValue(), floatingCorner.getValue()]).then(([enabled, savedCorner]) => {
+      void readSettings([floatingPlayer, floatingCorner] as const).then(([enabled, savedCorner]) => {
         if (!running) return;
         if (isCorner(savedCorner)) corner = savedCorner;
         setEnabled(enabled);

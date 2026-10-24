@@ -26,7 +26,7 @@ import { quickTooltip } from '@/features/downloads/quick';
 import { createUpdateReminder } from '@/features/update/content';
 import { createViewingController } from '@/features/viewing';
 import { initI18n, onLocaleChange, t } from '@/utils/i18n';
-import { enabled, QUALITY_LOCK_VALUES, toolbarLayout, type QualityLock } from '@/utils/settings';
+import { enabled, QUALITY_LOCK_VALUES, readSettings, toolbarLayout, uiLanguage, type QualityLock } from '@/utils/settings';
 import { normalizeLayout, type ToolbarLayout } from '@/utils/toolbar-layout';
 import { WATCH_HOSTS, findPlayer, findToolbarAnchor } from '@/utils/youtube/dom';
 import { getVideoId, isWatchPage, onNavigate } from '@/utils/youtube/page';
@@ -45,10 +45,12 @@ const qualityOptions = () =>
   }));
 
 export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
-  await initI18n();
-  let isEnabled = await enabled.getValue();
+  // 介面語言、是否顯示、工具列設定一次讀取。
+  const [language, enabledValue, layoutValue] = await readSettings([uiLanguage, enabled, toolbarLayout] as const);
+  await initI18n(language);
+  let isEnabled = enabledValue;
   // 自訂工具列（006）：讀取時驗證並與預設清單合併；其他分頁或設定頁改變時立即重新繪製（FR-21、FR-22）。
-  let layout: ToolbarLayout = normalizeLayout(await toolbarLayout.getValue());
+  let layout: ToolbarLayout = normalizeLayout(layoutValue);
   let videoId: string | null = null;
   let parentObserver: MutationObserver | null = null;
   let observedParent: Element | null = null;

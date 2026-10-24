@@ -3,12 +3,12 @@
 import { createStore, type Store } from '@/features/viewing/store';
 import { isBackgroundMessage } from '@/utils/messages';
 import { toErrorCode, type HostErrorCode, type HostInfo, type HostStatusResult, type UpdateResult } from '@/utils/native-protocol';
-import { defaultVideoContainer, defaultVideoHeight, mp3Bitrate, quickDownload } from '@/utils/settings';
+import { defaultVideoContainer, defaultVideoHeight, mp3Bitrate, quickDownload, watchSettings } from '@/utils/settings';
 import { sendToBackground } from '@/utils/messages';
 import type { QuickResult } from './host-background';
 import type { HostState } from './host-status';
 import type { DownloadRequest, JobRecord } from './jobs';
-import { DEFAULT_QUICK_DEFAULTS, toQuickDefaults, type QuickDefaults, type QuickKind } from './quick';
+import { toQuickDefaults, type QuickDefaults, type QuickKind } from './quick';
 
 const LOG_PREFIX = '[yt-toolbar-master]';
 
@@ -81,33 +81,8 @@ export function quickSettings(): Store<QuickSettings | null> {
   if (quickStore) return quickStore;
   const store = createStore<QuickSettings | null>(null);
   quickStore = store;
-  let raw = { enabled: true, height: DEFAULT_QUICK_DEFAULTS.height as unknown, container: DEFAULT_QUICK_DEFAULTS.container as unknown, bitrate: DEFAULT_QUICK_DEFAULTS.bitrate as unknown };
-  const publish = () => store.set({ enabled: raw.enabled !== false, defaults: toQuickDefaults(raw.height, raw.container, raw.bitrate) });
-  void Promise.all([quickDownload.getValue(), defaultVideoHeight.getValue(), defaultVideoContainer.getValue(), mp3Bitrate.getValue()]).then(
-    ([enabled, height, container, bitrate]) => {
-      raw = { enabled, height, container, bitrate };
-      publish();
-    },
-    (err: unknown) => {
-      console.info(`${LOG_PREFIX} failed to read one-click download settings`, err);
-      publish();
-    },
+  watchSettings([quickDownload, defaultVideoHeight, defaultVideoContainer, mp3Bitrate] as const, ([enabled, height, container, bitrate]) =>
+    store.set({ enabled: enabled !== false, defaults: toQuickDefaults(height, container, bitrate) }),
   );
-  quickDownload.watch((v) => {
-    raw = { ...raw, enabled: v };
-    if (store.get()) publish();
-  });
-  defaultVideoHeight.watch((v) => {
-    raw = { ...raw, height: v };
-    if (store.get()) publish();
-  });
-  defaultVideoContainer.watch((v) => {
-    raw = { ...raw, container: v };
-    if (store.get()) publish();
-  });
-  mp3Bitrate.watch((v) => {
-    raw = { ...raw, bitrate: v };
-    if (store.get()) publish();
-  });
   return store;
 }

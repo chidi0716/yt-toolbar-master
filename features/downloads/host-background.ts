@@ -18,7 +18,7 @@ import {
   type HostStatusResult,
 } from '@/utils/native-protocol';
 import { isValidJobId } from '@/utils/validate';
-import { defaultVideoContainer, defaultVideoHeight, downloadDir, embedInfo, mp3Bitrate, namePreset } from '@/utils/settings';
+import { defaultVideoContainer, defaultVideoHeight, downloadDir, embedInfo, mp3Bitrate, namePreset, readSettings } from '@/utils/settings';
 import { applyEvent, errorInfo, isActive, isFinal, markMissing, mergeHostJobs, newJob, pruneJobs, type DownloadRequest, type JobRecord } from './jobs';
 import { component, createStatusCache } from './host-status';
 import { activeJobFor, planQuickDownload, startNotificationId, toQuickDefaults, type QuickDefaults, type QuickKind } from './quick';
@@ -264,7 +264,7 @@ export interface QuickResult {
 
 /** 目前的預設值（009 FR-2、FR-3）。 */
 export async function readQuickDefaults(): Promise<QuickDefaults> {
-  const [height, container, bitrate] = await Promise.all([defaultVideoHeight.getValue(), defaultVideoContainer.getValue(), mp3Bitrate.getValue()]);
+  const [height, container, bitrate] = await readSettings([defaultVideoHeight, defaultVideoContainer, mp3Bitrate] as const);
   return toQuickDefaults(height, container, bitrate);
 }
 

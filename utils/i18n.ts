@@ -71,14 +71,14 @@ const STORAGE_KEY = 'uiLanguage';
 
 /**
  * 讀取 sync:uiLanguage 並監聽變更（每個執行環境呼叫一次；之後的呼叫回傳同一個 Promise）。
+ * 呼叫端已經讀到設定時以 preference 傳入，不再讀取。
  * 直接使用 browser.storage，不在模組載入時定義 storage 項目：頁面橋接腳本（MAIN world）也會間接載入本模組，
  * 那裡沒有擴充功能的 API。
  */
-export function initI18n(): Promise<void> {
+export function initI18n(...preference: [unknown?]): Promise<void> {
   ready ??= (async () => {
     try {
-      const stored = await browser.storage.sync.get(STORAGE_KEY);
-      setLocale(resolveLocale(stored[STORAGE_KEY]));
+      setLocale(resolveLocale(preference.length ? preference[0] : (await browser.storage.sync.get(STORAGE_KEY))[STORAGE_KEY]));
       browser.storage.onChanged.addListener((changes, area) => {
         if (area === 'sync' && STORAGE_KEY in changes) setLocale(resolveLocale(changes[STORAGE_KEY]!.newValue));
       });

@@ -1,6 +1,7 @@
 // 「會被記住的開關」型功能的共用骨架（003 FR-1）：讀取設定、切換時寫回設定，
 // 並在啟用、停用、換頁時呼叫功能本身的處理。
 import type { WxtStorageItem } from 'wxt/utils/storage';
+import { readSettings } from '@/utils/settings';
 import { createStore, type Store, type ToggleState, type ViewingFeature } from './store';
 
 export interface SettingFeatureHooks {
@@ -31,7 +32,7 @@ export function createSettingFeature(item: WxtStorageItem<boolean, Record<string
     start() {
       if (running) return;
       running = true;
-      void item.getValue().then((value) => {
+      void readSettings([item] as const).then(([value]) => {
         if (running) set(value);
       });
     },
