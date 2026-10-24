@@ -166,7 +166,7 @@ function QualityList({ videoId, pageTitle }: { videoId: string; pageTitle: strin
                   </span>
                   <span class="ytm-quality-badge">{row.badge && <span class="ytm-badge">{row.badge}</span>}</span>
                   <span class="ytm-quality-size">{formatSize(size, approx, t('sizeApprox'))}</span>
-                  {row.limited && <span class="ytm-quality-note">{t('qualityLimited')}</span>}
+                  {row.limited && <span class="ytm-quality-note">{t('qualityLimited', row.limitedCodec ?? 'AV1')}</span>}
                 </button>
               </li>
             );

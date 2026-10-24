@@ -29,8 +29,10 @@ export interface QualityRow {
   approx: boolean;
   /** 是否為 HDR 影像。 */
   hdr: boolean;
-  /** MP4 但影像不是 H.264（AV1 或 VP9）：部分播放器可能無法播放（002 FR-13）。 */
+  /** MP4 但影像不是 H.264（AV1 或 VP9）：部分播放器不支援（002 FR-13）。 */
   limited: boolean;
+  /** limited 時的影像編碼，顯示在說明中。 */
+  limitedCodec?: 'AV1' | 'VP9';
 }
 
 const hasVideo = (f: HostFormat) => !!f.vcodec && f.vcodec !== 'none';
@@ -95,6 +97,7 @@ interface Candidate {
   merged: boolean;
   rate: number;
   limited: boolean;
+  limitedCodec?: 'AV1' | 'VP9';
 }
 
 const groupKey = (container: Container, height: number, fps: number, hdr: boolean) => `${container}-${height}-${fps > 30 ? 60 : 30}-${hdr ? 'hdr' : 'sdr'}`;
@@ -115,6 +118,7 @@ function mergedCandidate(f: HostFormat, a: HostFormat, container: Container, hei
     merged: true,
     rate: rate(f),
     limited,
+    ...(limited ? { limitedCodec: isAv1(f.vcodec) ? ('AV1' as const) : ('VP9' as const) } : {}),
   };
 }
 
@@ -182,6 +186,7 @@ export function buildQualityList(formats: readonly HostFormat[]): QualityRow[] {
       approx: c.approx,
       hdr: c.hdr,
       limited: c.limited,
+      ...(c.limitedCodec ? { limitedCodec: c.limitedCodec } : {}),
     }))
     .sort((a, b) => b.height - a.height || b.fps - a.fps || Number(a.hdr) - Number(b.hdr) || (a.container === b.container ? 0 : a.container === 'mp4' ? -1 : 1));
 }

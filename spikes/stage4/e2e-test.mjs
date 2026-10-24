@@ -205,7 +205,7 @@ await session('connected', async ({ page, context, home, downloads }) => {
   check('DRM 與故事板格式不列出（FR-11）', !rows.some((r) => r.format.includes('999') || r.format.includes('sb0')));
   check(
     'T18a：4K 沒有 H.264 時以 AV1＋M4A 合併成 MP4 列在主清單，標「4K」並加註可能無法播放（FR-13、Q43）',
-    rows[0]?.format === '401+140' && rows[0].badge === '4K' && rows[0].note === 'May not play in some players' && rows.slice(1).every((r) => r.note === ''),
+    rows[0]?.format === '401+140' && rows[0].badge === '4K' && rows[0].note === 'AV1: not supported by some players' && rows.slice(1).every((r) => r.note === ''),
     JSON.stringify(rows[0]),
   );
   await shot(page, 'T19-video-panel.png');
@@ -357,10 +357,10 @@ await session('connected', async ({ page, context, home, downloads }) => {
 
   // ---- T22 錯誤訊息（FR-6a）----
   const errorCases = [
-    ['login', 'LOGIN_REQUIRED', "This video needs you to sign in. That isn't supported yet.", { retry: false }],
+    ['login', 'LOGIN_REQUIRED', "This video requires signing in, which isn't supported.", { retry: false }],
     ['bot', 'VERIFICATION_REQUIRED', 'YouTube has changed. Please update yt-dlp.', { retry: true, update: true }],
     ['outdated', 'YTDLP_OUTDATED', 'YouTube has changed. Please update yt-dlp.', { retry: true, update: true }],
-    ['network', 'NETWORK', 'There was a network problem. Please try again.', { retry: true }],
+    ['network', 'NETWORK', 'Network problem. Try again.', { retry: true }],
     ['diskfull', 'DISK_FULL', "Couldn't write to the download folder.", { retry: true, settings: true }],
     ['format', 'FORMAT_UNAVAILABLE', 'This quality is no longer available. Try another one.', { retry: true }],
     ['unavailable', 'VIDEO_UNAVAILABLE', 'This video is unavailable.', { retry: false }],

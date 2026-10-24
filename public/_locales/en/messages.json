@@ -100,7 +100,7 @@
     "description": "Help panel: one-sentence description of the Video button."
   },
   "helpMp3": {
-    "message": "Download the audio as MP3. With one-click download on, it starts right away; you can still pick a bitrate or only part of it.",
+    "message": "Download the audio as MP3. With one-click download on, it starts right away.",
     "description": "Help panel: one-sentence description of the MP3 button."
   },
   "helpThumbnail": {
@@ -204,7 +204,7 @@
     "description": "Subtitle file format without timestamps."
   },
   "subtitlesDirectFailed": {
-    "message": "Couldn't download these subtitles directly from YouTube. Installing the helper program lets the extension use yt-dlp instead.",
+    "message": "Couldn't download these subtitles from YouTube directly. Install the helper to download them with yt-dlp.",
     "description": "Subtitles panel: error when the direct download fails."
   },
   "liveUnavailable": {
@@ -290,7 +290,7 @@
     }
   },
   "hostDenoHint": {
-    "message": "deno is not installed. yt-dlp may miss some YouTube formats without it. Run the install command again to add it:",
+    "message": "deno is not installed. Without it, yt-dlp can't get some YouTube formats. Run the install command again to add it:",
     "description": "Hint when only deno is missing."
   },
   "clipTitle": {
@@ -322,8 +322,14 @@
     "description": "Video panel: hides formats other than MP4."
   },
   "qualityLimited": {
-    "message": "May not play in some players",
-    "description": "Video panel: note under a 2K/4K/8K MP4 that uses AV1 or VP9 video instead of H.264."
+    "message": "$CODEC$: not supported by some players",
+    "description": "Video panel: note under a 2K/4K/8K MP4 that uses AV1 or VP9 video instead of H.264.",
+    "placeholders": {
+      "codec": {
+        "content": "$1",
+        "example": "AV1"
+      }
+    }
   },
   "sizeApprox": {
     "message": "~",
@@ -388,7 +394,7 @@
     "description": "Download error: yt-dlp is outdated or YouTube asked for verification."
   },
   "errLoginRequired": {
-    "message": "This video needs you to sign in. That isn't supported yet.",
+    "message": "This video requires signing in, which isn't supported.",
     "description": "Download error: login required."
   },
   "errVideoUnavailable": {
@@ -404,7 +410,7 @@
     "description": "Download error: no subtitles."
   },
   "errNetwork": {
-    "message": "There was a network problem. Please try again.",
+    "message": "Network problem. Try again.",
     "description": "Download error: network or timeout."
   },
   "errCannotWrite": {
@@ -528,7 +534,7 @@
     "description": "Settings page: embed switch."
   },
   "optionsEmbedDesc": {
-    "message": "Adds the thumbnail, title, channel, upload date, link and chapters to downloaded videos and MP3. Formats that can't hold a cover (such as WEBM) are still downloaded.",
+    "message": "Adds the thumbnail, title, channel, upload date, link and chapters to videos and MP3. WEBM can't hold a cover; it is downloaded without one.",
     "description": "Settings page: embed switch description."
   },
   "linkAtTime": {
@@ -556,7 +562,7 @@
     "description": "Help panel: one-sentence description of the Dark mode button."
   },
   "darkModeUnavailable": {
-    "message": "Can't switch. Please use YouTube's Appearance setting.",
+    "message": "Can't switch. Use YouTube's Appearance setting.",
     "description": "Dark mode button: shown briefly when YouTube's Appearance menu could not be found or used (spec 003 FR-15)."
   },
   "helpCinema": {
@@ -686,7 +692,7 @@
     "description": "Settings page: heading of the toolbar section."
   },
   "optionsToolbarDesc": {
-    "message": "Choose which tools appear on the toolbar under the video, and their order. Tools before the divider are aligned left, the others right. “More” and “Close” always stay at the right end, and hidden tools are available from the “More” menu. You can also edit the toolbar on YouTube: “More” → “Edit toolbar”.",
+    "message": "Choose which tools appear on the toolbar and in what order. Tools above the divider are on the left, the rest on the right. “More” and “Close” are always at the right end; hidden tools are in the “More” menu. On YouTube: “More” → “Edit toolbar”.",
     "description": "Settings page: toolbar section description."
   },
   "optionsToolbarTools": {
@@ -742,7 +748,7 @@
     "description": "Interface language option: Chinese browsers use Traditional Chinese, others English."
   },
   "optionsLanguageNote": {
-    "message": "The extension's name and description on the browser's extensions page, and the tooltip of the extension's icon, are shown by the browser and always follow the browser language.",
+    "message": "The extension's name, description and icon tooltip are shown by the browser in the browser's language.",
     "description": "Settings page: note under the interface language dropdown (007 FR-5)."
   },
   "optionsAppearance": {
@@ -774,7 +780,7 @@
     "description": "Settings page: heading of the page tidy section."
   },
   "optionsTidyDesc": {
-    "message": "Changes to YouTube pages that stay on until you turn them off. They take effect right away in open YouTube tabs, even when the toolbar is closed.",
+    "message": "Applies to open YouTube tabs right away, also when the toolbar is closed.",
     "description": "Settings page: one-line explanation under the page tidy heading."
   },
   "optionsDownloadsTitle": {
@@ -944,7 +950,7 @@
     "description": "More panel: autoplay switch."
   },
   "moreAutoplayDesc": {
-    "message": "The same setting as YouTube's own autoplay switch.",
+    "message": "Same as YouTube's autoplay switch.",
     "description": "More panel: autoplay description."
   },
   "moreAutoplayMissing": {
@@ -956,7 +962,7 @@
     "description": "More panel: audio-only switch."
   },
   "moreAudioOnlyDesc": {
-    "message": "Shows the thumbnail instead of the picture. It only hides the video and does not save bandwidth.",
+    "message": "Shows the thumbnail instead of the picture. The video still streams, so it doesn't save data.",
     "description": "More panel: audio-only description."
   },
   "moreWheelVolume": {
@@ -996,7 +1002,7 @@
     "description": "Accessible label of the volume indicator shown over the player."
   },
   "darkModeUnavailableHint": {
-    "message": "Couldn't find YouTube's Appearance option. If you use an extension that changes the theme (for example, an ambient light extension), set its theme to follow YouTube.",
+    "message": "Couldn't find YouTube's Appearance option. If another extension changes YouTube's theme, set it to follow YouTube.",
     "description": "Dark mode button: shown for about 6 seconds when YouTube's Appearance menu or option could not be found or used, e.g. because another extension controls the theme (spec 003 FR-15)."
   },
   "updateReminderTitle": {
@@ -1054,7 +1060,7 @@
     "description": "Shown when the latest version has never been checked."
   },
   "aboutCheckFailed": {
-    "message": "$TIME$ (couldn't reach GitHub; will try again later)",
+    "message": "$TIME$ (couldn't reach GitHub)",
     "description": "Last check time when the check failed.",
     "placeholders": {
       "time": {
@@ -1078,7 +1084,7 @@
     }
   },
   "aboutAutoUpdated": {
-    "message": "This installation is updated automatically by the browser, so the extension doesn't check for new versions itself.",
+    "message": "The browser updates this installation; the extension doesn't check for new versions.",
     "description": "About section note for signed Firefox installs (008 FR-26)."
   },
   "aboutCheckNote": {
@@ -1094,7 +1100,7 @@
     "description": "About section button (008 FR-29)."
   },
   "installIntro": {
-    "message": "Downloading videos and MP3 needs yt-dlp (the open-source tool that downloads videos), ffmpeg (joins video and audio, converts to MP3) and deno (a runtime yt-dlp needs) on your computer, plus this project's helper (lets the browser use them). About 150 MB in total, installed only for your user account, and you can remove it at any time.",
+    "message": "Downloading videos and MP3 needs this project's helper plus yt-dlp (downloads videos), ffmpeg (joins video and audio, converts to MP3) and deno (a runtime yt-dlp needs). About 150 MB on macOS and 300 MB on Windows, installed only for your user account. You can remove it at any time.",
     "description": "Install guide introduction (008 FR-1)."
   },
   "hostStatusNotInstalled": {
@@ -1134,7 +1140,7 @@
     "description": "Install step 3."
   },
   "installAutoDetect": {
-    "message": "This panel switches to downloads automatically once the installation finishes.",
+    "message": "This panel updates by itself when the installation finishes.",
     "description": "Shown under the install steps; the panel checks every few seconds (008 FR-1)."
   },
   "installWhatTitle": {
@@ -1170,15 +1176,15 @@
     "description": "Install guide note (008 FR-12, FR-13, FR-15)."
   },
   "installReview": {
-    "message": "Want to read the script first? Download it, open it, then run it:",
+    "message": "To read the script first, download it, open it, then run it:",
     "description": "Install guide: how to review the script before running it (008 FR-1)."
   },
   "errJobsRunning": {
-    "message": "Some downloads are still running. Wait for them to finish or cancel them, then try again.",
+    "message": "Downloads are still running. Wait for them to finish or cancel them, then try again.",
     "description": "Error JOBS_RUNNING (plan 4.9)."
   },
   "errVerifyFailed": {
-    "message": "A downloaded update didn't pass verification, so it wasn't used. The current version is kept.",
+    "message": "A downloaded update failed verification and wasn't installed. The current version is kept.",
     "description": "Errors MANIFEST_INVALID and CHECKSUM_MISMATCH (plan 4.9, 008 SR-2)."
   },
   "jobUpdatingYtDlp": {
@@ -1288,7 +1294,7 @@
     "description": "Shown when an update command fails."
   },
   "updatesFailures": {
-    "message": "Automatic updates failed $COUNT$ times in a row. Running the install command again usually fixes this.",
+    "message": "Automatic updates failed $COUNT$ times in a row. Run the install command again to repair the installation.",
     "description": "Shown after 3+ consecutive failures (008 FR-25).",
     "placeholders": {
       "count": {
@@ -1302,7 +1308,7 @@
     "description": "Re-enables the dismissed update failure hint (constitution 7c)."
   },
   "updatesUnsupported": {
-    "message": "This version of the helper doesn't update automatically. Run the install command again to get the latest helper.",
+    "message": "This helper version doesn't update automatically. Run the install command again to get the latest helper.",
     "description": "Shown when status has no update information (older helper)."
   },
   "uninstallTitle": {
@@ -1310,7 +1316,7 @@
     "description": "Options group heading (008 FR-30)."
   },
   "uninstallDesc": {
-    "message": "Deletes the helper, the yt-dlp, ffmpeg and deno it installed, its log files, and its registration with the browsers. Videos you downloaded are not affected. Tools you installed yourself (for example with Homebrew) are left alone.",
+    "message": "Deletes the helper, the yt-dlp, ffmpeg and deno it installed, its log files and its browser registration. Downloaded videos and tools you installed yourself (for example with Homebrew) are not affected.",
     "description": "Uninstall description (008 FR-30)."
   },
   "uninstallButton": {
@@ -1322,7 +1328,7 @@
     "description": "Confirmation dialog title."
   },
   "uninstallDialogDesc": {
-    "message": "The helper, yt-dlp, ffmpeg, deno and the log files will be deleted. Videos you downloaded stay where they are. You can install again at any time with the install command.",
+    "message": "The helper, yt-dlp, ffmpeg, deno and the log files will be deleted. Downloaded videos stay where they are. You can install again with the install command.",
     "description": "Confirmation dialog text."
   },
   "uninstallCancel": {
@@ -1338,7 +1344,7 @@
     "description": "Status while removing."
   },
   "uninstallDone": {
-    "message": "Downloads were removed. Videos you downloaded are still in their folder.",
+    "message": "Downloads were removed. Downloaded videos are still in their folder.",
     "description": "Status after removing."
   },
   "uninstallFailed": {
@@ -1418,7 +1424,7 @@
     "description": "Settings page: one-click download switch."
   },
   "optionsQuickDownloadDesc": {
-    "message": "Clicking Video or MP3 on the toolbar starts downloading right away with the defaults below; MP3 uses the bitrate you chose last. Turn off to choose every time.",
+    "message": "Clicking Video or MP3 starts the download right away with the defaults below (MP3 uses the bitrate you chose last). When off, you choose each time.",
     "description": "Settings page: one-click download switch description."
   },
   "optionsDefaultHeight": {
@@ -1438,7 +1444,7 @@
     "description": "Settings page: default format option MP4."
   },
   "optionsContainerAny": {
-    "message": "Any format (best quality may be WEBM)",
+    "message": "Any format (WEBM when it has a higher quality)",
     "description": "Settings page: default format option any."
   },
   "optionsDefaultMark": {
@@ -1510,7 +1516,7 @@
     "description": "Notification title when a right-click download needs the helper."
   },
   "notifyNeedHelperBody": {
-    "message": "Click here to open the install guide in Settings.",
+    "message": "Click to open the install guide in Settings.",
     "description": "Notification text when a right-click download needs the helper."
   },
   "optionsContextMenu": {
@@ -1518,7 +1524,7 @@
     "description": "Settings page: right-click menu switch."
   },
   "optionsContextMenuDesc": {
-    "message": "Right-click a video on YouTube (home page, search results, recommendations, playlists) to download it with the defaults above without opening it.",
+    "message": "Right-click a video link on YouTube (home page, search results, recommendations, playlists) to download it with the defaults above.",
     "description": "Settings page: right-click menu switch description."
   },
   "jobsOtherVideos": {

@@ -87,6 +87,10 @@ describe('buildQualityList（002 FR-10 至 FR-13、plan 3.8）', () => {
     expect(byKey['mp4 2160p']).toMatchObject({ formatId: '401+140', limited: true, size: 367_000_000 + 3_970_000, approx: false, badge: '4K' });
     // 1440p 只有 VP9
     expect(byKey['mp4 1440p']).toMatchObject({ formatId: '271+140', limited: true, badge: '2K' });
+    // 說明中標明編碼（constitution 第 8a 點：「AV1：部分播放器不支援」）
+    expect(byKey['mp4 2160p']!.limitedCodec).toBe('AV1');
+    expect(byKey['mp4 1440p']!.limitedCodec).toBe('VP9');
+    expect(byKey['mp4 1080p']!.limitedCodec).toBeUndefined();
     // 1080p 有 H.264，不另外產生
     expect(rows.filter((r) => r.container === 'mp4' && r.height === 1080).map((r) => r.formatId)).toEqual(['299+140', '137+140']);
   });

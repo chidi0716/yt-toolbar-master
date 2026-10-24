@@ -96,11 +96,11 @@
     "description": "Button that retries loading panel content."
   },
   "helpVideo": {
-    "message": "下載這部影片；開啟一鍵下載時，直接以預設畫質開始下載。",
+    "message": "下載這部影片；開啟一鍵下載時，直接以預設畫質開始。",
     "description": "Help panel: one-sentence description of the Video button."
   },
   "helpMp3": {
-    "message": "把聲音下載成 MP3；開啟一鍵下載時直接開始，也可以改選位元率或只下載其中一段。",
+    "message": "把聲音下載成 MP3；開啟一鍵下載時直接開始。",
     "description": "Help panel: one-sentence description of the MP3 button."
   },
   "helpThumbnail": {
@@ -204,7 +204,7 @@
     "description": "Subtitle file format without timestamps."
   },
   "subtitlesDirectFailed": {
-    "message": "無法直接從 YouTube 下載這個字幕。安裝橋接程式後，可以改用 yt-dlp 下載。",
+    "message": "無法直接從 YouTube 下載這個字幕。安裝小幫手後可以改用 yt-dlp 下載。",
     "description": "Subtitles panel: error when the direct download fails."
   },
   "liveUnavailable": {
@@ -290,7 +290,7 @@
     }
   },
   "hostDenoHint": {
-    "message": "尚未安裝 deno。沒有 deno 時，yt-dlp 可能取得不到部分 YouTube 格式。再執行一次安裝指令即可補上：",
+    "message": "尚未安裝 deno，沒有它 yt-dlp 取得不到部分 YouTube 格式。再執行一次安裝指令即可補上：",
     "description": "Hint when only deno is missing."
   },
   "clipTitle": {
@@ -322,8 +322,14 @@
     "description": "Video panel: hides formats other than MP4."
   },
   "qualityLimited": {
-    "message": "部分播放器可能無法播放",
-    "description": "Video panel: note under a 2K/4K/8K MP4 that uses AV1 or VP9 video instead of H.264."
+    "message": "$CODEC$：部分播放器不支援",
+    "description": "Video panel: note under a 2K/4K/8K MP4 that uses AV1 or VP9 video instead of H.264.",
+    "placeholders": {
+      "codec": {
+        "content": "$1",
+        "example": "AV1"
+      }
+    }
   },
   "sizeApprox": {
     "message": "約 ",
@@ -388,7 +394,7 @@
     "description": "Download error: yt-dlp is outdated or YouTube asked for verification."
   },
   "errLoginRequired": {
-    "message": "這部影片需要登入才能觀看，目前不支援。",
+    "message": "這部影片需要登入，目前不支援。",
     "description": "Download error: login required."
   },
   "errVideoUnavailable": {
@@ -528,7 +534,7 @@
     "description": "Settings page: embed switch."
   },
   "optionsEmbedDesc": {
-    "message": "在下載的影片與 MP3 中加入縮圖、標題、頻道、上傳日期、網址與章節。無法嵌入封面的格式（例如 WEBM）仍會正常下載。",
+    "message": "在影片與 MP3 中加入縮圖、標題、頻道、上傳日期、網址與章節。WEBM 不支援封面，下載時不加封面。",
     "description": "Settings page: embed switch description."
   },
   "linkAtTime": {
@@ -556,7 +562,7 @@
     "description": "Help panel: one-sentence description of the Dark mode button."
   },
   "darkModeUnavailable": {
-    "message": "無法切換，請使用 YouTube 的外觀設定",
+    "message": "無法切換，請使用 YouTube 的外觀設定。",
     "description": "Dark mode button: shown briefly when YouTube's Appearance menu could not be found or used (spec 003 FR-15)."
   },
   "helpCinema": {
@@ -686,7 +692,7 @@
     "description": "Settings page: heading of the toolbar section."
   },
   "optionsToolbarDesc": {
-    "message": "選擇影片下方工具列要顯示哪些工具與順序。分隔點之前的工具靠左，其餘靠右；「更多」與「關閉」固定在最右邊，隱藏的工具可以從「更多」選單使用。也可以在 YouTube 上編輯：「更多」→「編輯工具列」。",
+    "message": "選擇工具列要顯示哪些工具與順序。分隔點之前的工具靠左，其餘靠右；「更多」與「關閉」固定在最右邊，隱藏的工具在「更多」選單中。在 YouTube 上：「更多」→「編輯工具列」。",
     "description": "Settings page: toolbar section description."
   },
   "optionsToolbarTools": {
@@ -742,7 +748,7 @@
     "description": "Interface language option: Chinese browsers use Traditional Chinese, others English."
   },
   "optionsLanguageNote": {
-    "message": "擴充功能在瀏覽器擴充功能管理頁中的名稱與說明，以及擴充功能圖示的滑鼠提示由瀏覽器顯示，一律跟隨瀏覽器語言。",
+    "message": "擴充功能的名稱、說明與圖示提示由瀏覽器顯示，一律使用瀏覽器的語言。",
     "description": "Settings page: note under the interface language dropdown (007 FR-5)."
   },
   "optionsAppearance": {
@@ -774,7 +780,7 @@
     "description": "Settings page: heading of the page tidy section."
   },
   "optionsTidyDesc": {
-    "message": "設定一次就一直生效的 YouTube 頁面調整。開關後已開啟的 YouTube 分頁立即生效，工具列關閉時也照常作用。",
+    "message": "開關後立即套用到已開啟的 YouTube 分頁，工具列關閉時也有效。",
     "description": "Settings page: one-line explanation under the page tidy heading."
   },
   "optionsDownloadsTitle": {
@@ -944,7 +950,7 @@
     "description": "More panel: autoplay switch."
   },
   "moreAutoplayDesc": {
-    "message": "與 YouTube 播放器上的自動播放開關同步。",
+    "message": "與 YouTube 播放器上的自動播放開關相同。",
     "description": "More panel: autoplay description."
   },
   "moreAutoplayMissing": {
@@ -956,7 +962,7 @@
     "description": "More panel: audio-only switch."
   },
   "moreAudioOnlyDesc": {
-    "message": "以縮圖取代影片畫面。只隱藏畫面，不保證節省頻寬。",
+    "message": "以縮圖取代影片畫面。影片仍在傳輸，不會節省流量。",
     "description": "More panel: audio-only description."
   },
   "moreWheelVolume": {
@@ -996,7 +1002,7 @@
     "description": "Accessible label of the volume indicator shown over the player."
   },
   "darkModeUnavailableHint": {
-    "message": "找不到 YouTube 的外觀選項。若安裝了會改變主題的擴充功能（例如氛圍光），請將其主題設定改為跟隨 YouTube。",
+    "message": "找不到 YouTube 的外觀選項。若有其他擴充功能會改變 YouTube 的主題，請把它設為跟隨 YouTube。",
     "description": "Dark mode button: shown for about 6 seconds when YouTube's Appearance menu or option could not be found or used, e.g. because another extension controls the theme (spec 003 FR-15)."
   },
   "updateReminderTitle": {
@@ -1054,7 +1060,7 @@
     "description": "Shown when the latest version has never been checked."
   },
   "aboutCheckFailed": {
-    "message": "$TIME$（無法連到 GitHub，之後會再試）",
+    "message": "$TIME$（無法連到 GitHub）",
     "description": "Last check time when the check failed.",
     "placeholders": {
       "time": {
@@ -1078,7 +1084,7 @@
     }
   },
   "aboutAutoUpdated": {
-    "message": "這個安裝方式由瀏覽器自動更新，擴充功能不會自己查詢新版本。",
+    "message": "這個安裝方式由瀏覽器更新，擴充功能不另外查詢新版本。",
     "description": "About section note for signed Firefox installs (008 FR-26)."
   },
   "aboutCheckNote": {
@@ -1094,7 +1100,7 @@
     "description": "About section button (008 FR-29)."
   },
   "installIntro": {
-    "message": "下載影片與 MP3 需要在你的電腦上安裝 yt-dlp（下載影片的開源工具）、ffmpeg（合併影音與轉 MP3）與 deno（yt-dlp 需要的執行環境），以及本專案的小幫手（讓瀏覽器能使用它們）。全部約 150 MB，只裝在你的帳號下，可以隨時移除。",
+    "message": "下載影片與 MP3 需要本專案的小幫手，以及 yt-dlp（下載影片）、ffmpeg（合併影音、轉 MP3）與 deno（yt-dlp 需要的執行環境）。macOS 約 150 MB、Windows 約 300 MB，只裝在你的帳號下，可以隨時移除。",
     "description": "Install guide introduction (008 FR-1)."
   },
   "hostStatusNotInstalled": {
@@ -1134,7 +1140,7 @@
     "description": "Install step 3."
   },
   "installAutoDetect": {
-    "message": "安裝完成後，這裡會自動切換成可以下載的畫面。",
+    "message": "安裝完成後，這裡會自動更新。",
     "description": "Shown under the install steps; the panel checks every few seconds (008 FR-1)."
   },
   "installWhatTitle": {
@@ -1170,7 +1176,7 @@
     "description": "Install guide note (008 FR-12, FR-13, FR-15)."
   },
   "installReview": {
-    "message": "想先檢視腳本內容：先下載、開啟檢視，再執行：",
+    "message": "想先檢視腳本：先下載、開啟檢視，再執行：",
     "description": "Install guide: how to review the script before running it (008 FR-1)."
   },
   "errJobsRunning": {
@@ -1178,7 +1184,7 @@
     "description": "Error JOBS_RUNNING (plan 4.9)."
   },
   "errVerifyFailed": {
-    "message": "下載的更新沒有通過驗證，所以沒有使用，已保留目前的版本。",
+    "message": "下載的更新沒有通過驗證，沒有安裝，已保留目前的版本。",
     "description": "Errors MANIFEST_INVALID and CHECKSUM_MISMATCH (plan 4.9, 008 SR-2)."
   },
   "jobUpdatingYtDlp": {
@@ -1288,7 +1294,7 @@
     "description": "Shown when an update command fails."
   },
   "updatesFailures": {
-    "message": "自動更新已連續失敗 $COUNT$ 次。通常再執行一次安裝指令即可解決。",
+    "message": "自動更新已連續失敗 $COUNT$ 次。再執行一次安裝指令可以修復安裝。",
     "description": "Shown after 3+ consecutive failures (008 FR-25).",
     "placeholders": {
       "count": {
@@ -1302,7 +1308,7 @@
     "description": "Re-enables the dismissed update failure hint (constitution 7c)."
   },
   "updatesUnsupported": {
-    "message": "目前的小幫手版本不會自動更新。再執行一次安裝指令即可換成最新的小幫手。",
+    "message": "這個版本的小幫手不會自動更新。再執行一次安裝指令即可換成最新版本。",
     "description": "Shown when status has no update information (older helper)."
   },
   "uninstallTitle": {
@@ -1310,7 +1316,7 @@
     "description": "Options group heading (008 FR-30)."
   },
   "uninstallDesc": {
-    "message": "刪除小幫手、由它安裝的 yt-dlp、ffmpeg、deno 與記錄檔，以及瀏覽器中的註冊。已下載的影片不受影響，你自己安裝的工具（例如 Homebrew 裝的）也不會被刪除。",
+    "message": "刪除小幫手、由它安裝的 yt-dlp、ffmpeg、deno、記錄檔與瀏覽器中的註冊。已下載的影片與你自己安裝的工具（例如 Homebrew 裝的）不受影響。",
     "description": "Uninstall description (008 FR-30)."
   },
   "uninstallButton": {
@@ -1322,7 +1328,7 @@
     "description": "Confirmation dialog title."
   },
   "uninstallDialogDesc": {
-    "message": "將刪除小幫手、yt-dlp、ffmpeg、deno 與記錄檔。已下載的影片會留在原本的位置。之後可以隨時用安裝指令重新安裝。",
+    "message": "將刪除小幫手、yt-dlp、ffmpeg、deno 與記錄檔。已下載的影片會留在原本的位置。之後可以用安裝指令重新安裝。",
     "description": "Confirmation dialog text."
   },
   "uninstallCancel": {
@@ -1418,7 +1424,7 @@
     "description": "Settings page: one-click download switch."
   },
   "optionsQuickDownloadDesc": {
-    "message": "點工具列的「影片」或「MP3」就以下方的預設值直接開始下載；MP3 使用上次選擇的位元率。關閉時每次都先選再下載。",
+    "message": "點「影片」或「MP3」就以下方的預設值直接開始下載（MP3 使用上次選擇的位元率）；關閉時每次先選再下載。",
     "description": "Settings page: one-click download switch description."
   },
   "optionsDefaultHeight": {
@@ -1438,7 +1444,7 @@
     "description": "Settings page: default format option MP4."
   },
   "optionsContainerAny": {
-    "message": "不限格式（最高畫質可能是 WEBM）",
+    "message": "不限格式（WEBM 畫質較高時用 WEBM）",
     "description": "Settings page: default format option any."
   },
   "optionsDefaultMark": {
@@ -1518,7 +1524,7 @@
     "description": "Settings page: right-click menu switch."
   },
   "optionsContextMenuDesc": {
-    "message": "在 YouTube 的影片連結（首頁、搜尋結果、推薦、播放清單）按右鍵，就能以上方的預設值下載，不用點進影片。",
+    "message": "在 YouTube 的影片連結（首頁、搜尋結果、推薦、播放清單）按右鍵，以上方的預設值下載。",
     "description": "Settings page: right-click menu switch description."
   },
   "jobsOtherVideos": {
