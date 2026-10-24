@@ -238,7 +238,7 @@ host/                           橋接程式（Go），見第 4 節
 - **設定**（`sync:`）：`quickDownload`（預設 true）、`defaultVideoHeight`（預設 1080）、`defaultVideoContainer`（預設 `mp4`）、`downloadContextMenu`（預設 true）。MP3 位元率沿用既有設定。
 - **一鍵流程**：背景腳本新增 `quickDownload({videoId, kind, source: 'toolbar'|'contextMenu'})`：取得影片資訊（共用 3.8 的快取）→ 檢查是否可下載（009 FR-6）→ 選格式 → 呼叫既有的 `download`。重複下載判斷依工作清單中「同影片＋同種類且狀態為進行中」。
 - **「改用其他畫質」**：送 `cancel` 後在同一個面板切換成完整清單。
-- **安裝後接著下載**：記住的意圖存在內容腳本記憶體（`{videoId, kind, at}`），不寫入儲存；面板偵測到小幫手後檢查影片 ID 一致且未超過 30 分鐘。
+- **安裝完成後**：面板偵測到小幫手後顯示「開始下載」按鈕（009 FR-11），不自動開始。
 - **右鍵選單**：背景腳本以 `contextMenus.create` 建立父選單與兩個子項目：
   - `contexts: ['link']`、`documentUrlPatterns: ['*://*.youtube.com/*']`、`targetUrlPatterns`：`*://*.youtube.com/watch*`、`*://*.youtube.com/shorts/*`、`*://youtu.be/*`；
   - 點擊時從 `linkUrl` 取出影片 ID（以既有的 ID 驗證規則），無效時不動作；
