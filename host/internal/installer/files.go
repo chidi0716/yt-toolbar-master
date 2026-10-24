@@ -45,7 +45,7 @@ func NewStaging(parent string) (*Staging, error) {
 	return &Staging{Dir: dir}, nil
 }
 
-// Close 刪除暫存資料夾。
+// close 刪除暫存資料夾。
 func (s *Staging) Close() { os.RemoveAll(s.Dir) }
 
 // Fetch 下載 url 到暫存資料夾並核對 SHA256；不符時刪除檔案並回傳 CHECKSUM_MISMATCH。
@@ -138,55 +138,90 @@ func extractOne(zf *zip.File, dest string) error {
 
 // InstallFiles 下載 files、核對 SHA256、解壓，全部成功後才把執行檔放進 binDir
 // （先放在暫存資料夾，最後逐一改名）。回傳安裝的執行檔路徑。任何一步失敗時 binDir 不變。
-func InstallFiles(ctx context.Context, f *release.Fetcher, files []release.File, binDir, goos string, report func(url string)) ([]string, error) {
+func InstallFiles(ctx context.Context, f *release.Fetcher, files []release.File, binDir, goos string) ([]string, error) {
+	p, err := prepareFiles(ctx, f, files, binDir, goos, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer p.close()
+	return p.commit()
+}
+
+// stagedFiles 是已下載、核對、解壓並設定執行權限，放在 binDir 中暫存資料夾的執行檔。
+type stagedFiles struct {
+	st           *Staging
+	out          string
+	names        []string
+	binDir, goos string
+}
+
+// prepareFiles 是 InstallFiles 放進 binDir 之前的步驟；binDir 不變。每個檔案下載、核對、解壓後
+// 呼叫 fileReady（可為 nil）。用完後必須呼叫 close。
+func prepareFiles(ctx context.Context, f *release.Fetcher, files []release.File, binDir, goos string, fileReady func()) (*stagedFiles, error) {
 	st, err := NewStaging(binDir)
 	if err != nil {
 		return nil, classify(err)
 	}
-	defer st.Close()
-	out := filepath.Join(st.Dir, "out")
-	if err := os.Mkdir(out, 0o755); err != nil {
-		return nil, classify(err)
+	p := &stagedFiles{st: st, out: filepath.Join(st.Dir, "out"), binDir: binDir, goos: goos}
+	if err := p.prepare(ctx, f, files, fileReady); err != nil {
+		st.Close()
+		return nil, err
 	}
-	var produced []string
+	return p, nil
+}
+
+func (p *stagedFiles) prepare(ctx context.Context, f *release.Fetcher, files []release.File, fileReady func()) error {
+	if err := os.Mkdir(p.out, 0o755); err != nil {
+		return classify(err)
+	}
 	for _, file := range files {
-		if report != nil {
-			report(file.URL)
-		}
-		p, err := st.Fetch(ctx, f, file.URL, file.SHA256)
+		dl, err := p.st.Fetch(ctx, f, file.URL, file.SHA256)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		switch file.Archive {
 		case "":
-			if err := os.Rename(p, filepath.Join(out, file.Name)); err != nil {
-				return nil, classify(err)
+			if err := os.Rename(dl, filepath.Join(p.out, file.Name)); err != nil {
+				return classify(err)
 			}
 		case "zip":
-			if err := ExtractZip(p, out, file.Extract); err != nil {
-				return nil, err
+			if err := ExtractZip(dl, p.out, file.Extract); err != nil {
+				return err
 			}
-			os.Remove(p)
+			os.Remove(dl)
 		default:
-			return nil, errs.New(errs.Unknown, "unsupported archive %q", file.Archive)
+			return errs.New(errs.Unknown, "unsupported archive %q", file.Archive)
 		}
-		produced = append(produced, file.Produces()...)
+		p.names = append(p.names, file.Produces()...)
+		if fileReady != nil {
+			fileReady()
+		}
 	}
-	var installed []string
-	for _, name := range produced {
-		src := filepath.Join(out, name)
+	for _, name := range p.names {
+		src := filepath.Join(p.out, name)
 		if err := os.Chmod(src, 0o755); err != nil {
-			return nil, classify(err)
+			return classify(err)
 		}
-		clearQuarantine(goos, src)
-		dest := filepath.Join(binDir, name)
-		if err := ReplaceFile(src, dest, goos); err != nil {
+		clearQuarantine(p.goos, src)
+	}
+	return nil
+}
+
+// commit 把執行檔逐一改名放進 binDir，回傳安裝的路徑。
+func (p *stagedFiles) commit() ([]string, error) {
+	var installed []string
+	for _, name := range p.names {
+		dest := filepath.Join(p.binDir, name)
+		if err := ReplaceFile(filepath.Join(p.out, name), dest, p.goos); err != nil {
 			return nil, classify(err)
 		}
 		installed = append(installed, dest)
 	}
 	return installed, nil
 }
+
+// close 刪除暫存資料夾。
+func (p *stagedFiles) close() { p.st.Close() }
 
 // ReplaceFile 以 src 取代 dest。Windows 無法覆蓋執行中的檔案，但可以改名，
 // 所以先把 dest 改名為 dest.old（plan 4.9），再放入新檔；.old 由 CleanupOld 在之後刪除。

@@ -7,7 +7,7 @@
 //     （參數從狀態資料夾讀取並再驗證一次），讓瀏覽器關閉後下載仍能完成（plan 4.6）；
 //   - --install [--manifest <components.json>] | --install --offline：
 //     一行指令的安裝（plan 4.9）或手動安裝（只註冊小幫手）；
-//   - --uninstall [--delay <秒>]：移除下載功能（008 FR-30）；
+//   - --uninstall [--wait-pid <PID>]：移除下載功能（008 FR-30），有 --wait-pid 時等該程序結束後才刪除；
 //   - --update：自動更新（plan 4.9，由 download 或 checkUpdates 以脫離的方式啟動）；
 //   - --version。
 package main

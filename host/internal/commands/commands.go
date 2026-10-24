@@ -50,21 +50,9 @@ type jobIDArgs struct {
 	JobID *string `json:"jobId"`
 }
 
-func decodeArgs(raw json.RawMessage, v any) error {
-	dec := json.NewDecoder(bytesReader(raw))
-	dec.DisallowUnknownFields()
-	if err := dec.Decode(v); err != nil {
-		return errs.New(errs.InvalidArgs, "args: %v", err)
-	}
-	if dec.More() {
-		return errs.New(errs.InvalidArgs, "args: trailing data")
-	}
-	return nil
-}
-
 func jobIDFrom(raw json.RawMessage) (string, error) {
 	var a jobIDArgs
-	if err := decodeArgs(raw, &a); err != nil {
+	if err := validate.DecodeStrict(raw, &a); err != nil {
 		return "", err
 	}
 	if a.JobID == nil {
@@ -76,17 +64,22 @@ func jobIDFrom(raw json.RawMessage) (string, error) {
 	return *a.JobID, nil
 }
 
-// handlers 是全部的指令；不在這裡的指令一律回 UNKNOWN_COMMAND。
-var handlers = map[string]handler{
-	"status": func(ctx context.Context, b Backend, args json.RawMessage) (any, error) {
+// noArgs 是不接受參數的指令。
+func noArgs(f func(Backend, context.Context) (any, error)) handler {
+	return func(ctx context.Context, b Backend, args json.RawMessage) (any, error) {
 		if err := validate.NoArgs(args); err != nil {
 			return nil, err
 		}
-		return b.Status(ctx)
-	},
+		return f(b, ctx)
+	}
+}
+
+// handlers 是全部的指令；不在這裡的指令一律回 UNKNOWN_COMMAND。
+var handlers = map[string]handler{
+	"status": noArgs(Backend.Status),
 	"getInfo": func(ctx context.Context, b Backend, args json.RawMessage) (any, error) {
 		var a videoIDArgs
-		if err := decodeArgs(args, &a); err != nil {
+		if err := validate.DecodeStrict(args, &a); err != nil {
 			return nil, err
 		}
 		if a.VideoID == nil {
@@ -116,12 +109,7 @@ var handlers = map[string]handler{
 		}
 		return b.Cancel(ctx, id)
 	},
-	"jobs": func(ctx context.Context, b Backend, args json.RawMessage) (any, error) {
-		if err := validate.NoArgs(args); err != nil {
-			return nil, err
-		}
-		return b.Jobs(ctx)
-	},
+	"jobs": noArgs(Backend.Jobs),
 	"reveal": func(ctx context.Context, b Backend, args json.RawMessage) (any, error) {
 		id, err := jobIDFrom(args)
 		if err != nil {
@@ -129,21 +117,11 @@ var handlers = map[string]handler{
 		}
 		return b.Reveal(ctx, id)
 	},
-	"pickFolder": func(ctx context.Context, b Backend, args json.RawMessage) (any, error) {
-		if err := validate.NoArgs(args); err != nil {
-			return nil, err
-		}
-		return b.PickFolder(ctx)
-	},
-	"updateYtDlp": func(ctx context.Context, b Backend, args json.RawMessage) (any, error) {
-		if err := validate.NoArgs(args); err != nil {
-			return nil, err
-		}
-		return b.UpdateYtDlp(ctx)
-	},
+	"pickFolder":  noArgs(Backend.PickFolder),
+	"updateYtDlp": noArgs(Backend.UpdateYtDlp),
 	"setAutoUpdate": func(ctx context.Context, b Backend, args json.RawMessage) (any, error) {
 		var a enabledArgs
-		if err := decodeArgs(args, &a); err != nil {
+		if err := validate.DecodeStrict(args, &a); err != nil {
 			return nil, err
 		}
 		if a.Enabled == nil {
@@ -151,18 +129,8 @@ var handlers = map[string]handler{
 		}
 		return b.SetAutoUpdate(ctx, *a.Enabled)
 	},
-	"checkUpdates": func(ctx context.Context, b Backend, args json.RawMessage) (any, error) {
-		if err := validate.NoArgs(args); err != nil {
-			return nil, err
-		}
-		return b.CheckUpdates(ctx)
-	},
-	"uninstall": func(ctx context.Context, b Backend, args json.RawMessage) (any, error) {
-		if err := validate.NoArgs(args); err != nil {
-			return nil, err
-		}
-		return b.Uninstall(ctx)
-	},
+	"checkUpdates": noArgs(Backend.CheckUpdates),
+	"uninstall":    noArgs(Backend.Uninstall),
 }
 
 // Names 回傳全部指令名稱（排序過）。

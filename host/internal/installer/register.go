@@ -47,12 +47,7 @@ func Register(l platform.Layout) ([]string, error) {
 		if err := os.MkdirAll(filepath.Dir(loc.Path), 0o755); err != nil {
 			return done, err
 		}
-		tmp := loc.Path + ".new-" + randomSuffix()
-		if err := os.WriteFile(tmp, content, 0o644); err != nil {
-			return done, err
-		}
-		if err := os.Rename(tmp, loc.Path); err != nil {
-			os.Remove(tmp)
+		if err := platform.WriteFileAtomic(loc.Path, content, 0o644); err != nil {
 			return done, err
 		}
 		done = append(done, loc.Path)

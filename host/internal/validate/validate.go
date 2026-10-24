@@ -110,8 +110,8 @@ func invalid(field, format string, a ...any) *errs.Error {
 	return errs.New(errs.InvalidArgs, "%s: %s", field, fmt.Sprintf(format, a...))
 }
 
-// decodeStrict 把 JSON 物件解到 v，不認得的欄位或多餘資料都算錯。
-func decodeStrict(raw json.RawMessage, v any) error {
+// DecodeStrict 把 JSON 物件解到 v，不認得的欄位或多餘資料都算錯。
+func DecodeStrict(raw json.RawMessage, v any) error {
 	if len(raw) == 0 {
 		raw = json.RawMessage("{}")
 	}
@@ -130,7 +130,7 @@ func decodeStrict(raw json.RawMessage, v any) error {
 // NoArgs 檢查不需要參數的指令：args 必須省略或是空物件。
 func NoArgs(raw json.RawMessage) error {
 	var v struct{}
-	return decodeStrict(raw, &v)
+	return DecodeStrict(raw, &v)
 }
 
 // VideoID 檢查影片 ID。
@@ -359,7 +359,7 @@ type downloadJSON struct {
 // 下載資料夾是否存在、可寫入由 Dir 另外檢查。
 func DownloadArgs(raw json.RawMessage) (*Download, error) {
 	var a downloadJSON
-	if err := decodeStrict(raw, &a); err != nil {
+	if err := DecodeStrict(raw, &a); err != nil {
 		return nil, err
 	}
 	d := &Download{NamePreset: DefaultNamePreset, Embed: true}

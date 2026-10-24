@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/chidi0716/yt-toolbar-master/host/internal/app"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/installer"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/jobs"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
@@ -20,6 +21,9 @@ import (
 
 // UninstallRetry 是移除安裝資料夾時重試的時間（Windows 上剛結束的小幫手會暫時鎖住檔案）。
 const UninstallRetry = 2 * time.Minute
+
+// UninstallWait 是 --wait-pid 等待的上限：瀏覽器一直沒有關閉連線時，時間到仍然移除。
+const UninstallWait = time.Minute
 
 // selfPath 回傳目前執行中的小幫手路徑（解析符號連結）。
 func selfPath() string {
@@ -113,28 +117,28 @@ func readSmall(p string) ([]byte, error) {
 	return release.ReadAllLimited(f, release.MaxSmallFile)
 }
 
-// runUninstall 實作 --uninstall [--delay <秒>]。
+// runUninstall 實作 --uninstall [--wait-pid <PID>]。
 //
 // Windows 無法刪除執行中的檔案，所以從安裝資料夾執行時，先把自己複製到暫存資料夾，
 // 以脫離的方式啟動複本來刪除，自己立即結束（暫存資料夾中的複本由系統清理）。
 func runUninstall(args []string) int {
-	delay := 0
+	waitPID := 0
 	switch {
 	case len(args) == 0:
-	case len(args) == 2 && args[0] == "--delay":
+	case len(args) == 2 && args[0] == app.WaitPIDFlag:
 		n, err := strconv.Atoi(args[1])
-		if err != nil || n < 0 || n > 60 {
-			fmt.Fprintln(os.Stderr, "--delay must be 0-60 seconds")
+		if err != nil || n <= 0 {
+			fmt.Fprintln(os.Stderr, "--wait-pid must be a process ID")
 			return 2
 		}
-		delay = n
+		waitPID = n
 	default:
-		fmt.Fprintln(os.Stderr, "usage: ytm-host --uninstall [--delay <seconds>]")
+		fmt.Fprintln(os.Stderr, "usage: ytm-host --uninstall [--wait-pid <PID>]")
 		return 2
 	}
 	l := platform.CurrentLayout()
 	if runtime.GOOS == "windows" && insideDir(selfPath(), l.InstallDir) {
-		pid, err := spawnUninstallCopy(delay)
+		pid, err := spawnUninstallCopy(waitPID)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "could not start the uninstaller: %v\n", err)
 			return 1
@@ -142,7 +146,7 @@ func runUninstall(args []string) int {
 		fmt.Printf("正在背景移除下載功能（程序 %d）/ Removing the download helper in the background (process %d)\n", pid, pid)
 		return 0
 	}
-	time.Sleep(time.Duration(delay) * time.Second)
+	waitForExit(waitPID, UninstallWait)
 	if err := installer.Uninstall(l, os.Stdout, UninstallRetry); err != nil {
 		fmt.Fprintf(os.Stdout, "失敗 / Failed: %v\n", err)
 		fmt.Fprintln(os.Stdout, "請關閉 Chrome 與 Firefox 後再執行一次。/ Close Chrome and Firefox, then run it again.")
@@ -151,8 +155,16 @@ func runUninstall(args []string) int {
 	return 0
 }
 
+// waitForExit 等 PID 的程序結束，最長 max；pid 為 0 時不等。
+func waitForExit(pid int, max time.Duration) {
+	deadline := time.Now().Add(max)
+	for pid > 0 && jobs.ProcessAlive(pid) && time.Now().Before(deadline) {
+		time.Sleep(100 * time.Millisecond)
+	}
+}
+
 // spawnUninstallCopy 把自己複製到系統暫存資料夾並以脫離的方式執行 --uninstall。
-func spawnUninstallCopy(delay int) (int, error) {
+func spawnUninstallCopy(waitPID int) (int, error) {
 	src := selfPath()
 	dest := filepath.Join(os.TempDir(), fmt.Sprintf("ytm-uninstall-%d.exe", time.Now().UnixNano()))
 	in, err := os.ReadFile(src)
@@ -162,7 +174,11 @@ func spawnUninstallCopy(delay int) (int, error) {
 	if err := os.WriteFile(dest, in, 0o755); err != nil {
 		return 0, err
 	}
-	return jobs.SpawnDetached(dest, "--uninstall", "--delay", strconv.Itoa(delay))
+	args := []string{app.UninstallFlag}
+	if waitPID > 0 {
+		args = append(args, app.WaitPIDFlag, strconv.Itoa(waitPID))
+	}
+	return jobs.SpawnDetached(dest, args...)
 }
 
 // insideDir 回傳 p 是否在 dir 之中（Windows 不分大小寫）。

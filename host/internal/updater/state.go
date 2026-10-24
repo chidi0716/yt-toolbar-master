@@ -7,11 +7,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/chidi0716/yt-toolbar-master/host/internal/jobs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
 )
 
 // 檔案名稱（都在安裝資料夾中）。
@@ -59,23 +58,10 @@ func Load(dir string) *State {
 
 // Save 以「寫暫存檔再改名」的方式寫入。
 func (s *State) Save(dir string) error {
-	b, err := json.MarshalIndent(s, "", "  ")
-	if err != nil {
-		return err
-	}
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
-	p := filepath.Join(dir, StateFileName)
-	tmp := fmt.Sprintf("%s.tmp-%d", p, os.Getpid())
-	if err := os.WriteFile(tmp, append(b, '\n'), 0o644); err != nil {
-		return err
-	}
-	if err := os.Rename(tmp, p); err != nil {
-		os.Remove(tmp)
-		return err
-	}
-	return nil
+	return platform.WriteJSONAtomic(filepath.Join(dir, StateFileName), s, 0o644)
 }
 
 // ShouldCheck 回傳開始下載時是否該啟動自動更新：自動更新開啟，且從沒檢查過或距上次檢查
@@ -122,22 +108,9 @@ func SetAuto(dir string, enabled bool) error {
 	return s.Save(dir)
 }
 
-// lockPID 讀取鎖檔中的 PID；沒有鎖檔時回傳 0。
-func lockPID(dir string) int {
-	b, err := os.ReadFile(filepath.Join(dir, LockFileName))
-	if err != nil {
-		return 0
-	}
-	pid, err := strconv.Atoi(strings.TrimSpace(string(b)))
-	if err != nil || pid <= 0 {
-		return -1 // 內容錯誤的鎖檔視為已失效
-	}
-	return pid
-}
-
 // Running 回傳是否有 --update 正在執行（鎖檔存在且其中的程序還在）。
 func Running(dir string) bool {
-	pid := lockPID(dir)
+	pid := jobs.LockHolder(filepath.Join(dir, LockFileName))
 	return pid > 0 && jobs.ProcessAlive(pid)
 }
 
@@ -149,21 +122,9 @@ func Lock(dir string) (unlock func(), err error) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, err
 	}
-	p := filepath.Join(dir, LockFileName)
-	for attempt := 0; attempt < 2; attempt++ {
-		f, err := os.OpenFile(p, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
-		if err == nil {
-			fmt.Fprintf(f, "%d\n", os.Getpid())
-			f.Close()
-			return func() { os.Remove(p) }, nil
-		}
-		if !os.IsExist(err) {
-			return nil, err
-		}
-		if pid := lockPID(dir); pid > 0 && jobs.ProcessAlive(pid) {
-			return nil, ErrLocked
-		}
-		os.Remove(p)
+	unlock, err = jobs.LockFile(filepath.Join(dir, LockFileName), true)
+	if os.IsExist(err) {
+		return nil, ErrLocked
 	}
-	return nil, ErrLocked
+	return unlock, err
 }

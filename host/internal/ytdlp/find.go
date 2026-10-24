@@ -32,10 +32,7 @@ func SystemEnv() Env {
 		Getenv:     os.Getenv,
 		LookPath:   exec.LookPath,
 		Glob:       filepath.Glob,
-		IsFile: func(p string) bool {
-			st, err := os.Stat(p)
-			return err == nil && st.Mode().IsRegular()
-		},
+		IsFile:     platform.IsFile,
 	}
 }
 

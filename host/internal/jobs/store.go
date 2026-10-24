@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
 )
 
@@ -112,7 +113,7 @@ func (s *Store) Create(spec *Spec) (*Status, error) {
 	if err := os.Mkdir(s.JobDir(spec.JobID), 0o700); err != nil {
 		return nil, err
 	}
-	if err := writeJSON(s.file(spec.JobID, "spec.json"), spec); err != nil {
+	if err := platform.WriteJSONAtomic(s.file(spec.JobID, "spec.json"), spec, 0o600); err != nil {
 		return nil, err
 	}
 	st := &Status{
@@ -164,7 +165,20 @@ func (s *Store) ReadStatus(id string) (*Status, error) {
 
 // WriteStatus 以「寫暫存檔再改名」的方式更新狀態，讀取端不會讀到寫一半的檔案。
 func (s *Store) WriteStatus(st *Status) error {
-	return writeJSON(s.file(st.JobID, "status.json"), &statusFile{Status: *st, Client: st.Client, RunnerPID: st.RunnerPID})
+	b, err := json.Marshal(&statusFile{Status: *st, Client: st.Client, RunnerPID: st.RunnerPID})
+	if err != nil {
+		return err
+	}
+	return platform.WriteFileAtomic(s.file(st.JobID, "status.json"), b, 0o600)
+}
+
+// modTime 回傳工作資料夾的修改時間（新增或刪除工作時改變）；不存在時為零值。
+func (s *Store) modTime() time.Time {
+	st, err := os.Stat(s.Dir)
+	if err != nil {
+		return time.Time{}
+	}
+	return st.ModTime()
 }
 
 // List 回傳全部工作的 ID（依建立時間排序前先以 ID 排序；呼叫端再依狀態排序）。
@@ -210,14 +224,11 @@ func (s *Store) Delivered(id string) bool { return s.exists(id, "delivered") }
 
 // Lock 取得執行鎖；已被其他程序持有時回傳錯誤。
 func (s *Store) Lock(id string) (unlock func(), err error) {
-	p := s.file(id, "runner.lock")
-	f, err := os.OpenFile(p, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600)
+	unlock, err = LockFile(s.file(id, "runner.lock"), false)
 	if err != nil {
 		return nil, fmt.Errorf("job %s is already running: %w", id, err)
 	}
-	fmt.Fprintf(f, "%d\n", os.Getpid())
-	f.Close()
-	return func() { os.Remove(p) }, nil
+	return unlock, nil
 }
 
 // Remove 刪除工作的資料夾。
@@ -229,21 +240,29 @@ func (s *Store) Remove(id string) error {
 }
 
 // Prune 刪除過舊的已結束工作：超過 maxAge，或每個呼叫者超過 maxKeep 筆時刪除最舊的；
-// 沒有狀態檔、建立超過一天的資料夾也一併刪除。
-func (s *Store) Prune(now time.Time, maxAge time.Duration, maxKeep int) {
+// 沒有狀態檔、建立超過一天的資料夾也一併刪除。回傳留下的工作 ID 與其中讀得到的狀態。
+func (s *Store) Prune(now time.Time, maxAge time.Duration, maxKeep int) ([]string, map[string]*Status) {
 	type item struct {
 		id string
 		t  time.Time
 	}
+	ids := s.List()
+	statuses := map[string]*Status{}
+	removed := map[string]bool{}
+	remove := func(id string) {
+		s.Remove(id)
+		removed[id] = true
+	}
 	perClient := map[string][]item{}
-	for _, id := range s.List() {
+	for _, id := range ids {
 		st, err := s.ReadStatus(id)
 		if err != nil {
 			if info, e := os.Stat(s.JobDir(id)); e == nil && now.Sub(info.ModTime()) > 24*time.Hour {
-				s.Remove(id)
+				remove(id)
 			}
 			continue
 		}
+		statuses[id] = st
 		if !Final(st.State) {
 			continue
 		}
@@ -252,7 +271,7 @@ func (s *Store) Prune(now time.Time, maxAge time.Duration, maxKeep int) {
 			t = *st.FinishedAt
 		}
 		if now.Sub(t) > maxAge {
-			s.Remove(id)
+			remove(id)
 			continue
 		}
 		perClient[st.Client] = append(perClient[st.Client], item{id, t})
@@ -263,9 +282,18 @@ func (s *Store) Prune(now time.Time, maxAge time.Duration, maxKeep int) {
 		}
 		sort.Slice(items, func(i, j int) bool { return items[i].t.After(items[j].t) })
 		for _, it := range items[maxKeep:] {
-			s.Remove(it.id)
+			remove(it.id)
 		}
 	}
+	kept := ids[:0:0]
+	for _, id := range ids {
+		if removed[id] {
+			delete(statuses, id)
+		} else {
+			kept = append(kept, id)
+		}
+	}
+	return kept, statuses
 }
 
 func readJSON(path string, v any) error {
@@ -274,27 +302,4 @@ func readJSON(path string, v any) error {
 		return err
 	}
 	return json.Unmarshal(b, v)
-}
-
-func writeJSON(path string, v any) error {
-	b, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		return err
-	}
-	tmp := fmt.Sprintf("%s.%d.tmp", path, os.Getpid())
-	if err := os.WriteFile(tmp, b, 0o600); err != nil {
-		return err
-	}
-	// Windows 上目標檔案正被讀取時改名會暫時失敗，稍等再試。
-	for i := 0; ; i++ {
-		err = os.Rename(tmp, path)
-		if err == nil || i >= 20 {
-			break
-		}
-		time.Sleep(25 * time.Millisecond)
-	}
-	if err != nil {
-		os.Remove(tmp)
-	}
-	return err
 }

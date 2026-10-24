@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/logx"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
 )
 
@@ -63,6 +64,9 @@ type Manager struct {
 	watched map[string]*watch
 	started map[string]bool // 由這個程序建立的工作
 	wake    chan struct{}
+	// listed 是 Init 讀到的工作 ID；工作資料夾的修改時間仍是 listedAt 時，第一次 List 沿用。
+	listed   []string
+	listedAt time.Time
 }
 
 type watch struct {
@@ -76,7 +80,7 @@ func (m *Manager) init() {
 		m.wake = make(chan struct{}, 1)
 	}
 	if m.Log == nil {
-		m.Log = nopLogger{}
+		m.Log = logx.Nop{}
 	}
 	if m.Now == nil {
 		m.Now = time.Now
@@ -89,13 +93,16 @@ func (m *Manager) Init() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.init()
-	m.Store.Prune(m.Now(), KeepFinished, KeepFinishedMax)
-	for _, id := range m.Store.List() {
-		st, err := m.Store.ReadStatus(id)
-		if err != nil || st.Client != m.Client || Final(st.State) {
-			continue
+	before := m.Store.modTime()
+	ids, statuses := m.Store.Prune(m.Now(), KeepFinished, KeepFinishedMax)
+	for id, st := range statuses {
+		if st.Client == m.Client && !Final(st.State) {
+			m.watched[id] = &watch{}
 		}
-		m.watched[id] = &watch{}
+	}
+	// Prune 刪除了工作，或其他程序同時建立了工作：不沿用。
+	if !before.IsZero() && before.Equal(m.Store.modTime()) {
+		m.listed, m.listedAt = ids, before
 	}
 }
 
@@ -150,19 +157,23 @@ func (m *Manager) poke() {
 	}
 }
 
-// Run 定期讀取追蹤中工作的狀態並推送事件，直到 ctx 結束。
+// Run 定期讀取追蹤中工作的狀態並推送事件，直到 ctx 結束。沒有追蹤中的工作時只等 Start 喚醒。
 func (m *Manager) Run(ctx context.Context) {
 	m.mu.Lock()
 	m.init()
 	m.mu.Unlock()
-	t := time.NewTicker(PollEvery)
-	defer t.Stop()
 	for {
 		m.Poll()
+		m.mu.Lock()
+		var tick <-chan time.Time
+		if len(m.watched) > 0 {
+			tick = time.After(PollEvery)
+		}
+		m.mu.Unlock()
 		select {
 		case <-ctx.Done():
 			return
-		case <-t.C:
+		case <-tick:
 		case <-m.wake:
 		}
 	}
@@ -330,8 +341,15 @@ type JobView struct {
 
 // List 回傳這個瀏覽器的工作：進行中的在前，其餘依建立時間由新到舊。
 func (m *Manager) List() []JobView {
+	m.mu.Lock()
+	ids, at := m.listed, m.listedAt
+	m.listed, m.listedAt = nil, time.Time{}
+	m.mu.Unlock()
+	if at.IsZero() || !at.Equal(m.Store.modTime()) {
+		ids = m.Store.List()
+	}
 	var out []JobView
-	for _, id := range m.Store.List() {
+	for _, id := range ids {
 		st, err := m.Store.ReadStatus(id)
 		if err != nil || st.Client != m.Client {
 			continue

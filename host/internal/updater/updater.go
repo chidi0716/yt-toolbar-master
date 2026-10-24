@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"io"
-	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/installer"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/logx"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/release"
 )
@@ -24,10 +24,6 @@ const (
 type Logger interface {
 	Printf(format string, a ...any)
 }
-
-type nopLogger struct{}
-
-func (nopLogger) Printf(string, ...any) {}
 
 // Updater 是一次 ytm-host --update。
 type Updater struct {
@@ -55,7 +51,7 @@ func (u *Updater) defaults() {
 		u.Now = time.Now
 	}
 	if u.Log == nil {
-		u.Log = nopLogger{}
+		u.Log = logx.Nop{}
 	}
 	if u.PollEvery == 0 {
 		u.PollEvery = PollEvery
@@ -92,11 +88,6 @@ func (u *Updater) waitForIdle(ctx context.Context) error {
 		}
 	}
 	return nil
-}
-
-func exists(p string) bool {
-	st, err := os.Stat(p)
-	return err == nil && st.Mode().IsRegular()
 }
 
 // Run 執行一次更新並寫入狀態檔；回傳結果（ok、updated、failed）。
@@ -157,7 +148,7 @@ func (u *Updater) run(ctx context.Context) ([]string, error) {
 
 	// 3. yt-dlp：只更新安裝資料夾中的（套件管理工具安裝的不動，008 FR-15）。
 	yt := filepath.Join(u.Layout.BinDir, release.ExeName("yt-dlp", u.Platform))
-	if exists(yt) && u.UpdateYtDlp != nil {
+	if platform.IsFile(yt) && u.UpdateYtDlp != nil {
 		ok, err := u.UpdateYtDlp(ctx, yt)
 		if err != nil {
 			fail(err)
@@ -172,10 +163,10 @@ func (u *Updater) run(ctx context.Context) ([]string, error) {
 		t := m.Tools[tool]
 		version := t.VersionFor(u.Platform)
 		bins := release.Binaries(tool, u.Platform)
-		if !exists(filepath.Join(u.Layout.BinDir, bins[0])) || state.Tools[tool] == version {
+		if !platform.IsFile(filepath.Join(u.Layout.BinDir, bins[0])) || state.Tools[tool] == version {
 			continue
 		}
-		if _, err := installer.InstallFiles(ctx, u.Fetcher, t.Platforms[u.Platform].Files, u.Layout.BinDir, u.Layout.GOOS, nil); err != nil {
+		if _, err := installer.InstallFiles(ctx, u.Fetcher, t.Platforms[u.Platform].Files, u.Layout.BinDir, u.Layout.GOOS); err != nil {
 			fail(err)
 			continue
 		}

@@ -50,11 +50,16 @@ type fakeServer struct {
 	files map[string][]byte
 	fail  map[string]bool
 	hits  map[string]int
+	// before 在處理每個請求之前呼叫（可為 nil）。
+	before func(path string)
 }
 
 func newFakeServer(t *testing.T) *fakeServer {
 	fs := &fakeServer{files: map[string][]byte{}, fail: map[string]bool{}, hits: map[string]int{}}
 	fs.Server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if fs.before != nil {
+			fs.before(r.URL.Path)
+		}
 		fs.mu.Lock()
 		defer fs.mu.Unlock()
 		fs.hits[r.URL.Path]++
@@ -266,6 +271,59 @@ func TestInstallFreshAndRepeat(t *testing.T) {
 	if readFile(t, filepath.Join(bin, "deno")) != "deno-2.9.9" || e.srv.hit("/yt-dlp_macos") != 1 || e.srv.hit("/ffmpeg.zip") != 1 {
 		t.Errorf("deno update: deno=%q yt-dlp hits=%d ffmpeg hits=%d", readFile(t, filepath.Join(bin, "deno")), e.srv.hit("/yt-dlp_macos"), e.srv.hit("/ffmpeg.zip"))
 	}
+}
+
+// TestInstallDownloadsToolsTogether 確認 yt-dlp、deno、ffmpeg 同時下載，安裝與輸出仍依步驟順序。
+func TestInstallDownloadsToolsTogether(t *testing.T) {
+	e := newEnv(t)
+	others := make(chan string, 10)
+	e.srv.before = func(p string) {
+		switch p {
+		case "/deno.zip", "/ffmpeg.zip":
+			others <- p
+		case "/yt-dlp_macos":
+			// yt-dlp 的下載等到 deno 與 ffmpeg 也開始下載才回應。
+			seen := map[string]bool{}
+			timeout := time.After(10 * time.Second)
+			for len(seen) < 2 {
+				select {
+				case p := <-others:
+					seen[p] = true
+				case <-timeout:
+					t.Error("deno and ffmpeg did not start downloading while yt-dlp was downloading")
+					return
+				}
+			}
+		}
+	}
+	if err := e.install(e.installer(), e.m); err != nil {
+		t.Fatalf("install: %v\n%s", err, e.out)
+	}
+	out := e.out.String()
+	pos := 0
+	for _, s := range []string{"[1/5]", e.url("/helper"), "[2/5]", e.url("/yt-dlp_macos"), "Installed 2026.10.21", "[3/5]", e.url("/deno.zip"), "Installed 2.9.8",
+		"[4/5]", e.url("/ffmpeg.zip"), e.url("/ffprobe.zip"), "Installed 9.0.2", "[5/5]", "Done!"} {
+		i := strings.Index(out[pos:], s)
+		if i < 0 {
+			t.Fatalf("output does not contain %q after position %d:\n%s", s, pos, out)
+		}
+		pos += i + len(s)
+	}
+	noStaging(t, e.layout.BinDir)
+}
+
+// TestInstallFailureOutput 確認某個檔案下載失敗時，不會印出同一個工具下一個檔案的來源。
+func TestInstallFailureOutput(t *testing.T) {
+	e := newEnv(t)
+	e.srv.setFail("/ffmpeg.zip", true)
+	if err := e.install(e.installer(), e.m); code(err) != errs.Network {
+		t.Fatalf("got %v, want NETWORK", err)
+	}
+	out := e.out.String()
+	if !strings.Contains(out, e.url("/ffmpeg.zip")) || strings.Contains(out, e.url("/ffprobe.zip")) || !strings.Contains(out, "Installed 2.9.8") {
+		t.Errorf("output:\n%s", out)
+	}
+	noStaging(t, e.layout.BinDir)
 }
 
 func TestInstallUsesSelfWhenItMatches(t *testing.T) {

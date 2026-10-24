@@ -60,6 +60,11 @@ func (l *Logger) Sanitize(s string) string {
 	}, s)
 }
 
+// Nop 不寫任何東西（記錄檔介面的預設值）。
+type Nop struct{}
+
+func (Nop) Printf(string, ...any) {}
+
 // Printf 寫入一行記錄。寫入失敗時安靜地放棄。
 func (l *Logger) Printf(format string, a ...any) {
 	if l == nil || l.path == "" {

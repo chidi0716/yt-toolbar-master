@@ -1,6 +1,33 @@
 package main
 
-import "testing"
+import (
+	"os"
+	"testing"
+	"time"
+)
+
+// TestUninstallArgs 確認 --uninstall 只接受 --wait-pid <PID>（不合法時不刪除任何東西）。
+func TestUninstallArgs(t *testing.T) {
+	for _, args := range [][]string{{"--wait-pid"}, {"--wait-pid", "x"}, {"--wait-pid", "0"}, {"--delay", "2"}, {"--wait-pid", "1", "2"}} {
+		if got := runUninstall(args); got != 2 {
+			t.Errorf("%v: exit %d", args, got)
+		}
+	}
+}
+
+func TestWaitForExit(t *testing.T) {
+	start := time.Now()
+	waitForExit(0, time.Minute)
+	waitForExit(999999999, time.Minute)
+	if time.Since(start) > time.Second {
+		t.Error("waited for a process that is not running")
+	}
+	start = time.Now()
+	waitForExit(os.Getpid(), 300*time.Millisecond)
+	if d := time.Since(start); d < 300*time.Millisecond || d > 5*time.Second {
+		t.Errorf("waited %s for a running process", d)
+	}
+}
 
 func TestIdentifyCaller(t *testing.T) {
 	cases := []struct {

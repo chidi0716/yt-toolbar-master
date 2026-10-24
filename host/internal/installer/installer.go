@@ -12,8 +12,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
-	"syscall"
 
 	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
@@ -113,21 +111,34 @@ func (in *Installer) Install(ctx context.Context, manifest []byte) error {
 	CleanupOld(in.Layout.InstallDir, in.Layout.BinDir)
 	state := LoadState(in.Layout.InstallDir)
 
+	// 三個工具同時下載與核對，安裝與輸出仍依步驟順序。
+	ctx, cancel := context.WithCancel(ctx)
+	ytDlp, deno, ffmpeg := in.planTool(m, release.ToolYtDlp, state), in.planTool(m, release.ToolDeno, state), in.planTool(m, release.ToolFFmpeg, state)
+	defer func() {
+		cancel()
+		for _, j := range []*toolJob{ytDlp, deno, ffmpeg} {
+			j.close()
+		}
+	}()
+	for _, j := range []*toolJob{ytDlp, deno, ffmpeg} {
+		in.startTool(ctx, j)
+	}
+
 	in.step(1, "小幫手（讓瀏覽器能使用下列工具）", "Helper (lets the browser use the tools below)")
 	if _, err := in.InstallHelper(ctx, m); err != nil {
 		return err
 	}
 
 	in.step(2, "yt-dlp（下載影片的開源工具）", "yt-dlp (open-source video downloader)")
-	if err := in.installTool(ctx, m, release.ToolYtDlp, state); err != nil {
+	if err := in.finishTool(ytDlp, state); err != nil {
 		return err
 	}
 	in.step(3, "deno（yt-dlp 需要的 JavaScript 執行環境）", "deno (JavaScript runtime that yt-dlp needs)")
-	if err := in.installTool(ctx, m, release.ToolDeno, state); err != nil {
+	if err := in.finishTool(deno, state); err != nil {
 		return err
 	}
 	in.step(4, "ffmpeg 與 ffprobe（合併影音、轉 MP3）", "ffmpeg and ffprobe (merge video and audio, convert to MP3)")
-	if err := in.installTool(ctx, m, release.ToolFFmpeg, state); err != nil {
+	if err := in.finishTool(ffmpeg, state); err != nil {
 		return err
 	}
 
@@ -202,46 +213,115 @@ func (in *Installer) bundledPaths(tool string) []string {
 
 func allExist(paths []string) bool {
 	for _, p := range paths {
-		if st, err := os.Stat(p); err != nil || !st.Mode().IsRegular() {
+		if !platform.IsFile(p) {
 			return false
 		}
 	}
 	return true
 }
 
-func (in *Installer) installTool(ctx context.Context, m *release.Manifest, tool string, state *State) error {
+// toolJob 是 Install 中的一個工具：planTool 決定是否略過，需要下載時 startTool 在背景下載、
+// 核對與解壓，finishTool 在它的步驟印出訊息並放進安裝資料夾。
+type toolJob struct {
+	tool, version string
+	skip          string   // 略過的原因：skipSelfUpdating、skipCurrent、skipSystem；空字串代表要下載
+	system        []string // skipSystem 時找到的 ffmpeg 與 ffprobe
+	files         []release.File
+
+	fileReady chan struct{} // 每個檔案下載並核對完成時送一次
+	done      chan struct{} // 背景工作結束後關閉，之後 staged、err 可讀
+	staged    *stagedFiles
+	err       error
+}
+
+const (
+	skipSelfUpdating = "self-updating"
+	skipCurrent      = "current"
+	skipSystem       = "system"
+)
+
+func (in *Installer) planTool(m *release.Manifest, tool string, state *State) *toolJob {
 	t := m.Tools[tool]
-	version := t.VersionFor(in.Platform)
-	bundled := in.bundledPaths(tool)
-	have := allExist(bundled)
+	j := &toolJob{tool: tool, version: t.VersionFor(in.Platform), files: t.Platforms[in.Platform].Files}
+	have := allExist(in.bundledPaths(tool))
 	switch {
 	case tool == release.ToolYtDlp && have:
 		// 已安裝的 yt-dlp 不覆蓋，之後由 yt-dlp -U 自己更新（plan 4.9）。
-		in.say("已安裝，略過（之後由 yt-dlp 自己更新）", "Already installed, skipped (yt-dlp updates itself)")
-		return nil
-	case have && state.Tools[tool] == version:
-		in.say("已是最新版本（"+version+"），略過", "Already up to date ("+version+"), skipped")
-		return nil
+		j.skip = skipSelfUpdating
+	case have && state.Tools[tool] == j.version:
+		j.skip = skipCurrent
 	case tool == release.ToolFFmpeg && !have && in.FindSystem != nil:
-		ff, fp := in.FindSystem("ffmpeg"), in.FindSystem("ffprobe")
-		if ff != "" && fp != "" {
-			in.say("這台電腦已經有 ffmpeg，沿用不另外下載", "ffmpeg is already on this computer; using it")
-			fmt.Fprintf(in.Out, "      %s\n      %s\n", ff, fp)
-			return nil
+		if ff, fp := in.FindSystem("ffmpeg"), in.FindSystem("ffprobe"); ff != "" && fp != "" {
+			j.skip, j.system = skipSystem, []string{ff, fp}
 		}
 	}
-	_, err := InstallFiles(ctx, in.Fetcher, t.Platforms[in.Platform].Files, in.Layout.BinDir, in.Layout.GOOS, func(u string) {
-		in.source(u)
+	return j
+}
+
+func (in *Installer) startTool(ctx context.Context, j *toolJob) {
+	if j.skip != "" {
+		return
+	}
+	j.fileReady, j.done = make(chan struct{}, len(j.files)), make(chan struct{})
+	go func() {
+		defer close(j.done)
+		j.staged, j.err = prepareFiles(ctx, in.Fetcher, j.files, in.Layout.BinDir, in.Layout.GOOS, func() { j.fileReady <- struct{}{} })
+	}()
+}
+
+// close 等背景工作結束並刪除暫存資料夾。
+func (j *toolJob) close() {
+	if j.done == nil {
+		return
+	}
+	<-j.done
+	if j.staged != nil {
+		j.staged.close()
+	}
+}
+
+func (in *Installer) finishTool(j *toolJob, state *State) error {
+	switch j.skip {
+	case skipSelfUpdating:
+		in.say("已安裝，略過（之後由 yt-dlp 自己更新）", "Already installed, skipped (yt-dlp updates itself)")
+		return nil
+	case skipCurrent:
+		in.say("已是最新版本（"+j.version+"），略過", "Already up to date ("+j.version+"), skipped")
+		return nil
+	case skipSystem:
+		in.say("這台電腦已經有 ffmpeg，沿用不另外下載", "ffmpeg is already on this computer; using it")
+		fmt.Fprintf(in.Out, "      %s\n      %s\n", j.system[0], j.system[1])
+		return nil
+	}
+	for _, file := range j.files {
+		in.source(file.URL)
 		in.say("下載中…", "Downloading…")
-	})
-	if err != nil {
+		// fileReady 一定比 done 先送出：先檢查 fileReady，失敗時才不會多印下一個檔案的來源。
+		select {
+		case <-j.fileReady:
+			continue
+		default:
+		}
+		select {
+		case <-j.fileReady:
+		case <-j.done:
+			if j.err != nil {
+				return j.err
+			}
+		}
+	}
+	<-j.done
+	if j.err != nil {
+		return j.err
+	}
+	if _, err := j.staged.commit(); err != nil {
 		return err
 	}
-	state.Tools[tool] = version
+	state.Tools[j.tool] = j.version
 	if err := state.Save(in.Layout.InstallDir); err != nil {
 		return classify(err)
 	}
-	in.say("已安裝 "+version+"（SHA256 相符）", "Installed "+version+" (SHA256 verified)")
+	in.say("已安裝 "+j.version+"（SHA256 相符）", "Installed "+j.version+" (SHA256 verified)")
 	return nil
 }
 
@@ -285,7 +365,7 @@ func (in *Installer) InstallOffline() error {
 		}
 		if p == "" {
 			for _, b := range []string{tool, tool + ".exe"} {
-				if allExist([]string{filepath.Join(in.Layout.BinDir, b)}) {
+				if platform.IsFile(filepath.Join(in.Layout.BinDir, b)) {
 					p = filepath.Join(in.Layout.BinDir, b)
 				}
 			}
@@ -332,12 +412,8 @@ func classify(err error) error {
 		return errs.New(errs.ChecksumMismatch, "%v", err)
 	case errors.As(err, &he), errors.As(err, &ne), errors.As(err, &ue), errors.Is(err, io.ErrUnexpectedEOF):
 		return errs.New(errs.Network, "%v", err)
-	case errors.Is(err, syscall.ENOSPC) || strings.Contains(strings.ToLower(err.Error()), "not enough space"):
-		return errs.New(errs.DiskFull, "%v", err)
-	case errors.Is(err, os.ErrPermission):
-		return errs.New(errs.PermissionDenied, "%v", err)
 	}
-	return errs.New(errs.Unknown, "%v", err)
+	return errs.FromFS(err)
 }
 
 // Explain 回傳給使用者看的中英文說明與解決方式（008 FR-14）。

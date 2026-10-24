@@ -82,6 +82,21 @@ func envWithPath(dir string) ytdlp.Env {
 	return e
 }
 
+// components 把 status 的元件依名稱整理成 map，並確認順序。
+func components(t *testing.T, s *StatusResult) map[string]Component {
+	t.Helper()
+	got := map[string]Component{}
+	var names []string
+	for _, c := range s.Components {
+		got[c.Name] = c
+		names = append(names, c.Name)
+	}
+	if strings.Join(names, ",") != "helper,yt-dlp,deno,ffmpeg,ffprobe" {
+		t.Fatalf("components: %v", names)
+	}
+	return got
+}
+
 func TestStatus(t *testing.T) {
 	a := &App{Version: "1.2.3", Env: envWithPath(testenv.FakeToolsDir(t, "ffmpeg", "deno"))}
 	v, err := a.Status(context.Background())
@@ -89,54 +104,55 @@ func TestStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := v.(*StatusResult)
-	if !s.Ready || !s.Complete || s.HostVersion != "1.2.3" || s.YtDlp.Version != "2026.10.21" ||
-		s.FFmpeg.Version != "7.1-fake" || s.Deno.Version != "2.1.4" || !s.Deno.Found {
+	c := components(t, s)
+	if !s.Ready || !s.Complete || s.HostVersion != "1.2.3" || c["yt-dlp"].Version != "2026.10.21" ||
+		c["ffmpeg"].Version != "7.1-fake" || c["deno"].Version != "2.1.4" || !c["deno"].Found {
 		t.Fatalf("%+v", s)
 	}
-	if len(s.Missing) != 0 || s.InstallCommand != "" || s.YtDlp.Error != "" || s.Deno.Error != "" {
-		t.Fatalf("nothing should be missing: %+v", s)
+	for _, name := range []string{"yt-dlp", "deno", "ffmpeg"} {
+		if c[name].Error != "" || c[name].Source != "path" {
+			t.Fatalf("%s: %+v", name, c[name])
+		}
 	}
 	if s.DefaultDir == "" || len(s.NamePresets) != 4 || s.NamePresets[0].ID != "title-id" {
 		t.Fatalf("%+v", s)
 	}
 
-	// deno 缺少時仍可下載（ready），但不完整，並列出缺少的元件。
+	// deno 缺少時仍可下載（ready），但不完整。
 	a.Env = envWithPath(testenv.FakeToolsDir(t, "ffmpeg"))
 	v, _ = a.Status(context.Background())
 	s = v.(*StatusResult)
-	if !s.Ready || s.Complete || s.Deno.Found || s.Deno.Error != "DENO_NOT_FOUND" || strings.Join(s.Missing, ",") != "deno" {
+	if c := components(t, s); !s.Ready || s.Complete || c["deno"].Found || c["deno"].Error != "" {
 		t.Fatalf("without deno: %+v", s)
 	}
 
 	a.Env = envWithPath(testenv.FakeToolsDir(t))
 	v, _ = a.Status(context.Background())
 	s = v.(*StatusResult)
-	if s.Ready || !s.YtDlp.Found || s.FFmpeg.Found || s.FFmpeg.Error != "FFMPEG_NOT_FOUND" || strings.Join(s.Missing, ",") != "ffmpeg,deno" {
+	if c := components(t, s); s.Ready || !c["yt-dlp"].Found || c["ffmpeg"].Found {
 		t.Fatalf("without ffmpeg: %+v", s)
 	}
 
 	a.Env = envWithPath(t.TempDir())
 	v, _ = a.Status(context.Background())
 	s = v.(*StatusResult)
-	if s.Ready || s.Complete || s.YtDlp.Found || s.FFmpeg.Found || s.YtDlp.Error != "YTDLP_NOT_FOUND" ||
-		strings.Join(s.Missing, ",") != "yt-dlp,ffmpeg,deno" {
+	if c := components(t, s); s.Ready || s.Complete || c["yt-dlp"].Found || c["ffmpeg"].Found {
 		t.Fatalf("nothing installed: %+v", s)
 	}
 }
 
-func TestInstallCommand(t *testing.T) {
-	all := []string{"yt-dlp", "ffmpeg", "deno"}
-	if got := InstallCommand("darwin", all); got != "brew install yt-dlp ffmpeg deno" {
-		t.Errorf("darwin: %s", got)
+// TestStatusToolError 確認找到但無法執行的工具：found 為 true，error 為錯誤代碼，ready 為 false。
+func TestStatusToolError(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("uses a shell script")
 	}
-	if got := InstallCommand("windows", all); got != "winget install yt-dlp.yt-dlp Gyan.FFmpeg DenoLand.Deno" {
-		t.Errorf("windows: %s", got)
-	}
-	if got := InstallCommand("windows", []string{"deno"}); got != "winget install DenoLand.Deno" {
-		t.Errorf("windows deno: %s", got)
-	}
-	if InstallCommand("darwin", nil) != "" || InstallCommand("linux", all) != "" {
-		t.Error("expected empty command")
+	dir := testenv.FakeToolsDir(t, "deno")
+	os.WriteFile(filepath.Join(dir, "ffmpeg"), []byte("#!/bin/sh\nexit 1\n"), 0o755)
+	a := &App{Version: "1.2.3", Env: envWithPath(dir)}
+	v, _ := a.Status(context.Background())
+	s := v.(*StatusResult)
+	if c := components(t, s)["ffmpeg"]; s.Ready || !c.Found || c.Error != "FFMPEG_NOT_FOUND" {
+		t.Fatalf("broken ffmpeg: %+v", s)
 	}
 }
 
