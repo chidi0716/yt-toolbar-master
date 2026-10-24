@@ -956,6 +956,17 @@ a.ytm-link {
   margin-top: 12px;
 }
 
+.ytm-other-jobs {
+  margin-top: 16px;
+}
+
+.ytm-other-jobs-title {
+  margin: 0;
+  color: var(--ytm-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
 .ytm-quick-installed {
   align-items: center;
   color: var(--ytm-text-primary);

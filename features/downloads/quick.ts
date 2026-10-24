@@ -51,6 +51,17 @@ export function quickSummary(job: Pick<JobRecord, 'label' | 'estimate'>): string
   return t('quickSummary', [job.label, formatSize(estimate.size, estimate.approx, t('sizeApprox'))]);
 }
 
+/** 右鍵選單的文字（009 FR-20、FR-26）：父選單是擴充功能名稱，子項目帶目前的預設值。 */
+export function contextMenuTitles(d: QuickDefaults): { parent: string; video: string; mp3: string } {
+  return { parent: t('extName'), video: t('menuDownloadVideo', videoSpecLabel(d.height, d.container)), mp3: t('menuDownloadMp3', String(d.bitrate)) };
+}
+
+/** 右鍵下載的「開始下載」通知（009 FR-23）：同一部影片、同一種只有一則，取得標題後以同一個 ID 更新。 */
+export const startNotificationId = (videoId: string, kind: QuickKind) => `ytm-start:${videoId}:${kind}`;
+
+/** 需要先安裝小幫手的錯誤（009 FR-24）。 */
+export const needsHelper = (code: HostErrorCode) => code === 'HOST_UNREACHABLE' || code === 'YTDLP_NOT_FOUND' || code === 'FFMPEG_NOT_FOUND';
+
 // ---------------------------------------------------------------------------
 // 選格式（009 FR-2、FR-3、FR-6）
 // ---------------------------------------------------------------------------

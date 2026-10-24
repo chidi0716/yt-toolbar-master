@@ -177,6 +177,14 @@ function renderPage(focusId?: string): () => void {
 
 await Promise.all([initI18n(), applyPageTheme()]);
 let dispose = renderPage();
+// 從通知打開時（例如 #downloads，009 FR-24）：內容繪製完成後捲到該區。
+if (location.hash) {
+  try {
+    document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView();
+  } catch {
+    // 不合法的位置：停在頁首。
+  }
+}
 onLocaleChange(() => {
   const focusedId = (document.activeElement as HTMLElement | null)?.id;
   dispose();

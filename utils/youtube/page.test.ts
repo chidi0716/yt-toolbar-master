@@ -1,5 +1,53 @@
 import { describe, expect, it } from 'vitest';
-import { getPageType, getShortsVideoId, getVideoId, isValidVideoId, isWatchPage, watchUrlForShorts } from './page';
+import { getPageType, getShortsVideoId, getVideoId, isValidVideoId, isWatchPage, videoIdFromLink, watchUrlForShorts } from './page';
+
+describe('videoIdFromLink（009 FR-21：右鍵下載的連結）', () => {
+  const ID = 'jNQXAC9IVRw';
+  it('指向單一影片的連結', () => {
+    for (const url of [
+      `https://www.youtube.com/watch?v=${ID}`,
+      `https://www.youtube.com/watch?v=${ID}&t=42s`,
+      `https://youtube.com/watch?v=${ID}`,
+      `https://m.youtube.com/watch?v=${ID}`,
+      `http://www.youtube.com/watch?v=${ID}`,
+      `https://youtu.be/${ID}`,
+      `https://youtu.be/${ID}?t=10`,
+      `https://www.youtube.com/shorts/${ID}`,
+      `https://www.youtube.com/shorts/${ID}/`,
+    ]) {
+      expect(videoIdFromLink(url), url).toBe(ID);
+    }
+  });
+
+  it('播放清單中的影片連結：只取影片本身', () => {
+    expect(videoIdFromLink(`https://www.youtube.com/watch?v=${ID}&list=PLabcdefghijkl&index=3`)).toBe(ID);
+    expect(videoIdFromLink(`https://youtu.be/${ID}?list=PLabcdefghijkl`)).toBe(ID);
+  });
+
+  it('頻道、播放清單本身、其他網站與不合法的連結：沒有影片 ID', () => {
+    for (const url of [
+      'https://www.youtube.com/playlist?list=PLabcdefghijkl',
+      'https://www.youtube.com/@jawed',
+      'https://www.youtube.com/channel/UC4QobU6STFB0P71PMvOGN5A',
+      'https://www.youtube.com/',
+      'https://www.youtube.com/results?search_query=zoo',
+      `https://www.youtube.com/embed/${ID}`,
+      `https://www.youtube.com/watch?v=${ID}x`,
+      'https://www.youtube.com/watch?v=../../etc',
+      `https://youtube.com.evil.example/watch?v=${ID}`,
+      `https://evilyoutube.com/watch?v=${ID}`,
+      `https://example.com/watch?v=${ID}`,
+      `https://youtu.be/${ID}/extra`,
+      `https://user@www.youtube.com/watch?v=${ID}`,
+      `javascript:alert(1)//www.youtube.com/watch?v=${ID}`,
+      `ftp://www.youtube.com/watch?v=${ID}`,
+      'not a url',
+      '',
+    ]) {
+      expect(videoIdFromLink(url), url).toBeNull();
+    }
+  });
+});
 
 describe('getPageType', () => {
   it.each([

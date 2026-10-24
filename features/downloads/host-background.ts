@@ -18,7 +18,7 @@ import {
 } from '@/utils/native-protocol';
 import { defaultVideoContainer, defaultVideoHeight, downloadDir, embedInfo, mp3Bitrate, namePreset } from '@/utils/settings';
 import { applyEvent, errorInfo, isActive, isFinal, markMissing, mergeHostJobs, newJob, pruneJobs, type DownloadRequest, type JobRecord } from './jobs';
-import { activeJobFor, planQuickDownload, toQuickDefaults, type QuickDefaults, type QuickKind } from './quick';
+import { activeJobFor, planQuickDownload, startNotificationId, toQuickDefaults, type QuickDefaults, type QuickKind } from './quick';
 
 const LOG_PREFIX = '[yt-toolbar-master]';
 const INFO_TTL_MS = 30 * 60_000;
@@ -140,7 +140,10 @@ async function syncJobs() {
 
 async function notifyFinished(jobId: string) {
   const job = jobs.find((j) => j.jobId === jobId);
-  if (!job || !isFinal(job.state) || job.state === 'cancelled' || notified.has(jobId)) return;
+  if (!job || !isFinal(job.state)) return;
+  // 右鍵下載的「開始下載」通知（009 FR-23）換成完成或失敗的通知。
+  if (job.kind === 'video' || job.kind === 'mp3') browser.notifications.clear(startNotificationId(job.videoId, job.kind)).catch(() => {});
+  if (job.state === 'cancelled' || notified.has(jobId)) return;
   notified.add(jobId);
   await notifiedItem.setValue([...notified].slice(-200));
   const done = job.state === 'done';
@@ -258,7 +261,7 @@ const quickPending = new Map<string, Promise<QuickResult>>();
 export function quickDownload(
   videoId: string,
   kind: QuickKind,
-  options: { source: QuickSource; title?: string; onInfo?: (title: string) => void },
+  options: { source: QuickSource; title?: string; onStart?: () => void; onInfo?: (title: string) => void },
 ): Promise<QuickResult> {
   const key = `${videoId}:${kind}`;
   const pending = quickPending.get(key);
@@ -269,6 +272,8 @@ export function quickDownload(
     if (running) return { status: 'running', jobId: running.jobId, title: running.title, label: running.label };
     const status = await getStatus(false);
     if (!status.ready) throw new HostRequestError(status.ytDlp.found ? 'FFMPEG_NOT_FOUND' : 'YTDLP_NOT_FOUND');
+    // 小幫手可以使用：右鍵下載在這時顯示「開始下載」通知（先以影片 ID 顯示，FR-23）。
+    options.onStart?.();
     const [info, defaults] = await Promise.all([getInfo(videoId), readQuickDefaults()]);
     options.onInfo?.(info.title || options.title || '');
     const plan = planQuickDownload(videoId, info, kind, defaults, options.title);

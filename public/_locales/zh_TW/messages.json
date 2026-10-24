@@ -1464,5 +1464,65 @@
   "quickInstalled": {
     "message": "小幫手已安裝完成。",
     "description": "Download panel: shown once the helper is detected after the install guide was shown."
+  },
+  "menuDownloadVideo": {
+    "message": "下載影片（$SPEC$）",
+    "description": "Right-click menu on video links: downloads the video with the default quality.",
+    "placeholders": {
+      "spec": {
+        "content": "$1",
+        "example": "1080p MP4"
+      }
+    }
+  },
+  "menuDownloadMp3": {
+    "message": "下載 MP3（$BITRATE$ kbps）",
+    "description": "Right-click menu on video links: downloads the audio as MP3.",
+    "placeholders": {
+      "bitrate": {
+        "content": "$1",
+        "example": "192"
+      }
+    }
+  },
+  "notifyStarted": {
+    "message": "開始下載：$TITLE$",
+    "description": "Notification after a right-click download starts (the video ID until the title is known).",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Me at the zoo"
+      }
+    }
+  },
+  "notifyAlreadyDownloading": {
+    "message": "已在下載中：$TITLE$",
+    "description": "Notification when the same right-click download is already running.",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Me at the zoo"
+      }
+    }
+  },
+  "notifyNeedHelper": {
+    "message": "下載影片需要先安裝小幫手",
+    "description": "Notification title when a right-click download needs the helper."
+  },
+  "notifyNeedHelperBody": {
+    "message": "點這裡打開設定頁的安裝說明。",
+    "description": "Notification text when a right-click download needs the helper."
+  },
+  "optionsContextMenu": {
+    "message": "在影片連結的右鍵選單顯示下載選項",
+    "description": "Settings page: right-click menu switch."
+  },
+  "optionsContextMenuDesc": {
+    "message": "在 YouTube 的影片連結（首頁、搜尋結果、推薦、播放清單）按右鍵，就能以上方的預設值下載，不用點進影片。",
+    "description": "Settings page: right-click menu switch description."
+  },
+  "jobsOtherVideos": {
+    "message": "其他下載",
+    "description": "Download panels: heading of the downloads of other videos (for example started from the right-click menu)."
   }
 }

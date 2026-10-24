@@ -29,7 +29,7 @@ describe('權限（plan 3.2、constitution 第 4 點）', () => {
   for (const browser of ['chrome', 'firefox']) {
     it(`${browser}：permissions 與 host_permissions 與 plan 3.2 完全一致`, () => {
       const manifest = (config.manifest as ManifestFn)({ browser, manifestVersion: 3, mode: 'production', command: 'build' });
-      expect(manifest.permissions).toEqual(['storage', 'downloads', 'notifications', 'nativeMessaging']);
+      expect(manifest.permissions).toEqual(['storage', 'downloads', 'notifications', 'nativeMessaging', 'contextMenus']);
       expect(manifest.host_permissions).toEqual(['*://*.youtube.com/*', 'https://i.ytimg.com/*']);
       expect(manifest).not.toHaveProperty('optional_permissions');
       expect(manifest).not.toHaveProperty('optional_host_permissions');

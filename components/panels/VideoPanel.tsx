@@ -18,7 +18,7 @@ import { Select } from '../controls/Select';
 import { Icon } from '../icons';
 import { PanelPinContext } from '../toolbar/PanelHost';
 import { DenoHint, HostSetup, UpdateFailureHint, useHostState } from './HostSetup';
-import { ErrorBlock, JobList, JobRow, openSettings } from './JobList';
+import { ErrorBlock, JobList, JobRow, OtherJobs, openSettings } from './JobList';
 import { PanelError, PanelLoading } from './PanelStatus';
 import { TimeRange, useClipRange } from './TimeRange';
 import { useStore } from './useStore';
@@ -49,6 +49,7 @@ function DownloadGate({ videoId, children }: { videoId: string; children: (title
       {missingOnlyDeno(host.state) && <DenoHint state={host.state} />}
       <UpdateFailureHint state={host.state} onOpenSettings={openSettings} />
       {children(video.data?.title ?? '', shownSetup.current)}
+      <OtherJobs videoId={videoId} />
     </>
   );
 }

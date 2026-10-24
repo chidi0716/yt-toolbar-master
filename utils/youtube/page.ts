@@ -71,6 +71,29 @@ export function watchUrlForShorts(url: string | URL): string | null {
   return watch.href;
 }
 
+/** youtube.com 或其子網域（www、m、music）。 */
+const isYouTubeHost = (host: string) => host === 'youtube.com' || host.endsWith('.youtube.com');
+
+/**
+ * 右鍵下載（009 FR-21）：指向單一影片的連結（`/watch?v=`、`youtu.be/`、`/shorts/`）的影片 ID。
+ * 帶有播放清單參數時只取影片本身；頻道、播放清單本身與其他網站的連結回傳 null。
+ */
+export function videoIdFromLink(url: string | URL): string | null {
+  const u = toUrl(url);
+  if (!u || (u.protocol !== 'https:' && u.protocol !== 'http:') || u.username || u.password) return null;
+  const host = u.hostname.toLowerCase();
+  if (host === 'youtu.be') {
+    const m = /^\/([^/]+)\/?$/.exec(u.pathname);
+    return m && isValidVideoId(m[1]) ? m[1] : null;
+  }
+  if (!isYouTubeHost(host)) return null;
+  if (u.pathname === '/watch') {
+    const id = u.searchParams.get('v');
+    return isValidVideoId(id) ? id : null;
+  }
+  return getShortsVideoId(u);
+}
+
 /** 監聽 YouTube 換頁完成事件；回傳取消監聽的函式。 */
 export function onNavigate(callback: () => void, target: EventTarget = document): () => void {
   target.addEventListener(NAVIGATE_FINISH_EVENT, callback);

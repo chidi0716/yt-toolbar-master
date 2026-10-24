@@ -32,7 +32,8 @@ export default defineConfig({
     description: '__MSG_extDescription__',
     default_locale: 'en',
     // 權限完全依 plan 3.2，每一項的用途寫在 plan 中。
-    permissions: ['storage', 'downloads', 'notifications', 'nativeMessaging'],
+    // contextMenus：影片連結的右鍵下載（009 第三節），不會產生安裝警告。
+    permissions: ['storage', 'downloads', 'notifications', 'nativeMessaging', 'contextMenus'],
     host_permissions: ['*://*.youtube.com/*', 'https://i.ytimg.com/*'],
     ...(browser === 'firefox'
       ? {

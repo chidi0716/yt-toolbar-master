@@ -11,6 +11,7 @@ import {
   DEFAULT_VIDEO_HEIGHTS,
   defaultVideoContainer,
   defaultVideoHeight,
+  downloadContextMenu,
   downloadDir,
   embedInfo,
   namePreset,
@@ -163,7 +164,13 @@ export function renderDownloads(root: HTMLElement): () => void {
   const container = selectRow('downloads-default-container', 'optionsDefaultContainer', null, [
     ...DEFAULT_VIDEO_CONTAINERS.map((c) => ({ value: c, label: c === 'mp4' ? t('optionsDefaultMark', t('optionsContainerMp4')) : t('optionsContainerAny') })),
   ]);
-  quick.append(switchRow('downloads-quick', 'optionsQuickDownload', 'optionsQuickDownloadDesc', quickDownload, cleanups), height.row, container.row);
+  quick.append(
+    switchRow('downloads-quick', 'optionsQuickDownload', 'optionsQuickDownloadDesc', quickDownload, cleanups),
+    height.row,
+    container.row,
+    // 右鍵下載（009 FR-25）：關閉時背景腳本移除選單項目。
+    switchRow('downloads-context-menu', 'optionsContextMenu', 'optionsContextMenuDesc', downloadContextMenu, cleanups),
+  );
   const showHeight = (v: unknown) => (height.select.value = String(toDefaultVideoHeight(v)));
   const showContainer = (v: unknown) => (container.select.value = toDefaultVideoContainer(v));
   void defaultVideoHeight.getValue().then((v) => {

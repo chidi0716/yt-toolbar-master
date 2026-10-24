@@ -149,6 +149,14 @@ export function markMissing(jobs: readonly JobRecord[], host: readonly HostJob[]
   return jobs.map((j) => (isActive(j) && !known.has(j.jobId) ? { ...j, state: 'failed', error: 'INTERRUPTED', speed: null, eta: null, updatedAt: now } : j));
 }
 
+/**
+ * 其他影片進行中的下載（009 FR-23：右鍵下載的工作也出現在每個 YouTube 分頁的下載面板中，可以取消）。
+ * 這部影片的下載由各面板自己的清單列出。
+ */
+export function otherActiveJobs(jobs: readonly JobRecord[], videoId: string): JobRecord[] {
+  return jobs.filter((j) => j.videoId !== videoId && isActive(j));
+}
+
 /** 只保留進行中的工作與最近結束的工作。 */
 export function pruneJobs(jobs: readonly JobRecord[], now: number): JobRecord[] {
   let finished = 0;

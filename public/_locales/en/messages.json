@@ -1464,5 +1464,65 @@
   "quickInstalled": {
     "message": "The helper is installed.",
     "description": "Download panel: shown once the helper is detected after the install guide was shown."
+  },
+  "menuDownloadVideo": {
+    "message": "Download video ($SPEC$)",
+    "description": "Right-click menu on video links: downloads the video with the default quality.",
+    "placeholders": {
+      "spec": {
+        "content": "$1",
+        "example": "1080p MP4"
+      }
+    }
+  },
+  "menuDownloadMp3": {
+    "message": "Download MP3 ($BITRATE$ kbps)",
+    "description": "Right-click menu on video links: downloads the audio as MP3.",
+    "placeholders": {
+      "bitrate": {
+        "content": "$1",
+        "example": "192"
+      }
+    }
+  },
+  "notifyStarted": {
+    "message": "Download started: $TITLE$",
+    "description": "Notification after a right-click download starts (the video ID until the title is known).",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Me at the zoo"
+      }
+    }
+  },
+  "notifyAlreadyDownloading": {
+    "message": "Already downloading: $TITLE$",
+    "description": "Notification when the same right-click download is already running.",
+    "placeholders": {
+      "title": {
+        "content": "$1",
+        "example": "Me at the zoo"
+      }
+    }
+  },
+  "notifyNeedHelper": {
+    "message": "Install the helper to download videos",
+    "description": "Notification title when a right-click download needs the helper."
+  },
+  "notifyNeedHelperBody": {
+    "message": "Click here to open the install guide in Settings.",
+    "description": "Notification text when a right-click download needs the helper."
+  },
+  "optionsContextMenu": {
+    "message": "Show download options when right-clicking video links",
+    "description": "Settings page: right-click menu switch."
+  },
+  "optionsContextMenuDesc": {
+    "message": "Right-click a video on YouTube (home page, search results, recommendations, playlists) to download it with the defaults above without opening it.",
+    "description": "Settings page: right-click menu switch description."
+  },
+  "jobsOtherVideos": {
+    "message": "Other downloads",
+    "description": "Download panels: heading of the downloads of other videos (for example started from the right-click menu)."
   }
 }

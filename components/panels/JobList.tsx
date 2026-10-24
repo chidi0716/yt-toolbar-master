@@ -4,7 +4,7 @@
 import { useState } from 'preact/hooks';
 import { cancelJob, revealJob, startDownload, updateYtDlp, HostError } from '@/features/downloads/host-client';
 import { INSTALL_GUIDE_URL } from '@/features/downloads/host-status';
-import { errorInfo, formatEta, formatSpeed, isActive, type JobRecord } from '@/features/downloads/jobs';
+import { errorInfo, formatEta, formatSpeed, isActive, otherActiveJobs, type JobRecord } from '@/features/downloads/jobs';
 import { t, type MessageKey } from '@/utils/i18n';
 import type { ContentMessage } from '@/utils/messages';
 import type { JobKind } from '@/utils/native-protocol';
@@ -184,6 +184,22 @@ export function JobRow({ job, label }: { job: JobRecord; label?: string }) {
       )}
       {job.state === 'failed' && <ErrorBlock code={retryError ?? job.error} onRetry={retry && !busy ? () => void retry() : null} />}
     </li>
+  );
+}
+
+/** 其他影片進行中的下載（例如從右鍵選單開始的，009 FR-23），標明影片標題。 */
+export function OtherJobs({ videoId }: { videoId: string }) {
+  const jobs = otherActiveJobs(useStore(downloadJobs()), videoId);
+  if (jobs.length === 0) return null;
+  return (
+    <section class="ytm-other-jobs" aria-label={t('jobsOtherVideos')}>
+      <p class="ytm-other-jobs-title">{t('jobsOtherVideos')}</p>
+      <ul class="ytm-jobs">
+        {jobs.map((job) => (
+          <JobRow key={job.jobId} job={job} label={[job.title || job.videoId, job.label].filter(Boolean).join(' · ')} />
+        ))}
+      </ul>
+    </section>
   );
 }
 
