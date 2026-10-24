@@ -117,6 +117,18 @@ describe('背景腳本的新版本查詢（008 FR-26、FR-27、FR-29a）', () =>
     expect(badge).toBe('');
   });
 
+  it('標記沒變時不重設', async () => {
+    const setBadge = vi.fn();
+    const service = make({ setBadge });
+    await service.checkIfDue();
+    await service.refreshBadge();
+    await service.status();
+    expect(setBadge).toHaveBeenCalledTimes(1);
+    await service.act('skip', '0.2.0');
+    expect(setBadge).toHaveBeenLastCalledWith('');
+    expect(setBadge).toHaveBeenCalledTimes(2);
+  });
+
   it('只寫入本機（local），不同步', async () => {
     await make().checkIfDue();
     expect(await updateCheck.getValue()).toMatchObject({ latest: RELEASE });
