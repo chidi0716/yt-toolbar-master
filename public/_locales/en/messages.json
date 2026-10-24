@@ -1460,5 +1460,9 @@
         "example": "1080p MP4"
       }
     }
+  },
+  "quickInstalled": {
+    "message": "The helper is installed.",
+    "description": "Download panel: shown once the helper is detected after the install guide was shown."
   }
 }

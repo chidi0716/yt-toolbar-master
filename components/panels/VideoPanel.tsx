@@ -7,7 +7,7 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { cancelJob, downloadJobs, getInfo, HostError, quickSettings, startDownload, startQuickDownload } from '@/features/downloads/host-client';
 import { canDownload, missingOnlyDeno } from '@/features/downloads/host-status';
 import { isActive, MP3_BITRATES, type DownloadRequest, type JobRecord, type Mp3Bitrate } from '@/features/downloads/jobs';
-import { existingQuickJob, mp3SpecLabel, quickSummary, videoSpecLabel, type QuickKind } from '@/features/downloads/quick';
+import { existingQuickJob, initialDownloadMode, mp3SpecLabel, quickSummary, videoSpecLabel, type DownloadMode, type QuickKind } from '@/features/downloads/quick';
 import { buildQualityList, formatSize, sizeForSection, visibleRows, type QualityRow } from '@/utils/format-list';
 import { t } from '@/utils/i18n';
 import type { HostInfo } from '@/utils/native-protocol';
@@ -284,26 +284,28 @@ function DownloadPanel({ videoId, kind }: { videoId: string; kind: QuickKind }) 
   const [openedFor] = useState(videoId);
   return (
     <DownloadGate key={videoId} videoId={videoId}>
-      {(title, installed) => <DownloadBody videoId={videoId} kind={kind} pageTitle={title} clicked={openedFor === videoId && !installed} installed={installed} />}
+      {(title, installed) => <DownloadBody videoId={videoId} kind={kind} pageTitle={title} clicked={openedFor === videoId} installed={installed} />}
     </DownloadGate>
   );
 }
-
-type BodyMode = 'quick' | 'confirm' | 'full';
 
 /**
  * 一鍵下載開啟時：剛點了按鈕就直接開始（009 FR-4）；剛安裝好小幫手（FR-11）或釘選的面板換了影片時，先顯示「開始下載」按鈕。
  * 一鍵下載關閉、或按了「改用其他畫質」時顯示完整選項。
  */
 function DownloadBody(props: { videoId: string; kind: QuickKind; pageTitle: string; clicked: boolean; installed: boolean }) {
-  const { videoId, kind, pageTitle, clicked } = props;
+  const { videoId, kind, pageTitle, clicked, installed } = props;
   const settings = useStore(quickSettings());
-  const [mode, setMode] = useState<BodyMode>(() => (settings?.enabled !== true ? 'full' : clicked ? 'quick' : 'confirm'));
+  const [mode, setMode] = useState<DownloadMode>(() =>
+    initialDownloadMode({ quickEnabled: settings?.enabled === true, clickedForThisVideo: clicked, helperJustInstalled: installed }),
+  );
   const full = kind === 'video' ? <QualityList videoId={videoId} pageTitle={pageTitle} /> : <Mp3Options videoId={videoId} pageTitle={pageTitle} />;
   if (mode === 'quick') return <QuickDownload videoId={videoId} kind={kind} pageTitle={pageTitle} onChooseOther={() => setMode('full')} />;
   if (mode === 'full' || !settings) {
+    // 一鍵下載關閉：安裝完成後切換成選項清單（009 FR-11）。
     return (
       <>
+        {installed && <InstalledNote />}
         {full}
       </>
     );
@@ -311,6 +313,7 @@ function DownloadBody(props: { videoId: string; kind: QuickKind; pageTitle: stri
   const spec = kind === 'video' ? videoSpecLabel(settings.defaults.height, settings.defaults.container) : mp3SpecLabel(settings.defaults.bitrate);
   return (
     <div class={kind === 'video' ? 'ytm-video ytm-quick' : 'ytm-mp3 ytm-quick'} data-kind={kind} data-phase="confirm">
+      {installed && <InstalledNote />}
       {pageTitle && <p class="ytm-quick-title">{pageTitle}</p>}
       <div class="ytm-quick-actions">
         <button type="button" class="ytm-link ytm-quick-other" onClick={() => setMode('full')}>
@@ -324,6 +327,16 @@ function DownloadBody(props: { videoId: string; kind: QuickKind; pageTitle: stri
       </div>
       <JobList videoId={videoId} kind={kind} />
     </div>
+  );
+}
+
+/** 「小幫手已安裝完成」（009 FR-11）：偵測到小幫手後不自動開始，等使用者按「開始下載」。 */
+function InstalledNote() {
+  return (
+    <p class="ytm-hint ytm-quick-installed" role="status">
+      <Icon name="check" size={18} />
+      <span>{t('quickInstalled')}</span>
+    </p>
   );
 }
 

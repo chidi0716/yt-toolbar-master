@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { setLocale } from '@/utils/i18n';
 import type { HostFormat, HostInfo } from '@/utils/native-protocol';
 import { newJob, type JobRecord } from './jobs';
-import { activeJobFor, existingQuickJob, mp3SpecLabel, planQuickDownload, quickSummary, quickTooltip, toQuickDefaults, videoSpecLabel } from './quick';
+import { activeJobFor, existingQuickJob, initialDownloadMode, mp3SpecLabel, planQuickDownload, quickSummary, quickTooltip, toQuickDefaults, videoSpecLabel } from './quick';
 
 const ID = 'jNQXAC9IVRw';
 const f = (p: Partial<HostFormat> & { id: string }): HostFormat => ({
@@ -132,5 +132,27 @@ describe('重複下載（009 FR-5）', () => {
     const jobs = [job('a', 'downloading', 'mp3'), job('b', 'downloading', 'video', 'bbbbbbbbbbb')];
     expect(existingQuickJob(jobs, ID, 'video')).toBeNull();
     expect(existingQuickJob(jobs, ID, 'mp3')?.jobId).toBe('a');
+  });
+});
+
+describe('面板一開始顯示什麼（009 FR-4、FR-8、FR-10、FR-11）', () => {
+  it('一鍵下載開啟、剛點了按鈕、小幫手可以用：直接開始', () => {
+    expect(initialDownloadMode({ quickEnabled: true, clickedForThisVideo: true, helperJustInstalled: false })).toBe('quick');
+  });
+
+  it('剛安裝好小幫手：不自動開始，顯示「開始下載」按鈕', () => {
+    expect(initialDownloadMode({ quickEnabled: true, clickedForThisVideo: true, helperJustInstalled: true })).toBe('confirm');
+  });
+
+  it('釘選的面板換了影片：不替沒點過的影片下載', () => {
+    expect(initialDownloadMode({ quickEnabled: true, clickedForThisVideo: false, helperJustInstalled: false })).toBe('confirm');
+  });
+
+  it('一鍵下載關閉：完整選項（安裝完成後也是）', () => {
+    for (const clickedForThisVideo of [true, false]) {
+      for (const helperJustInstalled of [true, false]) {
+        expect(initialDownloadMode({ quickEnabled: false, clickedForThisVideo, helperJustInstalled })).toBe('full');
+      }
+    }
   });
 });

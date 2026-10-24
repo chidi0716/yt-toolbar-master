@@ -106,3 +106,21 @@ export function existingQuickJob(jobs: readonly JobRecord[], videoId: string, ki
 /** 背景腳本的重複判斷（plan 3.11）：同影片＋同種類、狀態為進行中。 */
 export const activeJobFor = (jobs: readonly JobRecord[], videoId: string, kind: QuickKind) =>
   jobs.find((j) => j.videoId === videoId && j.kind === kind && isActive(j)) ?? null;
+
+// ---------------------------------------------------------------------------
+// 面板一開始顯示什麼（009 FR-4、FR-8、FR-10、FR-11）
+// ---------------------------------------------------------------------------
+
+/** quick：直接開始；confirm：顯示「開始下載（1080p MP4）」按鈕；full：完整選項（目前的行為）。 */
+export type DownloadMode = 'quick' | 'confirm' | 'full';
+
+/**
+ * - 一鍵下載關閉：完整選項（FR-8；安裝完成後也是，FR-11）。
+ * - 一鍵下載開啟、使用者剛為這部影片點了按鈕、小幫手一開始就能用：直接開始（FR-4）。
+ * - 一鍵下載開啟、但這次打開時顯示過安裝引導（不記住、不自動開始，FR-10、FR-11），或釘選的面板換了影片：
+ *   顯示「開始下載」按鈕，按下後才開始。
+ */
+export function initialDownloadMode(o: { quickEnabled: boolean; clickedForThisVideo: boolean; helperJustInstalled: boolean }): DownloadMode {
+  if (!o.quickEnabled) return 'full';
+  return o.clickedForThisVideo && !o.helperJustInstalled ? 'quick' : 'confirm';
+}
