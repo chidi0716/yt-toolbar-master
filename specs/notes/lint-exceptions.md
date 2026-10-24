@@ -9,8 +9,9 @@ T43 起 Firefox 版 manifest 有 `browser_specific_settings.gecko.update_url`（
 |---|---|---|---|
 | `KEY_FIREFOX_ANDROID_UNSUPPORTED_BY_MIN_VERSION` | `manifest.json` | `browser_specific_settings.gecko.data_collection_permissions` 在 Firefox for Android 142 才支援，而 `strict_min_version` 是 140。本專案不支援 Firefox Android（constitution 第 5 點），桌面版 140 已支援這個欄位。 | Q5、plan 3.3.1 |
 | `UNSAFE_VAR_ASSIGNMENT`（Unsafe assignment to innerHTML） | `content-scripts/youtube.js` | 來自 Preact 本身：它的 diff 程式碼支援 `dangerouslySetInnerHTML`，因此含有 `innerHTML` 指派。本專案**不得**使用 `dangerouslySetInnerHTML`，所以這段程式在執行時不會被走到；圖示也是取出 path 後用 JSX 畫出，不經過 innerHTML。 | Q10、plan 第 2 節 |
+| `UNSAFE_VAR_ASSIGNMENT`（Unsafe assignment to innerHTML） | `chunks/options-*.js`（檔名含建置雜湊） | 與上一項相同，來自 Preact：階段 11（X7）起設定頁的連線狀態掛載面板的 Preact 元件。本專案不使用 `dangerouslySetInnerHTML`。 | Q75 |
 
 ## 最近一次檢查
 
-- 日期：2026-10-23（T47，階段 8 擴充功能端）
-- 結果：0 個錯誤、2 個警告（即上表兩項：`manifest.json`、`content-scripts/youtube.js`）、0 個 notice。`background.js`（含原生訊息、通知與新版本查詢）、`options.html` 的腳本（設定頁的工具列區、下載區、安裝說明、更新與移除區、關於區都以 DOM API 建立元素與圖示，沒有 innerHTML，也不含 Preact）、`content-scripts/tidy.js` 沒有警告。
+- 日期：2026-10-24（階段 11 擴充功能端）
+- 結果：0 個錯誤、3 個警告（即上表三項：`manifest.json`、`content-scripts/youtube.js`、`chunks/options-*.js`）、0 個 notice。`background.js`（含原生訊息、通知與新版本查詢）與 `content-scripts/tidy.js` 沒有警告。
