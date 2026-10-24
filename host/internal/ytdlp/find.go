@@ -106,7 +106,7 @@ func (e Env) Find(tool string) string {
 	}
 	for _, pat := range e.packagePatterns(tool) {
 		matches, _ := e.Glob(pat)
-		sort.Sort(sort.Reverse(sort.StringSlice(matches))) // 版本號較新的通常排在後面
+		sort.Sort(sort.Reverse(sort.StringSlice(matches))) // 資料夾名稱含版本號：字串較大的優先
 		for _, m := range matches {
 			if e.IsFile(m) {
 				return m

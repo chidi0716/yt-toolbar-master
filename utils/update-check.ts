@@ -119,7 +119,7 @@ export function parseRelease(json: unknown): LatestRelease | null {
   return { version, title: title || `v${version}`, url: r.html_url };
 }
 
-/** 讀取 storage 中的值（可能是舊格式或被竄改）並補上預設值。 */
+/** 讀取 storage 中的值並補上預設值；舊格式或被改過的值也要能處理。 */
 export function normalizeCheckState(value: unknown): UpdateCheckState {
   if (!value || typeof value !== 'object') return { ...EMPTY_CHECK };
   const v = value as Record<string, unknown>;

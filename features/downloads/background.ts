@@ -144,7 +144,7 @@ async function handle(message: DirectMessage): Promise<MessageResponse<Record<st
         return { ok: false, error: 'EMPTY' };
       }
       try {
-        // SRT、VTT 以 application/octet-stream 存檔：瀏覽器可能依 text/plain 把副檔名改成 .txt。
+        // SRT、VTT 以 application/octet-stream 存檔，避免瀏覽器依 text/plain 把副檔名改成 .txt。
         const type = message.format === 'txt' ? 'text/plain;charset=utf-8' : 'application/octet-stream';
         await downloadBlob(
           new Blob([text], { type }),

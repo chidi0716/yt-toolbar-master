@@ -656,7 +656,7 @@ a.ytm-link {
   font-variant-numeric: tabular-nums;
 }
 
-/* AV1／VP9 合併成的 MP4：部分播放器可能無法播放（002 FR-13）。 */
+/* AV1／VP9 合併成的 MP4：部分播放器不支援（002 FR-13）。 */
 .ytm-quality-note {
   grid-column: 2 / -1;
   margin-top: -4px;

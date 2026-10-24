@@ -26,7 +26,7 @@ const (
 	UnsupportedPlatform Code = "UNSUPPORTED_PLATFORM" // 此作業系統不支援的指令（例如 Linux 上的 pickFolder）
 
 	// yt-dlp 回報的錯誤（依 stderr 分類，見 ytdlp.Classify）
-	YtDlpOutdated        Code = "YTDLP_OUTDATED"        // 解析失敗、HTTP 403 等通常更新 yt-dlp 就能解決的錯誤
+	YtDlpOutdated        Code = "YTDLP_OUTDATED"        // 解析失敗、HTTP 403 等要更新 yt-dlp 的錯誤
 	LoginRequired        Code = "LOGIN_REQUIRED"        // 私人、會員限定、年齡限制
 	VerificationRequired Code = "VERIFICATION_REQUIRED" // YouTube 要求確認不是機器人
 	VideoUnavailable     Code = "VIDEO_UNAVAILABLE"     // 影片不存在、已移除、地區限制

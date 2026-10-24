@@ -1,7 +1,7 @@
 // 一鍵下載與右鍵下載的畫質選擇（009 FR-2，plan 3.11）。純函式，重用 format-list.ts 的分組結果。
 // - 影片有設定的畫質就用它；沒有時選比它低的最高畫質；全部都比它高時選最低的（與 004 鎖定畫質相同的規則）。
-// - MP4：只從 MP4 組選（2K 以上可能是 AV1／VP9 合併的 MP4，002 FR-13）；完全沒有 MP4 結果時改從全部結果選。
-// - 不限格式：從全部結果選，最高畫質可能是 WEBM。
+// - MP4：只從 MP4 組選（2K 以上是 AV1／VP9 合併的 MP4，002 FR-13）；完全沒有 MP4 結果時改從全部結果選。
+// - 不限格式：從全部結果選，WEBM 畫質較高時選 WEBM。
 // - 同一個畫質有多個幀率時選最高幀率；同畫質同幀率時 SDR 優先於 HDR，再依 H.264 的 MP4、WEBM、AV1／VP9 的 MP4 的順序。
 import { buildQualityList, type QualityRow } from './format-list';
 import type { HostFormat } from './native-protocol';

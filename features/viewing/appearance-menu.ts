@@ -97,6 +97,6 @@ export function describeFailure(reason: Extract<AppearanceSwitchResult, { ok: fa
     case 'NO_THEME_OPTION':
       return `step 3/3 failed: the ${target} theme option was not found in the Appearance menu`;
     case 'THEME_NOT_CHANGED':
-      return `the ${target} theme option was selected, but the page theme did not change (another extension may control the theme)`;
+      return `the ${target} theme option was selected, but the page theme did not change (check whether another extension controls the theme)`;
   }
 }

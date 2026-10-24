@@ -19,7 +19,7 @@ export const SELECTORS = {
   video: '#movie_player video.html5-main-video',
   /** 播放器下方的欄位；工具列插在這裡的最前面，也就是標題的上方。 */
   belowPlayer: 'ytd-watch-flexy #below',
-  /** 影片標題與資訊區塊（在 #below 之內，可能包在其他容器裡）。 */
+  /** 影片標題與資訊區塊（在 #below 之內，有時包在其他容器裡）。 */
   metadata: 'ytd-watch-metadata',
   /**
    * 包住播放器的容器（一般模式在 #player 內，YouTube 劇院模式時會被移到加寬的容器）。
@@ -244,7 +244,7 @@ export function findThemeOption(theme: 'dark' | 'light', doc: Document = documen
 // 播放器 API（只在 main world 的頁面橋接腳本中使用）
 // ---------------------------------------------------------------------------
 
-/** 播放器元素上我們會用到的方法；每個都可能不存在，呼叫前要檢查。 */
+/** 播放器元素上我們會用到的方法；每個都不一定存在，呼叫前要檢查。 */
 export interface YtPlayerApi {
   getVideoData?: () => { video_id?: unknown; title?: unknown; isLive?: unknown } | undefined;
   getPlayerResponse?: () =>
@@ -342,7 +342,7 @@ export function isQualityCode(value: unknown): value is QualityCode {
   return typeof value === 'string' && Object.prototype.hasOwnProperty.call(QUALITY_HEIGHTS, value);
 }
 
-/** 播放器上與畫質相關的方法；每個都可能不存在，呼叫前要檢查。 */
+/** 播放器上與畫質相關的方法；每個都不一定存在，呼叫前要檢查。 */
 export interface YtQualityApi {
   getAvailableQualityLevels?: () => unknown;
   getPlaybackQuality?: () => unknown;
@@ -424,7 +424,7 @@ export function describeAudioTrack(track: unknown): AudioTrackInfo | null {
   };
 }
 
-/** 目前影片的語音軌清單與目前播放的語音軌 ID（清單還沒載入或只有一個語音軌時可能是空陣列）。 */
+/** 目前影片的語音軌清單與目前播放的語音軌 ID（清單還沒載入或只有一個語音軌時為空陣列）。 */
 export function readAudioTracks(player: YtAudioApi): { tracks: AudioTrackInfo[]; current: string | null } {
   const raw = player.getAvailableAudioTracks?.();
   const tracks = Array.isArray(raw) ? raw.map(describeAudioTrack).filter((t): t is AudioTrackInfo => t !== null) : [];

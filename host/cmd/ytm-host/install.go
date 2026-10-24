@@ -18,7 +18,7 @@ import (
 	"github.com/chidi0716/yt-toolbar-master/host/internal/ytdlp"
 )
 
-// UninstallRetry 是移除安裝資料夾時重試的時間（Windows 上剛結束的小幫手可能還鎖著檔案）。
+// UninstallRetry 是移除安裝資料夾時重試的時間（Windows 上剛結束的小幫手會暫時鎖住檔案）。
 const UninstallRetry = 2 * time.Minute
 
 // selfPath 回傳目前執行中的小幫手路徑（解析符號連結）。

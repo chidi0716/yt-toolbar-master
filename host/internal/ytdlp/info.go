@@ -66,7 +66,6 @@ type Info struct {
 	Truncated    bool       `json:"truncated,omitempty"` // 為了符合 1MB 上限而省略了部分資料
 }
 
-// Chapter 是章節。
 type Chapter struct {
 	Start float64 `json:"start"`
 	End   float64 `json:"end"`

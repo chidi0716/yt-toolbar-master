@@ -74,7 +74,6 @@ function switchRow(id: string, name: MessageKey, desc: MessageKey, item: { getVa
   );
 }
 
-/** 下拉選單一列。 */
 function selectRow(id: string, name: MessageKey, desc: MessageKey | null, options: Array<{ value: string; label: string }>) {
   const select = el('select', { id, className: 'select' });
   select.append(...options.map((o) => el('option', { value: o.value, textContent: o.label })));

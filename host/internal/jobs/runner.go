@@ -434,7 +434,7 @@ func moveUnique(src, dir string) (string, error) {
 	return "", errors.New("too many files with the same name")
 }
 
-// removeAllRetry 刪除暫存資料夾。Windows 上剛結束的程序可能還鎖著檔案，稍等再試。
+// removeAllRetry 刪除暫存資料夾。Windows 上剛結束的程序會暫時鎖住檔案，稍等再試。
 func removeAllRetry(dir string) {
 	for i := 0; i < 20; i++ {
 		if err := os.RemoveAll(dir); err == nil {

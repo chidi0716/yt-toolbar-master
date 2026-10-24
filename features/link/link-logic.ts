@@ -50,7 +50,7 @@ export function linkText(kind: LinkKind, videoId: string, title: string, seconds
   }
 }
 
-/** 過長的預覽在中間以「…」省略（FR-32），保留開頭與結尾（結尾通常是時間）。 */
+/** 過長的預覽在中間以「…」省略（FR-32），保留開頭與結尾（帶時間的連結以時間結尾）。 */
 export function middleEllipsis(text: string, max: number): string {
   const chars = Array.from(text);
   if (chars.length <= max || max < 3) return text;

@@ -8,7 +8,7 @@ export interface Cue {
   /** 毫秒 */
   start: number;
   end: number;
-  /** WebVTT 的 cue 文字：可能含有 <c>、<00:00:01.000> 等標籤，特殊字元以實體表示；多行以 \n 分隔。 */
+  /** WebVTT 的 cue 文字：會含有 <c>、<00:00:01.000> 等標籤，特殊字元以實體表示；多行以 \n 分隔。 */
   text: string;
 }
 
@@ -95,7 +95,7 @@ const attributes = (raw: string): Record<string, string> =>
  * 解析 YouTube 的 XML 字幕：
  * - `<transcript><text start="1.5" dur="2.3">…</text>`（秒）；
  * - format 3：`<timedtext format="3"><body><p t="1500" d="2300">…</p>`（毫秒，內含 <s> 逐字標籤）。
- * 先去掉 XML 標籤（<s>、<br/> 等），再解碼實體；文字中的實體可能被編碼兩次（例如 `&amp;#39;`），所以解碼兩次。
+ * 先去掉 XML 標籤（<s>、<br/> 等），再解碼實體；文字中的實體有時被編碼兩次（例如 `&amp;#39;`），所以解碼兩次。
  * 沒有長度時以下一句的開始時間為結束。產生的 cue 文字跳脫成 WebVTT 的格式。
  */
 export function parseTimedTextXml(xml: string): Cue[] {

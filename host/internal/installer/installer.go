@@ -20,7 +20,6 @@ import (
 	"github.com/chidi0716/yt-toolbar-master/host/internal/release"
 )
 
-// Installer 是一次安裝。
 type Installer struct {
 	Layout platform.Layout
 	// Platform 是清單中的平台鍵（darwin-arm64、darwin-amd64、windows-amd64）。

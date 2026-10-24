@@ -240,7 +240,7 @@ export function HostSetup({ state, checking, recheck }: { state: HostState; chec
   );
 }
 
-/** 只缺 deno 時的建議（可以下載，但部分格式可能缺少）：再執行一次安裝指令即可補上。 */
+/** 只缺 deno 時的提示（可以下載，但取得不到部分格式）：再執行一次安裝指令即可補上。 */
 export function DenoHint({ state }: { state: HostState }) {
   const os = usePlatformOs();
   const command = os ? installCommand(state, os) : null;

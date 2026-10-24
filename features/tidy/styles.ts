@@ -47,7 +47,7 @@ html.ytm-full-titles ${any(VIDEO_TITLE_SELECTORS)} {
 `;
 
 /**
- * 在頁面加入一次樣式（重複呼叫沒有作用）。在 document_start 執行時 <head> 可能還不存在，
+ * 在頁面加入一次樣式（重複呼叫沒有作用）。在 document_start 執行時 <head> 不一定存在，
  * 這時直接放在 <html> 底下。
  */
 export function ensureTidyStyles(doc: Document = document): void {

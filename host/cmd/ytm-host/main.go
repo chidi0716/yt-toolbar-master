@@ -48,7 +48,7 @@ const WaitAfterDisconnect = 6 * time.Hour
 
 // identifyCaller 依瀏覽器啟動橋接程式時傳入的參數判斷呼叫者：
 //   - Chrome：第一個參數是呼叫者的來源（chrome-extension://<ID>/），
-//     Windows 上可能另有 --parent-window=<數字>；
+//     Windows 上 Chrome 另外傳入 --parent-window=<數字>；
 //   - Firefox：第一個參數是原生訊息設定檔的路徑，第二個是附加元件 ID。
 func identifyCaller(args []string) (string, bool) {
 	if len(args) >= 1 && args[0] == chromeOrigin {

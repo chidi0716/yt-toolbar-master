@@ -28,11 +28,10 @@ import (
 	"github.com/chidi0716/yt-toolbar-master/host/internal/validate"
 )
 
-// 工作狀態。
 const (
-	StateQueued      = "queued"      // 已建立，執行程序還沒開始
-	StateDownloading = "downloading" // 下載中
-	StateProcessing  = "processing"  // 合併、轉檔、嵌入資訊、搬移檔案
+	StateQueued      = "queued" // 已建立，執行程序還沒開始
+	StateDownloading = "downloading"
+	StateProcessing  = "processing" // 合併、轉檔、嵌入資訊、搬移檔案
 	StateDone        = "done"
 	StateFailed      = "failed"
 	StateCancelled   = "cancelled"
@@ -145,7 +144,7 @@ func (s *Store) ReadStatus(id string) (*Status, error) {
 	}
 	var f statusFile
 	var err error
-	// 另一個程序可能正在改名替換這個檔案（Windows 上會暫時無法開啟），稍等再試。
+	// 另一個程序正在改名替換這個檔案時，Windows 上會暫時無法開啟：稍等再試。
 	for i := 0; i < 5; i++ {
 		if err = readJSON(s.file(id, "status.json"), &f); err == nil {
 			break

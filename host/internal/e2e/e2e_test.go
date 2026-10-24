@@ -342,7 +342,7 @@ func TestDownloadSurvivesHost(t *testing.T) {
 	jobID := ok(t, b.request("download", map[string]any{
 		"videoId": "jNQXAC9IVRw", "kind": "mp3", "bitrate": 128, "dir": dl,
 	}, nil))["jobId"].(string)
-	// 瀏覽器結束：強制結束橋接程式（瀏覽器在關閉連線後也可能這樣做）。
+	// 瀏覽器結束：強制結束小幫手（模擬瀏覽器關閉連線後結束程序）。
 	b.cmd.Process.Kill()
 	<-b.exited
 

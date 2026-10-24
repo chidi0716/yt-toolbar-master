@@ -108,7 +108,6 @@ export function createScreenshot(): ScreenshotFeature {
   };
 }
 
-/** 下載錯誤的說明文字。 */
 export function downloadErrorText(error: DownloadError | string): string {
   return t(error === 'NOT_FOUND' ? 'thumbnailMissing' : 'downloadFailed');
 }

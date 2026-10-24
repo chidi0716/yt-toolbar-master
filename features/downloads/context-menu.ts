@@ -49,7 +49,6 @@ export function menuItems(enabled: boolean, titles: { parent: string; video: str
   ];
 }
 
-/** 點擊的選單項目對應的下載種類。 */
 export const menuKind = (menuItemId: unknown): QuickKind | null => (menuItemId === MENU_VIDEO ? 'video' : menuItemId === MENU_MP3 ? 'mp3' : null);
 
 let rebuilding: Promise<void> = Promise.resolve();
@@ -59,7 +58,7 @@ export function rebuildContextMenus(): Promise<void> {
   rebuilding = rebuilding
     .then(async () => {
       await initI18n();
-      // 介面語言可能剛改變：直接以設定決定，不等翻譯層的監聽器。
+      // 翻譯層的監聽器不一定已經處理了這次的語言變更：直接以設定決定。
       setLocale(resolveLocale(await uiLanguage.getValue()));
       const [enabled, defaults] = await Promise.all([downloadContextMenu.getValue(), readQuickDefaults()]);
       await browser.contextMenus.removeAll();

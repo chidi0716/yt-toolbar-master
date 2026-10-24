@@ -199,7 +199,7 @@ func ReplaceFile(src, dest, goos string) error {
 		old = dest + ".old"
 		os.Remove(old)
 		if err := os.Rename(dest, old); err != nil {
-			// 舊的 .old 可能還在執行中而無法刪除：改用另一個名稱。
+			// 舊的 .old 還在執行時無法刪除：改用另一個名稱。
 			old = fmt.Sprintf("%s.old-%s", dest, randomSuffix())
 			if err := os.Rename(dest, old); err != nil {
 				return err
@@ -237,8 +237,7 @@ func CleanupOld(dirs ...string) {
 	}
 }
 
-// clearQuarantine 移除 macOS 的隔離屬性（plan 4.9）。小幫手自己下載的檔案通常沒有這個屬性，
-// 失敗不影響安裝。
+// clearQuarantine 移除 macOS 的隔離屬性（plan 4.9）。失敗不影響安裝（小幫手以 Go 下載的檔案沒有這個屬性）。
 func clearQuarantine(goos, p string) {
 	if goos != "darwin" {
 		return

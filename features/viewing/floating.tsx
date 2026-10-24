@@ -197,9 +197,9 @@ export function createFloating(): FloatingFeature {
   };
 
   const apply = () => {
-    const should = running && !!container && isFloating(fs);
-    if (should && !floating) float();
-    else if (!should && floating) unfloat();
+    const wanted = running && !!container && isFloating(fs);
+    if (wanted && !floating) float();
+    else if (!wanted && floating) unfloat();
   };
 
   function dispatch(event: FloatingEvent) {

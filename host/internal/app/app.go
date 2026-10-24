@@ -47,7 +47,6 @@ type Logger interface {
 	Printf(format string, a ...any)
 }
 
-// New 建立 App。
 func New(version string, m *jobs.Manager) *App {
 	self, _ := os.Executable()
 	return &App{

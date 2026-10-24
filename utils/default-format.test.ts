@@ -79,7 +79,7 @@ describe('pickDefaultFormat（009 FR-2、plan 3.11）', () => {
     expect(pickDefaultFormat(UHD, { height: 1440, container: 'mp4' })).toMatchObject({ formatId: '271+140', container: 'mp4', limited: true });
   });
 
-  it('最高畫質＋不限格式：4K 影片得到 2160p（可能是 WEBM）', () => {
+  it('最高畫質＋不限格式：4K 影片得到 2160p（這部影片的 2160p 只有 WEBM 與 AV1 的 MP4，選 WEBM）', () => {
     expect(pickDefaultFormat(UHD, { height: 'best', container: 'any' })).toMatchObject({ formatId: '313+251', container: 'webm', height: 2160 });
   });
 

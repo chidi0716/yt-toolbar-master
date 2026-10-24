@@ -16,7 +16,7 @@ const (
 	LineError             // ERROR: 開頭的錯誤訊息
 )
 
-// Progress 是一行進度資料（數值可能缺少，以指標表示）。
+// Progress 是一行進度資料（缺少的數值為 nil）。
 type Progress struct {
 	Status        string   `json:"status"`
 	Downloaded    *float64 `json:"downloaded_bytes"`
@@ -122,7 +122,7 @@ type Snapshot struct {
 	Speed      *float64 `json:"speed"`      // 位元組／秒
 	ETA        *float64 `json:"eta"`        // 秒
 	Downloaded *float64 `json:"downloaded"` // 目前這一段已下載的位元組
-	Total      *float64 `json:"total"`      // 目前這一段的總位元組（可能是估計值）
+	Total      *float64 `json:"total"`      // 目前這一段的總位元組（有時是估計值）
 	Part       int      `json:"part"`       // 第幾段（從 1 開始）
 	Parts      int      `json:"parts"`      // 共幾段
 }
@@ -177,7 +177,7 @@ func (t *Tracker) Update(p Progress, formatID string) Snapshot {
 	switch {
 	case sumTotal > 0:
 		pct = sumDone / sumTotal * 100
-		// 還沒開始的段落（通常是聲音）大小未知：先保留 10% 給它們。
+		// 還沒開始的段落（例如聲音）大小未知：先保留 10% 給它們。
 		if parts > 1 && len(t.totals) < parts {
 			pct *= 0.9
 		}

@@ -69,7 +69,7 @@ export function createSmartPause() {
 export interface AutoplayFeature extends ViewingFeature {
   state: Store<ToggleState>;
   toggle(): void;
-  /** 重新尋找 YouTube 的開關（播放器可能比內容腳本晚出現）。 */
+  /** 重新尋找 YouTube 的開關（播放器有時比內容腳本晚出現）。 */
   refresh(): void;
 }
 

@@ -36,7 +36,6 @@ var (
 	jobIDRe = regexp.MustCompile(`^[0-9a-f]{16}$`)
 )
 
-// 下載種類。
 const (
 	KindVideo    = "video"
 	KindMP3      = "mp3"

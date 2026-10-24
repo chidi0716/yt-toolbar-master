@@ -159,7 +159,6 @@ type Writer struct {
 	closed bool
 }
 
-// NewWriter 建立 Writer。
 func NewWriter(w io.Writer) *Writer { return &Writer{w: w} }
 
 // ErrClosed 表示連線已經關閉。

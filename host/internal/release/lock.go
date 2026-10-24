@@ -37,7 +37,7 @@ func ParseLock(data []byte) (*Lock, error) {
 	return &l, nil
 }
 
-// uniqueFiles 回傳 lock 中所有不重複的檔案（同一個網址可能用在多個平台，例如 yt-dlp_macos）。
+// uniqueFiles 回傳 lock 中所有不重複的檔案（同一個網址會用在多個平台，例如 yt-dlp_macos）。
 func (l *Lock) uniqueFiles() []File {
 	seen := map[string]bool{}
 	var out []File
@@ -57,7 +57,6 @@ func (l *Lock) uniqueFiles() []File {
 	return out
 }
 
-// Logf 是進度輸出。
 type Logf func(format string, a ...any)
 
 // VerifyOnline 對 lock 中的每個檔案：下載官方的檢查碼檔案，確認與 lock 記錄的 SHA256 相同；

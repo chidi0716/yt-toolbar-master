@@ -14,7 +14,7 @@ import (
 
 // Uninstall 移除下載功能（008 FR-30）：原生訊息設定檔、登錄機碼、安裝資料夾（小幫手、yt-dlp、
 // deno、ffmpeg、狀態與記錄檔），以及 macOS 的記錄檔資料夾。已下載的影片不受影響。
-// Windows 上剛結束的程序可能還鎖著檔案，刪除失敗時在 retryFor 內重試。
+// Windows 上剛結束的程序會暫時鎖住檔案，刪除失敗時在 retryFor 內重試。
 func Uninstall(l platform.Layout, out io.Writer, retryFor time.Duration) error {
 	if filepath.Base(l.InstallDir) != platform.AppDirName {
 		return fmt.Errorf("refusing to remove an unexpected folder: %s", l.InstallDir)

@@ -128,6 +128,6 @@ describe('describeFailure（003 FR-15：console 記錄失敗的步驟）', () =>
     expect(describeFailure('NO_MENU_BUTTON', 'dark')).toContain('step 1/3 failed: the account/settings menu button');
     expect(describeFailure('NO_APPEARANCE_ITEM', 'dark')).toContain('step 2/3 failed: the Appearance item');
     expect(describeFailure('NO_THEME_OPTION', 'light')).toContain('step 3/3 failed: the light theme option');
-    expect(describeFailure('THEME_NOT_CHANGED', 'dark')).toContain('another extension may control the theme');
+    expect(describeFailure('THEME_NOT_CHANGED', 'dark')).toContain('another extension controls the theme');
   });
 });

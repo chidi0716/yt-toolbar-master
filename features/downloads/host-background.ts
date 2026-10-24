@@ -230,7 +230,7 @@ async function startDownload(request: DownloadRequest, estimate: JobRecord['esti
   const result = await client.request('download', downloadArgs(request, settings));
   const jobId = typeof result.jobId === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(result.jobId) ? result.jobId : null;
   if (!jobId) throw new HostRequestError('UNKNOWN', 'download returned no jobId');
-  // 事件可能比 download 的回應早到：已經有紀錄時保留進度，只補上請求內容。
+  // 事件有時比 download 的回應早到：已經有紀錄時保留進度，只補上請求內容。
   const existing = jobs.find((j) => j.jobId === jobId);
   const created = newJob(jobId, request, Date.now(), estimate);
   await setJobs(existing ? jobs.map((j) => (j.jobId === jobId ? { ...j, label: created.label, title: created.title, request, estimate } : j)) : [created, ...jobs]);
@@ -285,7 +285,7 @@ export function quickDownload(
     options.onInfo?.(info.title || options.title || '');
     const plan = planQuickDownload(videoId, info, kind, defaults, options.title);
     if (!plan.ok) throw new HostRequestError(plan.error);
-    // 取得資訊的期間，可能已經從其他分頁開始了同一個下載。
+    // 取得資訊的期間，其他分頁有機會開始同一個下載：再檢查一次。
     const again = activeJobFor(jobs, videoId, kind);
     if (again) return { status: 'running', jobId: again.jobId, title: again.title, label: again.label };
     const jobId = await startDownload(plan.request, plan.estimate);

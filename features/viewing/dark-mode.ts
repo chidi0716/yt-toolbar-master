@@ -3,7 +3,7 @@
 // 已登入時帳號的外觀設定也跟著改變。操作期間 YouTube 的彈出選單不可見。
 // 擴充功能不另外記住狀態，也不修改主題 cookie 或頁面主題屬性；按鈕只反映 <html dark> 的實際狀態。
 // 找不到選單或選項時（例如 YouTube 改版，或其他擴充功能接管了主題）不做任何修改、不重試（FR-91），
-// 按鈕提示說明可能原因，console 記錄失敗的步驟（FR-15）。
+// 按鈕提示說明原因與處理方式，console 記錄失敗的步驟（FR-15）。
 import { t } from '@/utils/i18n';
 import {
   DARK_THEME_ATTRIBUTE,

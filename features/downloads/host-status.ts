@@ -27,7 +27,6 @@ export function componentState(s: HostState, c: HostComponent): boolean | null {
   return s.status.deno ? s.status.deno.found && !s.status.deno.error : null;
 }
 
-/** 元件的版本（可用時）。 */
 export function componentVersion(s: HostState, c: HostComponent): string | null {
   if (s.state !== 'connected') return null;
   if (c === 'host') return s.status.hostVersion || null;

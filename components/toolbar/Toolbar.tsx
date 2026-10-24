@@ -148,7 +148,7 @@ export function Toolbar({
     return () => document.removeEventListener('keydown', onKeyDown, true);
   }, [editing]);
 
-  // 新版本提醒：工具列掛載時才可能出現卡片（工具列被關閉時不顯示，FR-29b）；展開面板或編輯工具列時延後（constitution 第 7c 點）。
+  // 新版本提醒：卡片只在工具列掛載時出現（FR-29b）；展開面板或編輯工具列時延後（constitution 第 7c 點）。
   useEffect(() => {
     if (!reminder) return;
     reminder.attach(host);
