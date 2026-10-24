@@ -8,13 +8,11 @@ import { sendToBackground } from '@/features/downloads/content';
 import { checkHostStatus } from '@/features/downloads/host-client';
 import {
   canDownload,
-  componentState,
-  componentVersion,
+  COMPONENT_LABELS,
+  componentText,
   HOST_COMPONENTS,
   INSTALL_GUIDE_URL,
-  installCommand,
   showUpdateFailureHint,
-  type HostComponent,
   type HostState,
 } from '@/features/downloads/host-status';
 import {
@@ -29,19 +27,12 @@ import {
   type InstallOs,
 } from '@/features/downloads/install-guide';
 import { detectOs, type HostOs } from '@/features/downloads/logic';
-import { t, type MessageKey } from '@/utils/i18n';
+import { t } from '@/utils/i18n';
 import { hostUpdateHintDismissed } from '@/utils/settings';
 import { Button } from '../controls/Button';
 import { Icon } from '../icons';
 
 const LOG_PREFIX = '[yt-toolbar-master]';
-
-const COMPONENT_LABELS: Record<HostComponent, MessageKey> = {
-  host: 'hostComponentHelper',
-  ytDlp: 'hostComponentYtDlp',
-  ffmpeg: 'hostComponentFfmpeg',
-  deno: 'hostComponentDeno',
-};
 
 /** 從瀏覽器的 user agent 推測作業系統（等背景腳本回覆 runtime.getPlatformInfo 之前先用）。 */
 export const currentOs = (): HostOs => {
@@ -118,14 +109,6 @@ export function useHostState(options: { pollWhileMissing?: boolean } = {}): { st
 
   const recheck = useCallback(() => setAttempt((n) => n + 1), []);
   return { state, checking, recheck };
-}
-
-function stateText(s: HostState, c: HostComponent): { text: string; missing: boolean } {
-  const ok = componentState(s, c);
-  if (ok === null) return { text: t(c === 'host' ? 'hostStatusNotInstalled' : 'hostStatusUnknown'), missing: true };
-  if (!ok) return { text: t(c === 'host' ? 'hostStatusNotInstalled' : 'hostStatusMissing'), missing: true };
-  const version = componentVersion(s, c);
-  return { text: version ? t('hostStatusVersion', version) : t('hostStatusFound'), missing: false };
 }
 
 /** 指令與「複製」按鈕；無法寫入剪貼簿時選取指令文字，讓使用者自己複製。 */
@@ -212,7 +195,7 @@ export function HostSetup({ state, checking, recheck }: { state: HostState; chec
       <p class="ytm-setup-intro">{t('installIntro')}</p>
       <ul class="ytm-setup-components">
         {HOST_COMPONENTS.map((c) => {
-          const { text, missing } = stateText(state, c);
+          const { text, missing } = componentText(state, c);
           return (
             <li key={c} data-component={c} data-missing={missing ? '' : undefined}>
               <span>{t(COMPONENT_LABELS[c])}</span>
@@ -241,9 +224,9 @@ export function HostSetup({ state, checking, recheck }: { state: HostState; chec
 }
 
 /** 只缺 deno 時的提示（可以下載，但取得不到部分格式）：再執行一次安裝指令即可補上。 */
-export function DenoHint({ state }: { state: HostState }) {
+export function DenoHint() {
   const os = usePlatformOs();
-  const command = os ? installCommand(state, os) : null;
+  const command = os && os !== 'other' ? INSTALL_COMMANDS[os] : null;
   return (
     <div class="ytm-hint ytm-deno-hint" role="note">
       <Icon name="error" size={18} />

@@ -16,7 +16,6 @@ const f = (p: Partial<HostFormat> & { id: string }): HostFormat => ({
   filesizeApprox: null,
   protocol: 'https',
   dynamicRange: 'SDR',
-  language: '',
   note: '',
   ...p,
 });

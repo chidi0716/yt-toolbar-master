@@ -2,7 +2,7 @@
 // 下載工作的清單由背景腳本推播（jobsChanged），這裡保存一份給面板與工具列按鈕使用。
 import { createStore, type Store } from '@/features/viewing/store';
 import { isBackgroundMessage } from '@/utils/messages';
-import { parseStatus, toErrorCode, type HostErrorCode, type HostInfo, type HostStatusResult, type UpdateResult } from '@/utils/native-protocol';
+import { toErrorCode, type HostErrorCode, type HostInfo, type HostStatusResult, type UpdateResult } from '@/utils/native-protocol';
 import { defaultVideoContainer, defaultVideoHeight, mp3Bitrate, quickDownload } from '@/utils/settings';
 import { sendToBackground } from './content';
 import type { QuickResult } from './host-background';
@@ -30,9 +30,9 @@ async function call<T extends Record<string, unknown>>(message: Parameters<typeo
 /** 橋接程式的狀態；找不到或無法啟動時為 unreachable。 */
 export async function checkHostStatus(refresh = false): Promise<HostState> {
   try {
+    // 背景腳本已以 parseStatus 整理過。
     const { status } = await call<{ status: HostStatusResult }>({ type: 'hostStatus', refresh });
-    // 背景腳本已整理過；再整理一次，確保欄位完整。
-    return { state: 'connected', status: parseStatus(status as unknown as Record<string, unknown>) };
+    return { state: 'connected', status };
   } catch {
     return { state: 'unreachable' };
   }

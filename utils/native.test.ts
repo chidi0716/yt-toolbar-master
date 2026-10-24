@@ -68,32 +68,38 @@ describe('parseHostMessage（plan 4.2）', () => {
 });
 
 describe('結果整理', () => {
-  it('status：含 deno 時一併回報，舊版沒有 deno 時為 null', () => {
+  it('status：components 是各元件狀態的唯一來源（stage 11 格式）', () => {
     const s = parseStatus({
       hostVersion: '1.0.0',
-      os: 'darwin',
       ready: true,
-      ytDlp: { found: true, version: '2026.10.21', manager: 'homebrew', updateCommand: 'brew upgrade yt-dlp' },
-      ffmpeg: { found: false, error: 'FFMPEG_NOT_FOUND' },
-      deno: { found: true, version: '2.5.0' },
       complete: false,
-      missing: ['ffmpeg', 'rm -rf'],
-      installCommand: 'brew install ffmpeg',
+      components: [
+        { name: 'helper', found: true, version: '1.0.0', path: '/x/ytm-host', source: 'bundled', error: '' },
+        { name: 'yt-dlp', found: true, version: '2026.10.21', path: '/opt/homebrew/bin/yt-dlp', source: 'homebrew', error: '' },
+        { name: 'ffmpeg', found: true, version: '', path: '/usr/local/bin/ffmpeg', source: 'path', error: 'UNKNOWN' },
+        { name: 'deno', found: false, version: '', path: '', source: '', error: '' },
+      ],
       defaultDir: '/Users/a/Downloads',
       namePresets: [{ id: 'title-id', example: 'Title [x]' }, { id: 'BAD ID', example: 'x' }],
     });
-    expect(s).toMatchObject({ ready: true, ytDlp: { found: true, manager: 'homebrew' }, ffmpeg: { found: false }, deno: { found: true, version: '2.5.0' } });
-    expect(s).toMatchObject({ complete: false, missing: ['ffmpeg'], installCommand: 'brew install ffmpeg', ffmpeg: { error: 'FFMPEG_NOT_FOUND' } });
+    expect(s).toMatchObject({ hostVersion: '1.0.0', ready: true, complete: false, defaultDir: '/Users/a/Downloads' });
+    expect(s.components).toEqual([
+      { name: 'helper', found: true, version: '1.0.0', path: '/x/ytm-host', source: 'bundled', error: null },
+      { name: 'yt-dlp', found: true, version: '2026.10.21', path: '/opt/homebrew/bin/yt-dlp', source: 'homebrew', error: null },
+      { name: 'deno', found: false, version: null, path: null, source: null, error: null },
+      { name: 'ffmpeg', found: true, version: null, path: '/usr/local/bin/ffmpeg', source: 'path', error: 'UNKNOWN' },
+    ]);
     expect(s.namePresets).toEqual([{ id: 'title-id', example: 'Title [x]' }]);
-    expect(parseStatus({}).deno).toBeNull();
-    expect(parseStatus({ ready: true })).toMatchObject({ complete: true, missing: [], installCommand: '' });
+    expect(parseStatus({})).toMatchObject({ ready: false, complete: false, components: [], update: null });
+    // complete 只在 ready 時成立。
+    expect(parseStatus({ ready: false, complete: true }).complete).toBe(false);
   });
 
   it('getInfo：只取用到的欄位', () => {
     const info = parseInfo({ id: VID, title: 'T', duration: 19, formats: [{ id: '18', ext: 'mp4', vcodec: 'avc1', acodec: 'mp4a', height: 360 }, { ext: 'x' }], subtitles: [{ lang: 'en', name: 'English' }] });
     expect(info.formats).toHaveLength(1);
     expect(info.formats[0]).toMatchObject({ id: '18', height: 360, filesize: null });
-    expect(info.subtitles).toEqual([{ lang: 'en', name: 'English' }]);
+    expect(Object.keys(info).sort()).toEqual(['duration', 'formats', 'isLive', 'liveStatus', 'title']);
   });
 
   it('jobs：略過格式不對的工作', () => {

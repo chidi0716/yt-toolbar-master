@@ -46,7 +46,7 @@ function DownloadGate({ videoId, children }: { videoId: string; children: (title
   }
   return (
     <>
-      {missingOnlyDeno(host.state) && <DenoHint state={host.state} />}
+      {missingOnlyDeno(host.state) && <DenoHint />}
       <UpdateFailureHint state={host.state} onOpenSettings={openSettings} />
       {children(video.data?.title ?? '', shownSetup.current)}
       <OtherJobs videoId={videoId} />

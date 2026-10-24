@@ -430,7 +430,7 @@
   font-size: 12px;
 }
 
-.ytm-setup-components li[data-component='host'][data-missing] .ytm-setup-state {
+.ytm-setup-components li[data-component='helper'][data-missing] .ytm-setup-state {
   color: var(--ytm-error);
 }
 

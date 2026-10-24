@@ -1,11 +1,18 @@
 // 橋接程式的連線狀態（002 FR-2，tasks T16、T22）：由背景腳本以 status 指令查詢。
 // 必要元件為橋接程式、yt-dlp、ffmpeg、deno；ready（yt-dlp 與 ffmpeg 可用）時可以下載，只缺 deno 時顯示建議安裝的提示。
-import type { HostStatusResult } from '@/utils/native-protocol';
-import { INSTALL_COMMANDS } from './install-guide';
-import type { HostOs } from './logic';
+import { t, type MessageKey } from '@/utils/i18n';
+import type { ComponentName, HostComponentInfo, HostStatusResult } from '@/utils/native-protocol';
 
-export type HostComponent = 'host' | 'ytDlp' | 'ffmpeg' | 'deno';
-export const HOST_COMPONENTS: readonly HostComponent[] = ['host', 'ytDlp', 'ffmpeg', 'deno'];
+/** 面板與設定頁列出的元件（ffprobe 與 ffmpeg 一起安裝，不另外列出）。 */
+export const HOST_COMPONENTS = ['helper', 'yt-dlp', 'ffmpeg', 'deno'] as const satisfies readonly ComponentName[];
+export type HostComponent = (typeof HOST_COMPONENTS)[number];
+
+export const COMPONENT_LABELS: Record<HostComponent, MessageKey> = {
+  helper: 'hostComponentHelper',
+  'yt-dlp': 'hostComponentYtDlp',
+  ffmpeg: 'hostComponentFfmpeg',
+  deno: 'hostComponentDeno',
+};
 
 export type HostState =
   | { state: 'unreachable' }
@@ -18,32 +25,32 @@ export const INSTALL_GUIDE_URL = 'https://github.com/chidi0716/yt-toolbar-master
 /** 可以下載（yt-dlp 與 ffmpeg 都可用）。 */
 export const canDownload = (s: HostState): s is Extract<HostState, { state: 'connected' }> => s.state === 'connected' && s.status.ready;
 
-/** 各元件是否可用；null 表示無法確認（找不到橋接程式，或舊版橋接程式沒有回報 deno）。 */
-export function componentState(s: HostState, c: HostComponent): boolean | null {
-  if (c === 'host') return s.state === 'connected';
-  if (s.state !== 'connected') return null;
-  if (c === 'ytDlp') return s.status.ytDlp.found && !s.status.ytDlp.error;
-  if (c === 'ffmpeg') return s.status.ffmpeg.found && !s.status.ffmpeg.error;
-  return s.status.deno ? s.status.deno.found && !s.status.deno.error : null;
+export interface ComponentView {
+  /** 可以使用；null 表示無法確認（找不到橋接程式，或沒有回報這個元件）。 */
+  ok: boolean | null;
+  version: string | null;
+  /** status.components 中的這一項（路徑與來源）。 */
+  info: HostComponentInfo | null;
 }
 
-export function componentVersion(s: HostState, c: HostComponent): string | null {
-  if (s.state !== 'connected') return null;
-  if (c === 'host') return s.status.hostVersion || null;
-  const tool = c === 'ytDlp' ? s.status.ytDlp : c === 'ffmpeg' ? s.status.ffmpeg : s.status.deno;
-  return tool?.found ? tool.version : null;
+/** 元件的狀態；全部以 status.components 為準（小幫手本身另外以能否連線判斷）。 */
+export function component(s: HostState | null, name: HostComponent): ComponentView {
+  if (s?.state !== 'connected') return { ok: name === 'helper' && s ? false : null, version: null, info: null };
+  const info = s.status.components.find((c) => c.name === name) ?? null;
+  if (name === 'helper') return { ok: true, version: s.status.hostVersion || null, info };
+  if (!info) return { ok: null, version: null, info: null };
+  return { ok: info.found && !info.error, version: info.found ? info.version : null, info };
 }
 
-/**
- * 安裝或補齊元件的指令（008 FR-1、FR-13）：一律是一行安裝指令。指令可以重複執行，
- * 已安裝的部分會跳過、缺少的部分會補上，所以小幫手未安裝或缺少 yt-dlp、ffmpeg、deno 時都用同一個指令。
- */
-export function installCommand(_s: HostState, os: HostOs): string | null {
-  return os === 'other' ? null : INSTALL_COMMANDS[os];
+/** 元件列的狀態文字：版本、已找到、未安裝、缺少或無法確認。 */
+export function componentText(s: HostState, name: HostComponent): { text: string; missing: boolean } {
+  const { ok, version } = component(s, name);
+  if (!ok) return { text: t(name === 'helper' ? 'hostStatusNotInstalled' : ok === null ? 'hostStatusUnknown' : 'hostStatusMissing'), missing: true };
+  return { text: version ? t('hostStatusVersion', version) : t('hostStatusFound'), missing: false };
 }
 
 /** 只缺 deno（可以下載，但建議安裝，T15a）。 */
-export const missingOnlyDeno = (s: HostState) => canDownload(s) && componentState(s, 'deno') === false;
+export const missingOnlyDeno = (s: HostState) => canDownload(s) && component(s, 'deno').ok === false;
 
 /** 自動更新連續失敗幾次以上才在下載面板提示（008 FR-25）。 */
 export const UPDATE_FAILURE_HINT_AT = 3;

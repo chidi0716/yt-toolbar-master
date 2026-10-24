@@ -126,7 +126,7 @@ try {
   const status = await message({ type: 'hostStatus', refresh: true });
   check(
     'Firefox：背景腳本以 connectNative 取得 status（含 deno）',
-    status.ok && status.status.ready && status.status.complete && status.status.deno?.version === '2.1.4' && status.status.defaultDir === downloads,
+    status.ok && status.status.ready && status.status.complete && status.status.components?.find((c) => c.name === 'deno')?.version === '2.1.4' && status.status.defaultDir === downloads,
     JSON.stringify(status).slice(0, 300),
   );
   const info = await message({ type: 'getInfo', videoId: 'jNQXAC9IVRw' });
@@ -190,7 +190,7 @@ try {
     if (rows.length === 4 && rows.every((r) => r.endsWith('true'))) break;
     await sleep(200);
   }
-  check('Firefox：設定頁的連線狀態四項都可用', rows.join('|') === 'host:true|ytDlp:true|ffmpeg:true|deno:true', rows.join('|'));
+  check('Firefox：設定頁的連線狀態四項都可用', rows.join('|') === 'helper:true|yt-dlp:true|ffmpeg:true|deno:true', rows.join('|'));
 
   // 006：設定頁的「工具列」區（T34）
   const toolbarRows = JSON.parse(await evaluate(`JSON.stringify([...document.querySelectorAll('#toolbar-list .toolbar-row')].map((r) => r.dataset.item))`));

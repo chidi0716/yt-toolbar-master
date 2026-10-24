@@ -18,7 +18,7 @@ import {
 } from '@/utils/native-protocol';
 import { defaultVideoContainer, defaultVideoHeight, downloadDir, embedInfo, mp3Bitrate, namePreset } from '@/utils/settings';
 import { applyEvent, errorInfo, isActive, isFinal, markMissing, mergeHostJobs, newJob, pruneJobs, type DownloadRequest, type JobRecord } from './jobs';
-import { createStatusCache } from './host-status';
+import { component, createStatusCache } from './host-status';
 import { activeJobFor, planQuickDownload, startNotificationId, toQuickDefaults, type QuickDefaults, type QuickKind } from './quick';
 
 const LOG_PREFIX = '[yt-toolbar-master]';
@@ -278,7 +278,7 @@ export function quickDownload(
     const running = activeJobFor(jobs, videoId, kind);
     if (running) return { status: 'running', jobId: running.jobId, title: running.title, label: running.label };
     const status = await getStatus(false);
-    if (!status.ready) throw new HostRequestError(status.ytDlp.found ? 'FFMPEG_NOT_FOUND' : 'YTDLP_NOT_FOUND');
+    if (!status.ready) throw new HostRequestError(component({ state: 'connected', status }, 'yt-dlp').ok ? 'FFMPEG_NOT_FOUND' : 'YTDLP_NOT_FOUND');
     // 小幫手可以使用：右鍵下載在這時顯示「開始下載」通知（先以影片 ID 顯示，FR-23）。
     options.onStart?.();
     const [info, defaults] = await Promise.all([getInfo(videoId), readQuickDefaults()]);

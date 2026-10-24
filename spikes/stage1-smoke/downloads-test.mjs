@@ -364,7 +364,7 @@ for (const [task, ua, os] of [
       check(
         `${os}：影片面板列出需要的元件（小幫手未安裝、yt-dlp、ffmpeg 與 deno 無法確認）（FR-2、T15a）`,
         s?.title === "Downloads aren't set up yet" &&
-          s.components.join('|') === "host:Not installed|ytDlp:Can't check without the helper|ffmpeg:Can't check without the helper|deno:Can't check without the helper",
+          s.components.join('|') === "helper:Not installed|yt-dlp:Can't check without the helper|ffmpeg:Can't check without the helper|deno:Can't check without the helper",
         JSON.stringify(s?.components),
       );
       check(
@@ -390,7 +390,7 @@ for (const [task, ua, os] of [
           .then(() => 'Checking…', () => 'not shown');
         await page.waitForTimeout(700);
         const after = await setupState(page);
-        check('「重新檢查」按鈕：檢查中顯示「Checking…」，完成後更新狀態（FR-2）', during === 'Checking…' && after.recheck === 'Check again' && after.components[0] === 'host:Not installed', `${during} → ${after.recheck}`);
+        check('「重新檢查」按鈕：檢查中顯示「Checking…」，完成後更新狀態（FR-2）', during === 'Checking…' && after.recheck === 'Check again' && after.components[0] === 'helper:Not installed', `${during} → ${after.recheck}`);
         await page.keyboard.press('Escape');
         // MP3 面板相同
         await openPanel(page, 'mp3');

@@ -18,14 +18,11 @@ const f = (p: Partial<HostFormat> & { id: string }): HostFormat => ({
   filesizeApprox: null,
   protocol: 'https',
   dynamicRange: 'SDR',
-  language: '',
   note: '',
   ...p,
 });
 const info = (p: Partial<HostInfo> = {}): HostInfo => ({
-  id: ID,
   title: 'Me at the zoo',
-  channel: 'jawed',
   duration: 19,
   liveStatus: 'not_live',
   isLive: false,
@@ -34,8 +31,6 @@ const info = (p: Partial<HostInfo> = {}): HostInfo => ({
     f({ id: '136', ext: 'mp4', vcodec: 'avc1.4d401f', width: 1280, height: 720, fps: 30, filesize: 36_000_000 }),
     f({ id: '299', ext: 'mp4', vcodec: 'avc1.64002a', width: 1920, height: 1080, fps: 60, filesizeApprox: 316_000_000 }),
   ],
-  subtitles: [],
-  autoCaptions: [],
   ...p,
 });
 const defaults = toQuickDefaults(1080, 'mp4', 192);
@@ -90,7 +85,7 @@ describe('planQuickDownload（009 FR-2、FR-3、FR-6）', () => {
   });
 
   it('影片資訊沒有標題時用頁面上的標題；影片 ID 一律用請求的', () => {
-    const plan = planQuickDownload(ID, info({ title: '', id: '' }), 'mp3', defaults, 'Page title');
+    const plan = planQuickDownload(ID, info({ title: '' }), 'mp3', defaults, 'Page title');
     expect(plan.ok && plan.request).toMatchObject({ videoId: ID, title: 'Page title' });
   });
 

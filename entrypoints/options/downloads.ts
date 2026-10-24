@@ -2,7 +2,7 @@
 // 各元件（小幫手、yt-dlp、ffmpeg、deno、擴充功能）的版本與來源、安裝說明、更新 yt-dlp、自動更新、移除下載功能、
 // 下載資料夾、檔名格式、嵌入資訊開關。設定改變時立即寫入；背景腳本在下次下載時讀取。
 import { checkHostStatus, HostError, pickFolder, updateYtDlp } from '@/features/downloads/host-client';
-import { componentState, componentVersion, HOST_COMPONENTS, INSTALL_GUIDE_URL, type HostComponent, type HostState } from '@/features/downloads/host-status';
+import { component, COMPONENT_LABELS, componentText, HOST_COMPONENTS, INSTALL_GUIDE_URL, type HostState } from '@/features/downloads/host-status';
 import { INSTALL_POLL_MS } from '@/features/downloads/install-guide';
 import type { HostOs } from '@/features/downloads/logic';
 import { t, type MessageKey } from '@/utils/i18n';
@@ -20,15 +20,8 @@ import {
   toDefaultVideoHeight,
   type DefaultVideoHeight,
 } from '@/utils/settings';
-import { componentInfo, createMaintenance, extensionSource, sourceLabel } from './host-maintenance';
+import { createMaintenance, extensionSource, sourceLabel } from './host-maintenance';
 import { installGuide, platformOs } from './install-guide';
-
-const COMPONENT_LABELS: Record<HostComponent, MessageKey> = {
-  host: 'hostComponentHelper',
-  ytDlp: 'hostComponentYtDlp',
-  ffmpeg: 'hostComponentFfmpeg',
-  deno: 'hostComponentDeno',
-};
 
 /** 橋接程式內建的檔名格式（status 的 namePresets）；沒有連線時也能顯示目前的選擇。 */
 const PRESET_LABELS: Record<string, MessageKey> = {
@@ -196,18 +189,10 @@ export function renderDownloads(root: HTMLElement): () => void {
       return;
     }
     for (const c of HOST_COMPONENTS) {
-      const ok = componentState(state, c);
-      const version = componentVersion(state, c);
-      const text =
-        ok === null
-          ? t(c === 'host' ? 'hostStatusNotInstalled' : 'hostStatusUnknown')
-          : ok
-            ? version
-              ? t('hostStatusVersion', version)
-              : t('hostStatusFound')
-            : t(c === 'host' ? 'hostStatusNotInstalled' : 'hostStatusMissing');
+      const { ok, info: found } = component(state, c);
+      const { text } = componentText(state, c);
       // 來源（008 FR-24）：小幫手安裝的、Homebrew、winget 或系統上原本就有的；滑鼠停留時顯示路徑。
-      const info = ok ? componentInfo(state, c) : null;
+      const info = ok ? found : null;
       const source = sourceLabel(info);
       const value = el('span', { className: 'option-desc', textContent: source ? `${text} · ${source}` : text });
       if (info?.path) value.title = info.path;
@@ -223,7 +208,7 @@ export function renderDownloads(root: HTMLElement): () => void {
     }
     setPolling(missing);
     const connected = state.state === 'connected';
-    update.disabled = !connected || componentState(state, 'ytDlp') !== true;
+    update.disabled = !connected || component(state, 'yt-dlp').ok !== true;
     choose.disabled = !connected;
     maintenance.render(state);
     renderFolder();

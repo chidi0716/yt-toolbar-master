@@ -1,13 +1,10 @@
 // 設定頁「下載」區的元件來源、自動更新與移除（008 FR-24、FR-25、FR-30，plan 3.10）。以 DOM API 建立（設定頁不使用 Preact）。
 import { createIconElement } from '@/components/icon-data';
 import { checkUpdates, HostError, setAutoUpdate, uninstallHost } from '@/features/downloads/host-client';
-import { UPDATE_FAILURE_HINT_AT, type HostComponent, type HostState } from '@/features/downloads/host-status';
+import { UPDATE_FAILURE_HINT_AT, type HostState } from '@/features/downloads/host-status';
 import { currentLocaleTag, t, type MessageKey } from '@/utils/i18n';
-import type { ComponentName, ComponentSource, HostComponentInfo, HostUpdateInfo } from '@/utils/native-protocol';
+import type { ComponentSource, HostComponentInfo, HostUpdateInfo } from '@/utils/native-protocol';
 import { hostUpdateHintDismissed } from '@/utils/settings';
-
-/** 下載區元件列對應到 status.components 的名稱。 */
-export const COMPONENT_NAME: Record<HostComponent, ComponentName> = { host: 'helper', ytDlp: 'yt-dlp', ffmpeg: 'ffmpeg', deno: 'deno' };
 
 const SOURCE_LABELS: Record<ComponentSource, MessageKey> = {
   bundled: 'componentSourceBundled',
@@ -17,11 +14,6 @@ const SOURCE_LABELS: Record<ComponentSource, MessageKey> = {
 };
 
 /** 元件的來源文字（例如「小幫手安裝」「Homebrew」）；不明時為 null。 */
-export function componentInfo(state: HostState | null, c: HostComponent): HostComponentInfo | null {
-  if (state?.state !== 'connected') return null;
-  return state.status.components?.find((x) => x.name === COMPONENT_NAME[c]) ?? null;
-}
-
 export const sourceLabel = (info: HostComponentInfo | null): string | null => (info?.source ? t(SOURCE_LABELS[info.source]) : null);
 
 const RESULT_LABELS: Record<NonNullable<HostUpdateInfo['lastResult']>, MessageKey> = {

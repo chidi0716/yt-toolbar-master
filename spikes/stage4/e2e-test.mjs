@@ -466,7 +466,7 @@ await session('connected', async ({ page, context, home, downloads }) => {
   const opt = other;
   await opt.reload();
   await opt.waitForSelector('#downloads-groups .status-row[data-component="deno"]');
-  await opt.waitForFunction(() => document.querySelector('#downloads-groups .status-row[data-component="ytDlp"]')?.dataset.ok === 'true', null, { timeout: 10_000 });
+  await opt.waitForFunction(() => document.querySelector('#downloads-groups .status-row[data-component="yt-dlp"]')?.dataset.ok === 'true', null, { timeout: 10_000 });
   const status = await opt.evaluate(() => [...document.querySelectorAll('#downloads-groups .status-row[data-component]:not([data-component="extension"])')].map((r) => `${r.dataset.component}:${r.dataset.ok}:${r.lastElementChild.textContent}`));
   check('T23：連線狀態列出橋接程式、yt-dlp、ffmpeg、deno 與版本', status.length === 4 && status.every((s) => s.split(':')[1] === 'true') && status[1].includes('2026.10.21'), status.join(' | '));
   const folder = await opt.locator('#downloads-folder').textContent();
@@ -574,7 +574,7 @@ await session(
     );
     check(
       'T16/T22：已連線但缺 yt-dlp：標題「Some download tools are missing」，列出各元件狀態（FR-2）',
-      s?.state === 'connected' && s.title === 'Some download tools are missing' && s.components[0] === 'host:Installed (dev)' && s.components[1] === 'ytDlp:Not installed' && /^ffmpeg:Installed/.test(s.components[2]) && /^deno:Installed/.test(s.components[3]),
+      s?.state === 'connected' && s.title === 'Some download tools are missing' && s.components[0] === 'helper:Installed (dev)' && s.components[1] === 'yt-dlp:Not installed' && /^ffmpeg:Installed/.test(s.components[2]) && /^deno:Installed/.test(s.components[3]),
       JSON.stringify(s),
     );
     // 008（T45）：缺少元件時也顯示一行安裝指令（可以重複執行，已安裝的部分會跳過）。作業系統以 runtime.getPlatformInfo 為準，
