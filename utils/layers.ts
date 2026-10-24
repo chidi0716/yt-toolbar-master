@@ -13,6 +13,8 @@ export interface Layer {
 }
 
 const layers: Layer[] = [];
+/** 最近一次按下滑鼠時最上面的一層（在收起之前記下）。 */
+let pointerTop: Layer | null = null;
 
 const top = (): Layer | null => layers.reduce<Layer | null>((best, layer) => (!best || layer.level >= best.level ? layer : best), null);
 
@@ -22,8 +24,15 @@ function onKeyDown(event: KeyboardEvent) {
 
 function onPointerDown(event: PointerEvent) {
   const layer = top();
+  pointerTop = layer;
   if (layer?.outside && !layer.outside.inside(event.composedPath())) layer.outside.close();
 }
+
+/**
+ * 這次按下滑鼠時，這一層是不是最上面的一層（一次點擊只處理最上面的一層）。在 window 捕獲階段的 pointerdown
+ * 之後呼叫：這裡的監聽在有層開著時最先加上，所以比之後才加上的監聽先執行。
+ */
+export const wasTopAtPointerDown = (layer: Layer): boolean => pointerTop === layer;
 
 /** 開啟一層；回傳關閉時呼叫的函式（重複呼叫沒有作用）。 */
 export function pushLayer(layer: Layer): () => void {
@@ -37,6 +46,7 @@ export function pushLayer(layer: Layer): () => void {
     if (index === -1) return;
     layers.splice(index, 1);
     if (layers.length === 0) {
+      pointerTop = null;
       window.removeEventListener('keydown', onKeyDown, true);
       window.removeEventListener('pointerdown', onPointerDown, true);
     }

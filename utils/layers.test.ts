@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { LAYER_LEVEL, pushLayer } from './layers';
+import { LAYER_LEVEL, pushLayer, wasTopAtPointerDown, type Layer } from './layers';
 
 const target = new EventTarget();
 const esc = () => target.dispatchEvent(Object.assign(new Event('keydown'), { key: 'Escape' }));
@@ -36,5 +36,16 @@ describe('可以關閉的層（Esc 只關閉最上面的一層）', () => {
     target.dispatchEvent(new Event('pointerdown'));
     expect(close).toHaveBeenCalledTimes(1);
     off();
+  });
+
+  it('一次點擊只處理最上面的一層：面板開著時，按下時最上面的是面板，劇院模式不處理這次點擊', () => {
+    const cinema: Layer = { level: LAYER_LEVEL.cinema, onEscape: () => {} };
+    const closeCinema = pushLayer(cinema);
+    const closePanel = pushLayer({ level: LAYER_LEVEL.toolbar, onEscape: () => {}, outside: { inside: () => false, close: () => closePanel() } });
+    target.dispatchEvent(new Event('pointerdown'));
+    expect(wasTopAtPointerDown(cinema)).toBe(false);
+    target.dispatchEvent(new Event('pointerdown'));
+    expect(wasTopAtPointerDown(cinema)).toBe(true);
+    closeCinema();
   });
 });
