@@ -1,6 +1,8 @@
 // 經由橋接程式的下載工作（002 FR-3 至 FR-7、FR-6a、FR-6b，plan 3.8）：工作紀錄、事件套用、錯誤訊息對應、
 // 進度文字。純函式，背景腳本與內容腳本共用。
-import { formatNumber, type MessageKey } from '@/utils/i18n';
+import type { MessageKey } from '@/utils/i18n';
+import { formatClock } from '@/utils/time';
+import type { QualityRow } from '@/utils/format-list';
 import type { HostEvent } from '@/utils/native';
 import { FINAL_STATES, type HostErrorCode, type HostJob, type JobKind, type JobStage, type JobState } from '@/utils/native-protocol';
 
@@ -12,6 +14,12 @@ export type DownloadRequest =
 
 export const MP3_BITRATES = [64, 128, 192, 256, 320] as const;
 export type Mp3Bitrate = (typeof MP3_BITRATES)[number];
+export const isMp3Bitrate = (v: unknown): v is Mp3Bitrate => (MP3_BITRATES as readonly unknown[]).includes(v);
+
+/** 影片下載的說明（002 FR-11、009 FR-4），例如「1080p60 HDR MP4」。 */
+export const videoLabel = (row: Pick<QualityRow, 'resolution' | 'hdr' | 'container'>) => `${row.resolution}${row.hdr ? ' HDR' : ''} ${row.container.toUpperCase()}`;
+/** MP3 下載的說明，例如「MP3 192 kbps」。 */
+export const mp3Label = (bitrate: Mp3Bitrate) => `MP3 ${bitrate} kbps`;
 
 export interface JobRecord {
   jobId: string;
@@ -46,25 +54,29 @@ export const isActive = (job: JobRecord) => !isFinal(job.state);
 export const MAX_FINISHED_JOBS = 50;
 export const FINISHED_TTL_MS = 24 * 60 * 60_000;
 
-/** 新的工作（download 指令回應 jobId 之後）。 */
-export function newJob(jobId: string, request: DownloadRequest, now: number, estimate: JobRecord['estimate'] = null): JobRecord {
+/** 只知道 ID 與種類的工作（例如瀏覽器重新啟動前開始、之後才收到事件或從橋接程式補回的）。 */
+export function blankJob(jobId: string, videoId: string, kind: JobKind, now: number): JobRecord {
   return {
-    estimate,
     jobId,
-    videoId: request.videoId,
-    kind: request.kind,
-    label: request.label,
-    title: request.title,
+    videoId,
+    kind,
+    label: '',
+    title: '',
     state: 'queued',
     percent: null,
     speed: null,
     eta: null,
     fileName: null,
     error: null,
-    request,
+    request: null,
     createdAt: now,
     updatedAt: now,
   };
+}
+
+/** 新的工作（download 指令回應 jobId 之後）。 */
+export function newJob(jobId: string, request: DownloadRequest, now: number, estimate: JobRecord['estimate'] = null): JobRecord {
+  return { ...blankJob(jobId, request.videoId, request.kind, now), label: request.label, title: request.title, request, estimate };
 }
 
 /** 把橋接程式的事件套用到工作清單。未知的工作（例如瀏覽器重新啟動前開始的）也會加入。 */
@@ -78,25 +90,7 @@ export function applyEvent(jobs: readonly JobRecord[], event: HostEvent, now: nu
     out[index] = { ...job, state: 'downloading', stage: event.stage, percent: null, speed: null, eta: null, updatedAt: now };
     return out;
   }
-  const base: JobRecord =
-    index >= 0
-      ? jobs[index]!
-      : {
-          jobId: event.jobId,
-          videoId: event.videoId,
-          kind: event.jobKind,
-          label: '',
-          title: '',
-          state: 'queued',
-          percent: null,
-          speed: null,
-          eta: null,
-          fileName: null,
-          error: null,
-          request: null,
-          createdAt: now,
-          updatedAt: now,
-        };
+  const base = index >= 0 ? jobs[index]! : blankJob(event.jobId, event.videoId, event.jobKind, now);
   // 已結束的工作不再被延遲送達的進度事件改回進行中。
   if (isFinal(base.state) && event.kind === 'progress') return [...jobs];
   let next: JobRecord;
@@ -125,10 +119,9 @@ export function mergeHostJobs(jobs: readonly JobRecord[], host: readonly HostJob
     const prev = index >= 0 ? out[index]! : null;
     if (!prev && isFinal(h.state) && !h.missed) continue; // 以前的工作，不需要列出
     const next: JobRecord = {
-      ...(prev ?? newJob(h.jobId, { kind: 'subtitle', videoId: h.videoId, title: '', label: '', subLang: 'en', subFormat: 'srt', subAuto: false }, now)),
+      ...(prev ?? blankJob(h.jobId, h.videoId, h.kind, now)),
       kind: h.kind,
       videoId: h.videoId,
-      request: prev?.request ?? null,
       state: h.state,
       percent: h.state === 'done' ? 100 : h.percent,
       speed: isFinal(h.state) ? null : h.speed,
@@ -155,6 +148,19 @@ export function markMissing(jobs: readonly JobRecord[], host: readonly HostJob[]
  */
 export function otherActiveJobs(jobs: readonly JobRecord[], videoId: string): JobRecord[] {
   return jobs.filter((j) => j.videoId !== videoId && isActive(j));
+}
+
+/**
+ * 收到新的清單時沿用內容沒變的紀錄（同一個物件），全部沒變時回傳原本的清單：
+ * 面板只在自己的工作確實改變時重新繪製。
+ */
+export function reuseJobs(prev: readonly JobRecord[], next: readonly JobRecord[]): readonly JobRecord[] {
+  const byId = new Map(prev.map((j) => [j.jobId, j]));
+  const merged = next.map((j) => {
+    const old = byId.get(j.jobId);
+    return old && JSON.stringify(old) === JSON.stringify(j) ? old : j;
+  });
+  return merged.length === prev.length && merged.every((j, i) => j === prev[i]) ? prev : merged;
 }
 
 /** 只保留進行中的工作與最近結束的工作。 */
@@ -222,28 +228,10 @@ export function errorInfo(code: HostErrorCode | null): ErrorInfo {
 // 進度文字（002 FR-3）
 // ---------------------------------------------------------------------------
 
-/** 速度：例如「1.2 MB/s」。 */
-export function formatSpeed(bytesPerSecond: number | null): string {
-  if (bytesPerSecond === null || !(bytesPerSecond > 0)) return '';
-  const units = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
-  let v = bytesPerSecond;
-  let u = 0;
-  while (v >= 1000 && u < units.length - 1) {
-    v /= 1000;
-    u++;
-  }
-  return `${formatNumber(u === 0 ? Math.round(v) : v, u === 0 ? 0 : 1)} ${units[u]}`;
-}
-
 /** 剩餘時間：例如「01:23」「1:02:03」。 */
 export function formatEta(seconds: number | null): string {
   if (seconds === null || !Number.isFinite(seconds) || seconds < 0) return '';
-  const total = Math.round(seconds);
-  const h = Math.floor(total / 3600);
-  const m = Math.floor((total % 3600) / 60);
-  const s = total % 60;
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+  return formatClock(Math.round(seconds));
 }
 
 /** 工具列按鈕的進度環（FR-3）：這部影片該類下載中最慢的一個；沒有百分比時為不確定（FR-6b）。 */

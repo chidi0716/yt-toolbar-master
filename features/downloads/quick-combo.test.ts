@@ -49,8 +49,7 @@ describe('隱藏的工具與編輯工具列（006）', () => {
     const opened = panelReducer(panelReducer(initialPanelState<ButtonId>(), { type: 'toggle', id: 'more' }), { type: 'toggle', id: 'video' });
     expect(opened.openId).toBe('video');
     expect(initialDownloadMode({ quickEnabled: true, clickedForThisVideo: true, helperJustInstalled: false })).toBe('quick');
-    const progress = { video: buttonProgress([videoJob('a', ID, 'downloading', 40)], ID, 'video') };
-    expect(isToolOngoing('video', { progress })).toBe(true);
+    expect(isToolOngoing('video', { progress: buttonProgress([videoJob('a', ID, 'downloading', 40)], ID, 'video') })).toBe(true);
   });
 
   it('改變順序後提示文字仍對應到同一個工具（以工具 ID 對應）', () => {

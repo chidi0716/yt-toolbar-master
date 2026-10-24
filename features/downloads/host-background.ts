@@ -1,6 +1,7 @@
 // 背景腳本端：經由橋接程式的下載（tasks T16、plan 3.8）。
 // - 連線（utils/native.ts）、狀態與影片資訊的暫存（002 NFR-2）；
-// - 下載工作清單：以 storage.session 保存，改變時推播給曾經查詢過的 YouTube 分頁（002 FR-3、FR-4）；
+// - 下載工作清單：進度只存在記憶體，工作的狀態改變時才寫入 storage.session；推播給曾經查詢過的 YouTube 分頁，
+//   只有進度改變時每秒最多推播一次（002 FR-3、FR-4）；
 // - 完成／失敗通知，點通知在 Finder／檔案總管中顯示檔案（002 FR-5、FR-6）；擴充功能沒有連線時結束的工作
 //   在下一次連線時以 jobs 的 missed 補發通知（plan 4.6）。
 import { initI18n, t } from '@/utils/i18n';
@@ -12,13 +13,15 @@ import {
   parseJobs,
   parseStatus,
   parseUpdate,
+  type HostCommand,
   type HostErrorCode,
   type HostInfo,
   type HostStatusResult,
 } from '@/utils/native-protocol';
-import { defaultVideoContainer, defaultVideoHeight, downloadDir, embedInfo, mp3Bitrate, namePreset } from '@/utils/settings';
+import { isValidJobId } from '@/utils/validate';
+import { defaultVideoContainer, defaultVideoHeight, downloadDir, embedInfo, mp3Bitrate, namePreset, readSettings } from '@/utils/settings';
 import { applyEvent, errorInfo, isActive, isFinal, markMissing, mergeHostJobs, newJob, pruneJobs, type DownloadRequest, type JobRecord } from './jobs';
-import { createStatusCache } from './host-status';
+import { component, createStatusCache } from './host-status';
 import { activeJobFor, planQuickDownload, startNotificationId, toQuickDefaults, type QuickDefaults, type QuickKind } from './quick';
 
 const LOG_PREFIX = '[yt-toolbar-master]';
@@ -26,6 +29,8 @@ const INFO_TTL_MS = 30 * 60_000;
 const NOTIFICATION_PREFIX = 'ytm-job:';
 /** 沒有進行中的下載、也沒有等待中的指令這麼久之後關閉連線（橋接程式隨之結束，也不讓 service worker 一直執行）。 */
 const IDLE_CLOSE_MS = 60_000;
+/** 只有進度改變時，推播的最短間隔。 */
+const PROGRESS_BROADCAST_MS = 1000;
 
 const jobsItem = storage.defineItem<JobRecord[]>('session:downloadJobs', { fallback: [] });
 const notifiedItem = storage.defineItem<string[]>('session:notifiedJobs', { fallback: [] });
@@ -59,6 +64,15 @@ const client = new NativeClient({
   shouldReconnect: () => jobs.some(isActive),
 });
 
+/** 會改變 status 結果的指令：回應後清除狀態快取（009 FR-10a）。 */
+const STATUS_CHANGING: readonly HostCommand[] = ['updateYtDlp', 'setAutoUpdate', 'checkUpdates', 'uninstall'];
+
+const hostRequest: NativeClient['request'] = (cmd, ...rest) => {
+  const done = client.request(cmd, ...rest);
+  if (STATUS_CHANGING.includes(cmd)) void done.finally(() => statusCache.clear()).catch(() => {});
+  return done;
+};
+
 let idleTimer: ReturnType<typeof setTimeout> | null = null;
 
 function scheduleIdleClose() {
@@ -87,8 +101,16 @@ export async function resumeDownloads(): Promise<void> {
   if (jobs.some(isActive) || unfinished) client.connect();
 }
 
-async function setJobs(next: JobRecord[]): Promise<void> {
+/**
+ * 更新工作清單。progressOnly：只有進度（百分比、速度、剩餘時間）改變，不寫入 storage，推播合併為每秒最多一次；
+ * service worker 重新啟動後從最近一次保存的狀態繼續，進度由下一個事件補上。
+ */
+async function setJobs(next: JobRecord[], progressOnly = false): Promise<void> {
   jobs = pruneJobs(next, Date.now());
+  if (progressOnly) {
+    scheduleBroadcast();
+    return;
+  }
   await jobsItem.setValue(jobs);
   const active = jobs.some(isActive);
   if (active !== unfinished) {
@@ -98,7 +120,18 @@ async function setJobs(next: JobRecord[]): Promise<void> {
   broadcast();
 }
 
+let broadcastTimer: ReturnType<typeof setTimeout> | null = null;
+let lastBroadcast = 0;
+
+function scheduleBroadcast() {
+  if (broadcastTimer !== null) return;
+  broadcastTimer = setTimeout(broadcast, Math.max(0, lastBroadcast + PROGRESS_BROADCAST_MS - Date.now()));
+}
+
 function broadcast() {
+  if (broadcastTimer !== null) clearTimeout(broadcastTimer);
+  broadcastTimer = null;
+  lastBroadcast = Date.now();
   const message = { type: 'jobsChanged', jobs };
   for (const tabId of [...tabs]) {
     browser.tabs.sendMessage(tabId, message).catch(() => {
@@ -111,7 +144,10 @@ function broadcast() {
 
 async function onHostEvent(event: HostEvent) {
   await load();
-  await setJobs(applyEvent(jobs, event, Date.now()));
+  const before = event.kind === 'progress' ? jobs.find((j) => j.jobId === event.jobId) : undefined;
+  const next = applyEvent(jobs, event, Date.now());
+  const after = before && next.find((j) => j.jobId === event.jobId);
+  await setJobs(next, !!after && after.state === before.state && after.stage === before.stage);
   if (event.kind !== 'progress' && event.kind !== 'stage') {
     await notifyFinished(event.jobId);
     scheduleIdleClose();
@@ -122,7 +158,7 @@ async function onHostEvent(event: HostEvent) {
 async function syncJobs() {
   await load();
   try {
-    const host = parseJobs(await client.request('jobs'));
+    const host = parseJobs(await hostRequest('jobs'));
     let next = mergeHostJobs(jobs, host, Date.now());
     next = markMissing(next, host, Date.now());
     await setJobs(next);
@@ -167,7 +203,7 @@ export function onNotificationClicked(notificationId: string): void {
   void browser.notifications.clear(notificationId);
   void load().then(() => {
     if (jobs.find((j) => j.jobId === jobId)?.state !== 'done') return;
-    client.request('reveal', { jobId }).catch((err: unknown) => console.info(`${LOG_PREFIX} reveal failed`, err));
+    hostRequest('reveal', { jobId }).catch((err: unknown) => console.info(`${LOG_PREFIX} reveal failed`, err));
   });
 }
 
@@ -176,7 +212,7 @@ export async function getStatus(refresh: boolean): Promise<HostStatusResult> {
   const cached = refresh ? null : statusCache.get();
   if (cached) return cached;
   try {
-    const value = parseStatus(await client.request('status'));
+    const value = parseStatus(await hostRequest('status'));
     statusCache.put(value);
     return value;
   } catch (err) {
@@ -188,7 +224,7 @@ export async function getStatus(refresh: boolean): Promise<HostStatusResult> {
 function getInfo(videoId: string): Promise<HostInfo> {
   const cached = infoCache.get(videoId);
   if (cached && Date.now() - cached.at < INFO_TTL_MS) return cached.promise;
-  const promise = client.request('getInfo', { videoId }).then(parseInfo);
+  const promise = hostRequest('getInfo', { videoId }).then(parseInfo);
   infoCache.set(videoId, { at: Date.now(), promise });
   promise.catch(() => infoCache.delete(videoId));
   if (infoCache.size > 30) infoCache.delete(infoCache.keys().next().value!);
@@ -217,18 +253,22 @@ export function downloadArgs(
   }
 }
 
-async function startDownload(request: DownloadRequest, estimate: JobRecord['estimate'] = null): Promise<string> {
+async function cancelJob(jobId: string): Promise<void> {
+  const result = await hostRequest('cancel', { jobId });
   await load();
-  const status = await getStatus(false);
-  const preset = await namePreset.getValue();
+  await setJobs(jobs.map((j) => (j.jobId === jobId && isActive(j) ? { ...j, state: result.state === 'cancelled' ? 'cancelled' : j.state, speed: null, eta: null, updatedAt: Date.now() } : j)));
+}
+
+async function startDownload(request: DownloadRequest, estimate: JobRecord['estimate'] = null): Promise<string> {
+  const [, status, [dir, preset, embed]] = await Promise.all([load(), getStatus(false), readSettings([downloadDir, namePreset, embedInfo] as const)]);
   const settings = {
-    dir: (await downloadDir.getValue()) || status.defaultDir,
+    dir: dir || status.defaultDir,
     namePreset: status.namePresets.some((p) => p.id === preset) ? preset : 'title-id',
-    embed: (await embedInfo.getValue()) !== false,
+    embed: embed !== false,
   };
   // 設定的下載資料夾不存在或無法寫入時，橋接程式回應 PERMISSION_DENIED（T15b）。
-  const result = await client.request('download', downloadArgs(request, settings));
-  const jobId = typeof result.jobId === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(result.jobId) ? result.jobId : null;
+  const result = await hostRequest('download', downloadArgs(request, settings));
+  const jobId = isValidJobId(result.jobId) ? result.jobId : null;
   if (!jobId) throw new HostRequestError('UNKNOWN', 'download returned no jobId');
   // 事件有時比 download 的回應早到：已經有紀錄時保留進度，只補上請求內容。
   const existing = jobs.find((j) => j.jobId === jobId);
@@ -241,11 +281,12 @@ async function startDownload(request: DownloadRequest, estimate: JobRecord['esti
 // 一鍵下載與右鍵下載（009，plan 3.11）
 // ---------------------------------------------------------------------------
 
-export type QuickSource = 'toolbar' | 'contextMenu';
-
 export interface QuickResult {
-  /** started：開始了新的下載；running：同一部影片的同一種下載已在進行中（FR-5），沒有重複下載。 */
-  status: 'started' | 'running';
+  /**
+   * started：開始了新的下載；running：同一部影片的同一種下載已在進行中（FR-5），沒有重複下載；
+   * cancelled：準備期間被 cancelQuick 取消（沒有下載）。
+   */
+  status: 'started' | 'running' | 'cancelled';
   jobId: string;
   title: string;
   label: string;
@@ -253,12 +294,20 @@ export interface QuickResult {
 
 /** 目前的預設值（009 FR-2、FR-3）。 */
 export async function readQuickDefaults(): Promise<QuickDefaults> {
-  const [height, container, bitrate] = await Promise.all([defaultVideoHeight.getValue(), defaultVideoContainer.getValue(), mp3Bitrate.getValue()]);
+  const [height, container, bitrate] = await readSettings([defaultVideoHeight, defaultVideoContainer, mp3Bitrate] as const);
   return toQuickDefaults(height, container, bitrate);
 }
 
 /** 同一部影片、同一種的一鍵下載同時只處理一個（連點兩次時共用同一個結果）。 */
 const quickPending = new Map<string, Promise<QuickResult>>();
+/** 準備期間按了「改用其他畫質」的一鍵下載。 */
+const quickCancelled = new Set<string>();
+
+/** 取消準備中的一鍵下載：還沒送出 download 時不送出；已經送出時取消那個工作。 */
+function cancelQuick(videoId: string, kind: QuickKind) {
+  const key = `${videoId}:${kind}`;
+  if (quickPending.has(key)) quickCancelled.add(key);
+}
 
 /**
  * 一鍵下載：取得影片資訊（共用 getInfo 的暫存）→ 檢查是否可下載（FR-6）→ 依預設值選格式（FR-2、FR-3）→ 開始下載。
@@ -268,7 +317,7 @@ const quickPending = new Map<string, Promise<QuickResult>>();
 export function quickDownload(
   videoId: string,
   kind: QuickKind,
-  options: { source: QuickSource; title?: string; onStart?: () => void; onInfo?: (title: string) => void },
+  options: { title?: string; onStart?: () => void; onInfo?: (title: string) => void } = {},
 ): Promise<QuickResult> {
   const key = `${videoId}:${kind}`;
   const pending = quickPending.get(key);
@@ -277,43 +326,45 @@ export function quickDownload(
     await load();
     const running = activeJobFor(jobs, videoId, kind);
     if (running) return { status: 'running', jobId: running.jobId, title: running.title, label: running.label };
+    // 影片資訊與狀態同時查詢（小幫手不能用時 getInfo 的失敗不用理會）。
+    const infoPromise = getInfo(videoId);
+    infoPromise.catch(() => {});
     const status = await getStatus(false);
-    if (!status.ready) throw new HostRequestError(status.ytDlp.found ? 'FFMPEG_NOT_FOUND' : 'YTDLP_NOT_FOUND');
+    if (!status.ready) throw new HostRequestError(component({ state: 'connected', status }, 'yt-dlp').ok ? 'FFMPEG_NOT_FOUND' : 'YTDLP_NOT_FOUND');
     // 小幫手可以使用：右鍵下載在這時顯示「開始下載」通知（先以影片 ID 顯示，FR-23）。
     options.onStart?.();
-    const [info, defaults] = await Promise.all([getInfo(videoId), readQuickDefaults()]);
+    const [info, defaults] = await Promise.all([infoPromise, readQuickDefaults()]);
     options.onInfo?.(info.title || options.title || '');
     const plan = planQuickDownload(videoId, info, kind, defaults, options.title);
     if (!plan.ok) throw new HostRequestError(plan.error);
     // 取得資訊的期間，其他分頁有機會開始同一個下載：再檢查一次。
     const again = activeJobFor(jobs, videoId, kind);
     if (again) return { status: 'running', jobId: again.jobId, title: again.title, label: again.label };
+    const cancelled = { status: 'cancelled', jobId: '', title: plan.request.title, label: plan.request.label } as const;
+    if (quickCancelled.has(key)) return cancelled;
     const jobId = await startDownload(plan.request, plan.estimate);
+    if (quickCancelled.has(key)) {
+      await cancelJob(jobId);
+      return cancelled;
+    }
     return { status: 'started', jobId, title: plan.request.title, label: plan.request.label };
   })();
   quickPending.set(key, run);
-  void run.finally(() => quickPending.delete(key)).catch(() => {});
+  void run
+    .finally(() => {
+      quickPending.delete(key);
+      quickCancelled.delete(key);
+    })
+    .catch(() => {});
   return run;
 }
 
-type HostMessageType =
-  | 'hostStatus'
-  | 'getInfo'
-  | 'startDownload'
-  | 'quickDownload'
-  | 'cancelJob'
-  | 'revealJob'
-  | 'getJobs'
-  | 'pickFolder'
-  | 'updateYtDlp'
-  | 'hostSetAutoUpdate'
-  | 'hostCheckUpdates'
-  | 'hostUninstall';
-export const HOST_MESSAGE_TYPES: readonly string[] = [
+const HOST_MESSAGE_TYPES = [
   'hostStatus',
   'getInfo',
   'startDownload',
   'quickDownload',
+  'cancelQuick',
   'cancelJob',
   'revealJob',
   'getJobs',
@@ -322,7 +373,8 @@ export const HOST_MESSAGE_TYPES: readonly string[] = [
   'hostSetAutoUpdate',
   'hostCheckUpdates',
   'hostUninstall',
-];
+] as const;
+type HostMessageType = (typeof HOST_MESSAGE_TYPES)[number];
 
 async function handle(message: Extract<ContentMessage, { type: HostMessageType }>, tabId: number | undefined): Promise<MessageResponse<Record<string, unknown>>> {
   switch (message.type) {
@@ -333,15 +385,15 @@ async function handle(message: Extract<ContentMessage, { type: HostMessageType }
     case 'startDownload':
       return { ok: true, jobId: await startDownload(message.request) };
     case 'quickDownload':
-      return { ok: true, result: await quickDownload(message.videoId, message.kind, { source: 'toolbar', title: message.title }) };
-    case 'cancelJob': {
-      const result = await client.request('cancel', { jobId: message.jobId });
-      await load();
-      await setJobs(jobs.map((j) => (j.jobId === message.jobId && isActive(j) ? { ...j, state: result.state === 'cancelled' ? 'cancelled' : j.state, speed: null, eta: null, updatedAt: Date.now() } : j)));
+      return { ok: true, result: await quickDownload(message.videoId, message.kind, { title: message.title }) };
+    case 'cancelJob':
+      await cancelJob(message.jobId);
       return { ok: true };
-    }
+    case 'cancelQuick':
+      cancelQuick(message.videoId, message.kind);
+      return { ok: true };
     case 'revealJob':
-      await client.request('reveal', { jobId: message.jobId });
+      await hostRequest('reveal', { jobId: message.jobId });
       return { ok: true };
     case 'getJobs':
       await load();
@@ -352,28 +404,23 @@ async function handle(message: Extract<ContentMessage, { type: HostMessageType }
       if (jobs.some(isActive) && !client.connected) client.connect();
       return { ok: true, jobs };
     case 'pickFolder': {
-      const result = await client.request('pickFolder');
+      const result = await hostRequest('pickFolder');
       return { ok: true, path: typeof result.path === 'string' ? result.path : null };
     }
     case 'updateYtDlp': {
-      const result = parseUpdate(await client.request('updateYtDlp'));
-      statusCache.clear();
-      return { ok: true, update: result };
+      return { ok: true, update: parseUpdate(await hostRequest('updateYtDlp')) };
     }
     // 008（plan 4.9、3.10）
     case 'hostSetAutoUpdate':
-      await client.request('setAutoUpdate', { enabled: message.enabled });
-      statusCache.clear();
+      await hostRequest('setAutoUpdate', { enabled: message.enabled });
       return { ok: true };
     case 'hostCheckUpdates': {
-      const result = await client.request('checkUpdates');
-      statusCache.clear();
+      const result = await hostRequest('checkUpdates');
       return { ok: true, started: result.started === true };
     }
     case 'hostUninstall':
-      // 有進行中的下載時，小幫手回應 JOBS_RUNNING。成功後小幫手 2 秒後刪除自己與瀏覽器的註冊。
-      await client.request('uninstall');
-      statusCache.clear();
+      // 有進行中的下載時，小幫手回應 JOBS_RUNNING。成功時小幫手在這個程序結束後刪除自己與瀏覽器的註冊。
+      await hostRequest('uninstall');
       infoCache.clear();
       // 關閉這次的連線：正在執行的小幫手隨之結束，下一次查詢會重新連線（註冊已被刪除時為未安裝）。
       client.close();
@@ -383,7 +430,7 @@ async function handle(message: Extract<ContentMessage, { type: HostMessageType }
 
 /** 處理經由橋接程式的訊息；結果以 sendResponse 回覆。不是這類訊息時回傳 false。 */
 export function handleHostMessage(message: ContentMessage, tabId: number | undefined, sendResponse: (response: unknown) => void): boolean {
-  if (!HOST_MESSAGE_TYPES.includes(message.type)) return false;
+  if (!(HOST_MESSAGE_TYPES as readonly string[]).includes(message.type)) return false;
   const done = handle(message as Extract<ContentMessage, { type: HostMessageType }>, tabId);
   void done.finally(scheduleIdleClose).catch(() => {});
   done.then(sendResponse, (err: unknown) => {

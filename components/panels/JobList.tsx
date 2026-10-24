@@ -1,18 +1,20 @@
 // 下載工作清單（002 FR-3、FR-4、FR-6、FR-6a、FR-6b，tasks T22）：面板內列出目前這部影片的下載，
 // 顯示百分比、速度、剩餘時間（沒有百分比時為不確定進度）、「取消」；完成時可以在 Finder／檔案總管中顯示；
 // 失敗時顯示易懂的原因與「重試」，必要時附「更新 yt-dlp」「開啟設定頁」或安裝說明。
-import { useState } from 'preact/hooks';
+import { useMemo, useState } from 'preact/hooks';
 import { cancelJob, revealJob, startDownload, updateYtDlp, HostError } from '@/features/downloads/host-client';
 import { INSTALL_GUIDE_URL } from '@/features/downloads/host-status';
-import { errorInfo, formatEta, formatSpeed, isActive, otherActiveJobs, type JobRecord } from '@/features/downloads/jobs';
+import { errorInfo, formatEta, isActive, otherActiveJobs, type JobRecord } from '@/features/downloads/jobs';
+import { formatSpeed } from '@/utils/format-list';
 import { t, type MessageKey } from '@/utils/i18n';
-import type { ContentMessage } from '@/utils/messages';
+import { openSettings } from '@/utils/messages';
 import type { JobKind } from '@/utils/native-protocol';
 import type { UpdateResult } from '@/utils/native-protocol';
 import { Button } from '../controls/Button';
 import { Icon } from '../icons';
 import { useStore } from './useStore';
-import { downloadJobs } from '@/features/downloads/host-client';
+import { downloadJobs, videoJobs } from '@/features/downloads/host-client';
+import { derive } from '@/features/viewing/store';
 
 const STATE_LABELS: Record<JobRecord['state'], MessageKey> = {
   queued: 'jobQueued',
@@ -23,13 +25,8 @@ const STATE_LABELS: Record<JobRecord['state'], MessageKey> = {
   cancelled: 'jobCancelled',
 };
 
-export function openSettings() {
-  const message: ContentMessage = { type: 'openOptions' };
-  browser.runtime.sendMessage(message).catch(() => {});
-}
-
-/** 「更新 yt-dlp」：直接更新，或顯示可以複製的更新指令（由套件管理工具安裝時）。 */
-export function UpdateYtDlp() {
+/** 「更新 yt-dlp」：直接更新，或顯示可以複製的更新指令（由套件管理工具安裝時）。onDone 在指令結束後呼叫。 */
+export function UpdateYtDlp({ onDone }: { onDone?: () => void }) {
   const [state, setState] = useState<{ status: 'idle' | 'running' | 'error' } | { status: 'done'; result: UpdateResult }>({ status: 'idle' });
   const run = async () => {
     setState({ status: 'running' });
@@ -38,6 +35,7 @@ export function UpdateYtDlp() {
     } catch {
       setState({ status: 'error' });
     }
+    onDone?.();
   };
   if (state.status === 'done') {
     const r = state.result;
@@ -189,7 +187,7 @@ export function JobRow({ job, label }: { job: JobRecord; label?: string }) {
 
 /** 其他影片進行中的下載（例如從右鍵選單開始的，009 FR-23），標明影片標題。 */
 export function OtherJobs({ videoId }: { videoId: string }) {
-  const jobs = otherActiveJobs(useStore(downloadJobs()), videoId);
+  const jobs = useStore(useMemo(() => derive([downloadJobs()], (list) => otherActiveJobs(list, videoId)), [videoId]));
   if (jobs.length === 0) return null;
   return (
     <section class="ytm-other-jobs" aria-label={t('jobsOtherVideos')}>
@@ -205,7 +203,7 @@ export function OtherJobs({ videoId }: { videoId: string }) {
 
 /** 這部影片、這一類的下載（新的在前）。 */
 export function JobList({ videoId, kind }: { videoId: string; kind: JobKind }) {
-  const jobs = useStore(downloadJobs()).filter((j) => j.videoId === videoId && j.kind === kind && j.state !== 'cancelled');
+  const jobs = useStore(useMemo(() => videoJobs(videoId, (j) => j.kind === kind && j.state !== 'cancelled'), [videoId, kind]));
   if (jobs.length === 0) return null;
   return (
     <ul class="ytm-jobs" aria-label={t('jobsLabel')}>

@@ -1,12 +1,21 @@
 // 內容腳本端的新版本提醒（008 FR-27 至 FR-29b，plan 3.9）：
-// - 影片頁載入完成時請背景腳本查詢（背景腳本決定是否真的連網）；
+// - 影片頁載入完成時讀取記錄；距上次查詢 24 小時以上才請背景腳本查詢（背景腳本決定是否真的連網），
+//   其他時候在這裡依記錄決定是否提醒，不送訊息；
 // - 收集卡片的顯示條件（分頁在前景、工具列在畫面中、全螢幕、子母畫面、正在輸入）與使用者操作，交給 reminder.ts；
 // - 其他分頁或設定頁處理提醒後（storage 改變）重新讀取狀態；
 // - 卡片與「更多」選單的操作：前往下載、跳過這個版本、不再提醒、✕。
 // 只有在有提醒要顯示（等待出現或卡片顯示中）時才監聽頁面事件，平常不增加任何監聽（001 NFR-3）。
-import { sendToBackground } from '@/features/downloads/content';
-import { updateCheck, updateReminder } from '@/utils/settings';
-import { isReleaseUrl, type ReminderAction, type ReminderView } from '@/utils/update-check';
+import { sendToBackground } from '@/utils/messages';
+import { readSettings, updateCheck, updateReminder } from '@/utils/settings';
+import {
+  isReleaseUrl,
+  normalizeCheckState,
+  normalizeReminderState,
+  reminderView,
+  shouldCheck,
+  type ReminderAction,
+  type ReminderView,
+} from '@/utils/update-check';
 import { createReminderController, type ReminderController, type ReminderPhase } from './reminder';
 
 const LOG_PREFIX = '[yt-toolbar-master]';
@@ -61,9 +70,23 @@ export function createUpdateReminder(): UpdateReminder {
     controller.setView(next);
   };
 
-  async function request(type: 'updateCheck' | 'updateStatus') {
-    const res = await sendToBackground<{ view: ReminderView }>({ type });
+  async function requestCheck() {
+    const res = await sendToBackground<{ view: ReminderView }>({ type: 'updateCheck' });
     if (!disposed && res.ok && res.view) apply(res.view);
+  }
+
+  /**
+   * 依記錄決定是否提醒。到了該查詢的時間（或從未查詢過）才請背景腳本查詢。查詢只在可以提醒的安裝方式進行
+   * （FR-26），所以有查詢記錄就表示可以提醒。
+   */
+  async function refresh(checkIfDue: boolean) {
+    const [rawCheck, rawReminder] = await readSettings([updateCheck, updateReminder] as const);
+    if (disposed) return;
+    const check = normalizeCheckState(rawCheck);
+    const reminder = normalizeReminderState(rawReminder);
+    const now = Date.now();
+    if (checkIfDue && shouldCheck({ eligible: true, reminder, check, now })) return requestCheck();
+    apply(reminderView({ currentVersion: browser.runtime.getManifest().version, eligible: check.lastCheckedAt !== null, check, reminder, now }));
   }
 
   async function send(action: ReminderAction, version: string | null) {
@@ -132,7 +155,7 @@ export function createUpdateReminder(): UpdateReminder {
   const unsubscribe = controller.state.subscribe(() => syncListeners(controller.state.get().phase));
 
   // 其他分頁、設定頁處理提醒，或其他分頁查詢到新版本時，重新讀取狀態。
-  const unwatch = [updateReminder.watch(() => void request('updateStatus')), updateCheck.watch(() => void request('updateStatus'))];
+  const unwatch = [updateReminder.watch(() => void refresh(false)), updateCheck.watch(() => void refresh(false))];
 
   const act = (action: ReminderAction) => {
     const version = view?.latest?.version ?? null;
@@ -144,7 +167,7 @@ export function createUpdateReminder(): UpdateReminder {
   return {
     controller,
     check() {
-      void request('updateCheck');
+      void refresh(true);
     },
     attach(next) {
       host = next;

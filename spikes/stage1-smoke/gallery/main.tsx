@@ -2,7 +2,6 @@
 // 以 YouTube 2026-10 實測到的 --yt-sys-color-baseline--* 值模擬淺色與深色主題。
 import { render } from 'preact';
 import { useState } from 'preact/hooks';
-import { Badge } from '@/components/controls/Badge';
 import { Button } from '@/components/controls/Button';
 import { RangeSlider } from '@/components/controls/RangeSlider';
 import { Select } from '@/components/controls/Select';
@@ -98,9 +97,9 @@ function Demo() {
           <Switch label="Off" checked={false} onChange={() => {}} />
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <Badge>4K</Badge>
-          <Badge>2K</Badge>
-          <Badge>HD</Badge>
+          <span class="ytm-badge">4K</span>
+          <span class="ytm-badge">2K</span>
+          <span class="ytm-badge">HD</span>
         </div>
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
           <Button variant="secondary">Pin panel</Button>

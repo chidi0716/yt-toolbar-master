@@ -1,35 +1,14 @@
 // 設定頁「關於」區（008 FR-29、FR-29a，plan 3.9）：目前版本、最新版本、最近一次查詢時間、「前往下載」，
 // 以及選過「不再提醒」時的「重新開啟新版本提醒」。設定頁不會自己查詢（查詢只在開啟影片頁時進行，FR-27）。
-import type { ContentMessage, MessageResponse } from '@/utils/messages';
-import { currentLocaleTag, t } from '@/utils/i18n';
+import { sendToBackground, type ContentMessage } from '@/utils/messages';
+import { t } from '@/utils/i18n';
 import { updateCheck, updateReminder } from '@/utils/settings';
 import { isNewer, isReleaseUrl, type ReminderView } from '@/utils/update-check';
+import { formatDateTime, statusRow as row } from './dom';
 
 async function send(message: ContentMessage): Promise<ReminderView | null> {
-  try {
-    const res = (await browser.runtime.sendMessage(message)) as MessageResponse<{ view: ReminderView }> | undefined;
-    return res?.ok ? res.view : null;
-  } catch (err) {
-    console.info('[yt-toolbar-master] update status failed', err);
-    return null;
-  }
-}
-
-export function formatDateTime(ms: number): string {
-  return new Intl.DateTimeFormat(currentLocaleTag(), { dateStyle: 'medium', timeStyle: 'short' }).format(ms);
-}
-
-function row(label: string, value: string, id: string): HTMLElement {
-  const el = document.createElement('div');
-  el.className = 'status-row';
-  const name = document.createElement('span');
-  name.textContent = label;
-  const text = document.createElement('span');
-  text.className = 'option-desc';
-  text.id = id;
-  text.textContent = value;
-  el.append(name, text);
-  return el;
+  const res = await sendToBackground<{ view: ReminderView }>(message);
+  return res.ok ? res.view : null;
 }
 
 /** 繪製「關於」區；回傳的函式取消監聽。 */

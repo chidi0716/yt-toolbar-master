@@ -1,20 +1,22 @@
-// 小幫手的狀態與安裝說明（002 FR-2、008 FR-1，tasks T16、T22、T45）：
-// - useHostState：向背景腳本查詢 status（含 deno），可以重新檢查；安裝說明顯示中每 3 秒自動檢查一次（只在面板開著時）；
+// 小幫手的狀態與安裝說明（002 FR-2、008 FR-1、FR-2、FR-24，tasks T16、T22、T45）。影片／MP3 面板與設定頁共用：
+// - useHostState：向背景腳本查詢 status，可以重新檢查；還沒裝好的期間每 3 秒自動檢查一次（只在面板或設定頁開著時）；
+// - ComponentList：各元件的狀態（設定頁另外顯示來源與路徑）；
 // - HostSetup：說明會安裝什麼、必要元件的狀態，依作業系統顯示一行安裝指令（可以複製）、三步驟說明、
 //   「這個指令會做什麼？」（步驟、下載來源、先檢視腳本的方式）與「重新檢查」；
 // - DenoHint：只缺 deno 時的建議提示（可以下載）。
+import type { ComponentChildren } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
-import { sendToBackground } from '@/features/downloads/content';
+import { sendToBackground } from '@/utils/messages';
 import { checkHostStatus } from '@/features/downloads/host-client';
 import {
   canDownload,
-  componentState,
-  componentVersion,
+  COMPONENT_LABELS,
+  componentText,
   HOST_COMPONENTS,
   INSTALL_GUIDE_URL,
-  installCommand,
   showUpdateFailureHint,
-  type HostComponent,
+  sourceLabel,
+  component,
   type HostState,
 } from '@/features/downloads/host-status';
 import {
@@ -29,19 +31,11 @@ import {
   type InstallOs,
 } from '@/features/downloads/install-guide';
 import { detectOs, type HostOs } from '@/features/downloads/logic';
-import { t, type MessageKey } from '@/utils/i18n';
+import { t } from '@/utils/i18n';
 import { hostUpdateHintDismissed } from '@/utils/settings';
 import { Button } from '../controls/Button';
 import { Icon } from '../icons';
-
-const LOG_PREFIX = '[yt-toolbar-master]';
-
-const COMPONENT_LABELS: Record<HostComponent, MessageKey> = {
-  host: 'hostComponentHelper',
-  ytDlp: 'hostComponentYtDlp',
-  ffmpeg: 'hostComponentFfmpeg',
-  deno: 'hostComponentDeno',
-};
+import { useCopy } from '../useCopy';
 
 /** 從瀏覽器的 user agent 推測作業系統（等背景腳本回覆 runtime.getPlatformInfo 之前先用）。 */
 export const currentOs = (): HostOs => {
@@ -72,11 +66,24 @@ const MIN_CHECK_MS = 400;
 
 const sameState = (a: HostState | null, b: HostState) => JSON.stringify(a) === JSON.stringify(b);
 
+/** 面板：還不能下載的期間自動檢查（008 FR-1）。 */
+const notReady = (s: HostState) => !canDownload(s);
+
+export interface HostStateHook {
+  state: HostState | null;
+  checking: boolean;
+  recheck: () => void;
+  /** 不顯示「檢查中」地重新查詢（例如改了自動更新的設定之後）。 */
+  refresh: () => void;
+  /** 以指令的回應直接更新（例如移除下載功能之後，不必再查詢）。 */
+  setState: (state: HostState) => void;
+}
+
 /**
- * 小幫手的狀態。pollWhileMissing 為 true 時，還不能下載的期間每 3 秒在背景檢查一次（不顯示「檢查中」），
- * 安裝完成後自動切換成可下載畫面（008 FR-1）；元件卸載（面板收起）時停止。分頁在背景時不檢查。
+ * 小幫手的狀態。pollWhile 成立的期間每 3 秒在背景檢查一次（不顯示「檢查中」），安裝完成後自動切換成可下載畫面
+ * （008 FR-1）；元件卸載（面板收起、離開設定頁）時停止。分頁在背景時不檢查。
  */
-export function useHostState(options: { pollWhileMissing?: boolean } = {}): { state: HostState | null; checking: boolean; recheck: () => void } {
+export function useHostState(pollWhile: (s: HostState) => boolean = notReady): HostStateHook {
   const [state, setState] = useState<HostState | null>(null);
   const [checking, setChecking] = useState(true);
   const [attempt, setAttempt] = useState(0);
@@ -96,69 +103,82 @@ export function useHostState(options: { pollWhileMissing?: boolean } = {}): { st
     };
   }, [attempt]);
 
-  const missing = state !== null && !canDownload(state);
-  const poll = !!options.pollWhileMissing && missing && !checking;
+  const mounted = useRef(true);
+  useEffect(
+    () => () => {
+      mounted.current = false;
+    },
+    [],
+  );
+  const refresh = useCallback(() => {
+    void checkHostStatus(true).then((s) => {
+      if (mounted.current) setState((prev) => (sameState(prev, s) ? prev : s));
+    });
+  }, []);
+
+  const poll = state !== null && !checking && pollWhile(state);
   useEffect(() => {
     if (!poll) return;
-    let current = true;
     let busy = false;
     const timer = setInterval(() => {
       if (busy || document.visibilityState !== 'visible') return;
       busy = true;
       void checkHostStatus(true).then((s) => {
         busy = false;
-        if (current) setState((prev) => (sameState(prev, s) ? prev : s));
+        if (mounted.current) setState((prev) => (sameState(prev, s) ? prev : s));
       });
     }, INSTALL_POLL_MS);
-    return () => {
-      current = false;
-      clearInterval(timer);
-    };
+    return () => clearInterval(timer);
   }, [poll]);
 
   const recheck = useCallback(() => setAttempt((n) => n + 1), []);
-  return { state, checking, recheck };
+  return { state, checking, recheck, refresh, setState };
 }
 
-function stateText(s: HostState, c: HostComponent): { text: string; missing: boolean } {
-  const ok = componentState(s, c);
-  if (ok === null) return { text: t(c === 'host' ? 'hostStatusNotInstalled' : 'hostStatusUnknown'), missing: true };
-  if (!ok) return { text: t(c === 'host' ? 'hostStatusNotInstalled' : 'hostStatusMissing'), missing: true };
-  const version = componentVersion(s, c);
-  return { text: version ? t('hostStatusVersion', version) : t('hostStatusFound'), missing: false };
+/**
+ * 各元件的狀態。details 為 true 時（設定頁，008 FR-24）另外顯示來源，滑鼠停留時顯示路徑；
+ * children 接在最後（設定頁的擴充功能本身）。
+ */
+export function ComponentList({ state, details = false, children }: { state: HostState; details?: boolean; children?: ComponentChildren }) {
+  return (
+    <ul class="ytm-setup-components">
+      {HOST_COMPONENTS.map((c) => {
+        const { text, missing } = componentText(state, c);
+        const info = details && !missing ? component(state, c).info : null;
+        const source = sourceLabel(info);
+        return (
+          <li key={c} data-component={c} data-missing={missing ? '' : undefined}>
+            <span>{t(COMPONENT_LABELS[c])}</span>
+            <span class="ytm-setup-state" title={info?.path ?? undefined}>
+              {source ? `${text} · ${source}` : text}
+            </span>
+          </li>
+        );
+      })}
+      {children}
+    </ul>
+  );
 }
 
 /** 指令與「複製」按鈕；無法寫入剪貼簿時選取指令文字，讓使用者自己複製。 */
 export function CopyCommand({ command, id }: { command: string; id: string }) {
-  const [copied, setCopied] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const { copied: done, failed, copy } = useCopy<'command'>();
+  const copied = done ? 'copied' : failed ? 'failed' : 'idle';
   const codeRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (copied !== 'copied') return;
-    const timer = setTimeout(() => setCopied('idle'), 2000);
-    return () => clearTimeout(timer);
-  }, [copied]);
-  const copy = () => {
-    // 在點擊的使用者操作中直接呼叫（與複製連結相同，plan 3.7.1）。
-    const write = navigator.clipboard?.writeText(command) ?? Promise.reject(new Error('clipboard unavailable'));
-    write.then(
-      () => setCopied('copied'),
-      (err: unknown) => {
-        console.info(`${LOG_PREFIX} copy install command failed`, err);
-        setCopied('failed');
-        try {
-          if (codeRef.current) window.getSelection()?.selectAllChildren(codeRef.current);
-        } catch {
-          // 選取失敗時，指令文字仍可以手動選取（user-select: all）。
-        }
-      },
-    );
-  };
+    if (!failed || !codeRef.current) return;
+    try {
+      window.getSelection()?.selectAllChildren(codeRef.current);
+    } catch {
+      // 選取失敗時，指令文字仍可以手動選取（user-select: all）。
+    }
+  }, [failed]);
   return (
     <div class="ytm-command">
       <code ref={codeRef} id={id} class="ytm-code ytm-command-text">
         {command}
       </code>
-      <Button variant="secondary" aria-describedby={id} onClick={copy} data-copied={copied === 'copied' ? '' : undefined}>
+      <Button variant="secondary" aria-describedby={id} onClick={() => copy('command', command)} data-copied={copied === 'copied' ? '' : undefined}>
         <Icon name={copied === 'copied' ? 'check' : 'content_copy'} size={18} />
         <span>{copied === 'copied' ? t('installCopied') : t('installCopy')}</span>
       </Button>
@@ -200,8 +220,13 @@ export function InstallGuide({ os, idPrefix }: { os: InstallOs; idPrefix: string
   );
 }
 
-/** 未安裝小幫手或缺少元件時的說明（002 FR-2、008 FR-1）。 */
-export function HostSetup({ state, checking, recheck }: { state: HostState; checking: boolean; recheck: () => void }) {
+/**
+ * 未安裝小幫手或缺少元件時的說明（002 FR-2、008 FR-1、FR-2）。設定頁以 details 顯示元件來源，
+ * extraRows 接在元件清單最後，actions 放在「重新檢查」旁。
+ */
+export function HostSetup(props: { host: HostStateHook & { state: HostState }; details?: boolean; extraRows?: ComponentChildren; actions?: ComponentChildren }) {
+  const { host, details, extraRows, actions } = props;
+  const { state } = host;
   const os = usePlatformOs();
   return (
     <div class="ytm-setup" data-state={state.state}>
@@ -210,17 +235,9 @@ export function HostSetup({ state, checking, recheck }: { state: HostState; chec
         <span>{t(state.state === 'unreachable' ? 'hostMissingTitle' : 'hostToolsMissingTitle')}</span>
       </p>
       <p class="ytm-setup-intro">{t('installIntro')}</p>
-      <ul class="ytm-setup-components">
-        {HOST_COMPONENTS.map((c) => {
-          const { text, missing } = stateText(state, c);
-          return (
-            <li key={c} data-component={c} data-missing={missing ? '' : undefined}>
-              <span>{t(COMPONENT_LABELS[c])}</span>
-              <span class="ytm-setup-state">{text}</span>
-            </li>
-          );
-        })}
-      </ul>
+      <ComponentList state={state} details={details}>
+        {extraRows}
+      </ComponentList>
       {os && <p class="ytm-setup-os-title">{t(INSTALL_TITLES[os])}</p>}
       {os === 'other' ? <p class="ytm-muted ytm-setup-os">{t('hostOtherOs')}</p> : os && <InstallGuide os={os} idPrefix="ytm-install" />}
       <p class="ytm-muted ytm-install-auto" role="status">
@@ -231,19 +248,27 @@ export function HostSetup({ state, checking, recheck }: { state: HostState; chec
           <Icon name="open_in_new" size={20} />
           <span>{t('hostInstallGuide')}</span>
         </a>
-        <Button variant="primary" disabled={checking} onClick={recheck}>
-          <Icon name="refresh" size={18} />
-          <span>{checking ? t('hostChecking') : t('hostRecheck')}</span>
-        </Button>
+        <RecheckButton host={host} />
+        {actions}
       </div>
     </div>
   );
 }
 
+/** 「重新檢查」：檢查中顯示「檢查中」。 */
+export function RecheckButton({ host }: { host: Pick<HostStateHook, 'checking' | 'recheck'> }) {
+  return (
+    <Button variant="primary" disabled={host.checking} onClick={host.recheck}>
+      <Icon name="refresh" size={18} />
+      <span>{host.checking ? t('hostChecking') : t('hostRecheck')}</span>
+    </Button>
+  );
+}
+
 /** 只缺 deno 時的提示（可以下載，但取得不到部分格式）：再執行一次安裝指令即可補上。 */
-export function DenoHint({ state }: { state: HostState }) {
+export function DenoHint() {
   const os = usePlatformOs();
-  const command = os ? installCommand(state, os) : null;
+  const command = os && os !== 'other' ? INSTALL_COMMANDS[os] : null;
   return (
     <div class="ytm-hint ytm-deno-hint" role="note">
       <Icon name="error" size={18} />

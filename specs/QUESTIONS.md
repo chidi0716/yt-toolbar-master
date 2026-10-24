@@ -529,3 +529,8 @@
   2. `specs/` 中除了 `QUESTIONS.md`、`CLEANROOM.md`、`tasks.md` 以外，描述目前名稱的地方（plan、e2e-checklist、notes、008）都改為新名稱；上述三個檔案保留原文作為紀錄。
   3. 測試過舊版本的電腦需要手動移除舊版小幫手（舊的移除指令或刪除 `youtube-extension-host` 資料夾與舊的原生訊息設定檔），e2e-checklist 第 11 節開頭已註明。
 - **請規格方確認**是否需要讓新的移除指令也清除舊名稱的檔案（目前不處理，因為尚未發佈任何版本）。
+
+### Q75 設定頁使用 Preact 後多一個 web-ext lint 警告（階段 11 X7） — 已回答：接受，列為例外
+
+- **狀況**：X7 要求設定頁的連線狀態改為掛載面板既有的 Preact 元件（`entrypoints/options/connection.tsx`）。Preact 因此打包進設定頁，`web-ext lint --self-hosted` 在 `chunks/options-*.js` 多出一個 `UNSAFE_VAR_ASSIGNMENT`（Unsafe assignment to innerHTML），與 `specs/notes/lint-exceptions.md` 已接受的 `content-scripts/youtube.js` 那一項來源相同（Preact 內部對 `dangerouslySetInnerHTML` 的支援；本專案不使用該屬性）。目前結果：0 個錯誤、3 個警告。
+- **請規格方確認**是否把設定頁的 chunk 加入 `lint-exceptions.md` 的例外（檔名含建置雜湊，建議寫成 `chunks/options-*.js`）。我沒有修改該檔。

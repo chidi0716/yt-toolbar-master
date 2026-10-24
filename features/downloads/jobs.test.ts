@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { formatSpeed } from '@/utils/format-list';
 import type { HostJob } from '@/utils/native-protocol';
 import {
   applyEvent,
+  reuseJobs,
   buttonProgress,
   errorInfo,
   formatEta,
-  formatSpeed,
   markMissing,
   mergeHostJobs,
   newJob,
@@ -117,5 +118,18 @@ describe('進度文字（002 FR-3、FR-6b）', () => {
     expect(buttonProgress([a, c], VID, 'video')).toBe('indeterminate');
     expect(buttonProgress([a], VID, 'mp3')).toBeNull();
     expect(buttonProgress([{ ...a, state: 'done' }], VID, 'video')).toBeNull();
+  });
+});
+
+describe('reuseJobs（推播的清單沿用沒變的紀錄）', () => {
+  const job = (jobId: string, percent: number) => ({ ...newJob(jobId, { kind: 'mp3', videoId: 'jNQXAC9IVRw', title: 'T', label: 'L', bitrate: 192, section: null }, 1), percent });
+  it('內容沒變時沿用同一個物件；全部沒變時沿用整個清單', () => {
+    const prev = [job('a', 10), job('b', 20)];
+    const same = reuseJobs(prev, JSON.parse(JSON.stringify(prev)));
+    expect(same).toBe(prev);
+    const next = reuseJobs(prev, [job('a', 10), job('b', 30)]);
+    expect(next).not.toBe(prev);
+    expect(next[0]).toBe(prev[0]);
+    expect(next[1]).not.toBe(prev[1]);
   });
 });

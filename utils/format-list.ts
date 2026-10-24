@@ -206,13 +206,22 @@ export function sizeForSection(row: QualityRow, section: { start: number; end: n
 /** 檔案大小的文字（002 FR-11）：例如「147.1 MB」；只有估計值時加上 approxPrefix；未知為「—」。 */
 export function formatSize(size: number | null, approx: boolean, approxPrefix: string): string {
   if (size === null || !Number.isFinite(size) || size < 0) return '—';
+  const text = formatBytes(size, '');
+  return approx ? `${approxPrefix}${text}` : text;
+}
+
+/** 速度（002 FR-3）：例如「1.2 MB/s」；未知或 0 時為空字串。 */
+export function formatSpeed(bytesPerSecond: number | null): string {
+  return bytesPerSecond === null || !(bytesPerSecond > 0) ? '' : formatBytes(bytesPerSecond, '/s');
+}
+
+/** 位元組數加上單位（1000 進位）：B 不帶小數，其他一位小數。 */
+function formatBytes(value: number, suffix: string): string {
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  let value = size;
   let unit = 0;
   while (value >= 1000 && unit < units.length - 1) {
     value /= 1000;
     unit++;
   }
-  const text = `${formatNumber(unit === 0 ? Math.round(value) : value, unit === 0 ? 0 : 1)} ${units[unit]}`;
-  return approx ? `${approxPrefix}${text}` : text;
+  return `${formatNumber(unit === 0 ? Math.round(value) : value, unit === 0 ? 0 : 1)} ${units[unit]}${suffix}`;
 }

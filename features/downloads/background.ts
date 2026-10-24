@@ -3,7 +3,7 @@
 import { convertCaption } from '@/utils/captions';
 import { captionFilename, screenshotFilename, thumbnailFilename } from '@/utils/filename';
 import type { ContentMessage, MessageResponse, ThumbnailInfo } from '@/utils/messages';
-import { THUMBNAIL_SIZES, thumbnailSizeUrl, validateCaptionUrl } from '@/utils/youtube/dom';
+import { THUMBNAIL_SIZES, thumbnailSizeUrl, validateCaptionUrl, type ThumbnailKey } from '@/utils/youtube/dom';
 import { isRealThumbnail } from './logic';
 
 const LOG_PREFIX = '[yt-toolbar-master]';
@@ -24,17 +24,25 @@ async function imageSize(blob: Blob): Promise<{ width: number; height: number }>
 
 /** 依序檢查各尺寸，排除 404 與 120×90 的預設圖（plan 3.8）。同一部影片的結果暫存。 */
 const thumbnailCache = new Map<string, ThumbnailInfo[]>();
+/** 檢查時取得的圖片，下載時沿用（不重複下載）；只保留最近幾部影片的。 */
+const thumbnailBlobs = new Map<string, Map<ThumbnailKey, Blob>>();
+const MAX_BLOB_VIDEOS = 5;
+
 export async function getThumbnails(videoId: string): Promise<ThumbnailInfo[]> {
   const cached = thumbnailCache.get(videoId);
   if (cached) return cached;
+  const blobs = new Map<ThumbnailKey, Blob>();
   const results = await Promise.all(
     THUMBNAIL_SIZES.map(async ({ key }) => {
       const url = thumbnailSizeUrl(videoId, key);
       try {
         const res = await fetch(url, { credentials: 'omit' });
         if (!res.ok) return null;
-        const { width, height } = await imageSize(await res.blob());
-        return isRealThumbnail(res.status, width, height) ? { key, width, height, url } : null;
+        const blob = await res.blob();
+        const { width, height } = await imageSize(blob);
+        if (!isRealThumbnail(res.status, width, height)) return null;
+        blobs.set(key, blob);
+        return { key, width, height, url };
       } catch (err) {
         console.info(`${LOG_PREFIX} thumbnail check failed`, key, err);
         return null;
@@ -44,6 +52,8 @@ export async function getThumbnails(videoId: string): Promise<ThumbnailInfo[]> {
   const list = results.filter((r): r is ThumbnailInfo => r !== null);
   if (thumbnailCache.size > 50) thumbnailCache.clear();
   thumbnailCache.set(videoId, list);
+  thumbnailBlobs.set(videoId, blobs);
+  if (thumbnailBlobs.size > MAX_BLOB_VIDEOS) thumbnailBlobs.delete(thumbnailBlobs.keys().next().value!);
   return list;
 }
 
@@ -83,8 +93,8 @@ function releaseWhenDone(id: number, url: string) {
   browser.downloads.onChanged.addListener(onChanged);
 }
 
-type DirectMessage = Extract<ContentMessage, { type: 'getThumbnails' | 'downloadThumbnail' | 'saveScreenshot' | 'downloadCaption' }>;
-const DIRECT_TYPES: readonly string[] = ['getThumbnails', 'downloadThumbnail', 'saveScreenshot', 'downloadCaption'];
+const DIRECT_TYPES = ['getThumbnails', 'downloadThumbnail', 'saveScreenshot', 'downloadCaption'] as const;
+type DirectMessage = Extract<ContentMessage, { type: (typeof DIRECT_TYPES)[number] }>;
 
 async function handle(message: DirectMessage): Promise<MessageResponse<Record<string, unknown>>> {
   switch (message.type) {
@@ -97,9 +107,13 @@ async function handle(message: DirectMessage): Promise<MessageResponse<Record<st
       if (!found) return { ok: false, error: 'NOT_FOUND' };
       try {
         // 由背景腳本取得圖片後存檔（與字幕、截圖相同的方式），格式維持 YouTube 提供的 JPG 或 WebP（FR-31）。
-        const res = await fetch(found.url, { credentials: 'omit' });
-        if (!res.ok) return { ok: false, error: 'NOT_FOUND' };
-        const blob = await res.blob();
+        // 檢查尺寸時取得的圖片還在時直接使用。
+        let blob = thumbnailBlobs.get(message.videoId)?.get(message.key);
+        if (!blob) {
+          const res = await fetch(found.url, { credentials: 'omit' });
+          if (!res.ok) return { ok: false, error: 'NOT_FOUND' };
+          blob = await res.blob();
+        }
         const extension = blob.type === 'image/webp' ? 'webp' : 'jpg';
         await downloadBlob(blob, thumbnailFilename(message.title, message.videoId, extension));
         return { ok: true };
@@ -161,7 +175,7 @@ async function handle(message: DirectMessage): Promise<MessageResponse<Record<st
 
 /** 處理下載相關的訊息；結果以 sendResponse 回覆（Chrome 與 Firefox 都支援 return true 的寫法）。 */
 export function handleDownloadMessage(message: ContentMessage, sendResponse: (response: unknown) => void): boolean {
-  if (!DIRECT_TYPES.includes(message.type)) return false;
+  if (!(DIRECT_TYPES as readonly string[]).includes(message.type)) return false;
   handle(message as DirectMessage).then(sendResponse, (err: unknown) => {
     console.info(`${LOG_PREFIX} download message failed`, err);
     sendResponse({ ok: false, error: 'DOWNLOAD_FAILED' });

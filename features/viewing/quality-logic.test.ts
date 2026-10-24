@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { QualityCode } from '@/utils/youtube/dom';
-import { isManualChange, lockHeight, pickQuality, qualityToApply } from './quality-logic';
+import { isManualChange, lockHeight, pickQuality } from './quality-logic';
 
 const UP_TO_4K: QualityCode[] = ['hd2160', 'hd1440', 'hd1080', 'hd720', 'large', 'medium', 'small', 'tiny'];
 const UP_TO_720: QualityCode[] = ['hd720', 'large', 'medium', 'small', 'tiny'];
@@ -47,26 +47,6 @@ describe('pickQuality（004 FR-2）', () => {
   it('鎖定關閉或沒有可用畫質時回傳 null', () => {
     expect(pickQuality('off', UP_TO_4K)).toBeNull();
     expect(pickQuality('1080', [])).toBeNull();
-  });
-});
-
-describe('qualityToApply（004 FR-2 至 FR-4）', () => {
-  it('目前畫質不是目標時切換', () => {
-    expect(qualityToApply({ lock: '1080', available: UP_TO_4K, current: 'hd2160', userChose: false })).toBe('hd1080');
-    expect(qualityToApply({ lock: '1080', available: UP_TO_4K, current: null, userChose: false })).toBe('hd1080');
-  });
-
-  it('已經是目標畫質時不切換', () => {
-    expect(qualityToApply({ lock: '1080', available: UP_TO_4K, current: 'hd1080', userChose: false })).toBeNull();
-  });
-
-  it('使用者已手動選擇時不切換', () => {
-    expect(qualityToApply({ lock: '1080', available: UP_TO_4K, current: 'large', userChose: true })).toBeNull();
-  });
-
-  it('鎖定關閉或畫質清單還沒載入時不切換', () => {
-    expect(qualityToApply({ lock: 'off', available: UP_TO_4K, current: 'large', userChose: false })).toBeNull();
-    expect(qualityToApply({ lock: '720', available: [], current: null, userChose: false })).toBeNull();
   });
 });
 

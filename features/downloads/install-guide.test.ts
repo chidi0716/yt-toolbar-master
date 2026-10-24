@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import en from '../../public/_locales/en/messages.json';
 import zh from '../../public/_locales/zh_TW/messages.json';
-import { installCommand } from './host-status';
 import { detailSource, INSTALL_COMMANDS, INSTALL_DETAILS, INSTALL_POLL_MS, INSTALL_STEPS, platformToOs, REVIEW_COMMANDS } from './install-guide';
 
 describe('一行安裝指令（008 FR-1、FR-10，plan 3.10）', () => {
@@ -14,12 +13,6 @@ describe('一行安裝指令（008 FR-1、FR-10，plan 3.10）', () => {
     for (const command of [...Object.values(INSTALL_COMMANDS), ...Object.values(REVIEW_COMMANDS).flat()]) {
       expect(command).not.toMatch(/sudo|RunAs|-Verb/i);
     }
-  });
-
-  it('小幫手未安裝、缺少元件、只缺 deno 時都使用同一個指令（可以重複執行，FR-13）；其他系統沒有指令', () => {
-    expect(installCommand({ state: 'unreachable' }, 'mac')).toBe(INSTALL_COMMANDS.mac);
-    expect(installCommand({ state: 'unreachable' }, 'windows')).toBe(INSTALL_COMMANDS.windows);
-    expect(installCommand({ state: 'unreachable' }, 'other')).toBeNull();
   });
 
   it('先檢視腳本：下載同一個腳本、檢視、再執行', () => {

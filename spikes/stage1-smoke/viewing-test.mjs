@@ -428,6 +428,20 @@ await section('T07', async (page) => {
   await page.waitForTimeout(200);
   check('點變暗區域的空白處關閉劇院模式（FR-21）', (await pressed(page, 'cinema')).pressed === 'false' && !(await cinemaOn(page)));
 
+  // 一次點擊只處理最上面的一層（與 Esc 相同）：有未釘選的面板展開時，點變暗區域只收起面板，再點一次才關閉劇院模式
+  await button(page, 'cinema').click();
+  await button(page, 'help').click();
+  await page.waitForTimeout(300);
+  await page.mouse.click(1200, 700);
+  await page.waitForTimeout(200);
+  check(
+    '劇院模式中有面板展開時，點變暗區域只收起面板（FR-12、FR-21）',
+    (await cinemaOn(page)) && (await page.locator('ytm-toolbar .ytm-panel').count()) === 0,
+  );
+  await page.mouse.click(1200, 700);
+  await page.waitForTimeout(200);
+  check('再點一次變暗區域才關閉劇院模式（FR-21）', !(await cinemaOn(page)) && (await pressed(page, 'cinema')).pressed === 'false');
+
   await button(page, 'cinema').click();
   await page.reload();
   await openWatch(page);

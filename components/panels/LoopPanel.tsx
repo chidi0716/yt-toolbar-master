@@ -4,29 +4,11 @@ import { MAX_TIMES, MIN_TIMES, type LoopConfig } from '@/features/viewing/loop-l
 import type { LoopController } from '@/features/viewing/loop';
 import { t } from '@/utils/i18n';
 import { formatTime, validateRange, type TimeError } from '@/utils/time';
-import { findVideo } from '@/utils/youtube/dom';
 import { Button } from '../controls/Button';
 import { RangeSlider } from '../controls/RangeSlider';
 import { TimeInput } from '../controls/TimeInput';
 import { useStore } from './useStore';
-
-/** 目前影片的長度（秒）；中繼資料載入後更新。 */
-function useDuration(): number {
-  const [duration, setDuration] = useState(() => findVideo()?.duration ?? Number.NaN);
-  useEffect(() => {
-    const video = findVideo();
-    if (!video) return;
-    const update = () => setDuration(video.duration);
-    update();
-    video.addEventListener('durationchange', update);
-    video.addEventListener('loadedmetadata', update);
-    return () => {
-      video.removeEventListener('durationchange', update);
-      video.removeEventListener('loadedmetadata', update);
-    };
-  }, []);
-  return duration;
-}
+import { useDuration } from './useVideoData';
 
 const ERROR_KEYS = {
   format: 'timeErrorFormat',

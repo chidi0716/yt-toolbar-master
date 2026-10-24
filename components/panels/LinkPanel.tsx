@@ -5,12 +5,11 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { LINK_KINDS, linkText, middleEllipsis, wholeSeconds, type LinkKind } from '@/features/link/link-logic';
 import { t, type MessageKey } from '@/utils/i18n';
 import { findVideo } from '@/utils/youtube/dom';
-import { player } from '@/utils/youtube/player';
 import { Icon } from '../icons';
+import { useCopy } from '../useCopy';
 import { PanelError, PanelLoading } from './PanelStatus';
+import { useVideoData } from './useVideoData';
 
-const LOG_PREFIX = '[yt-toolbar-master]';
-const COPIED_MS = 2000;
 const PREVIEW_MAX = 52;
 
 const LABELS: Record<LinkKind, MessageKey> = {
@@ -38,42 +37,15 @@ function useCurrentSeconds(videoId: string): number {
   return seconds;
 }
 
-type TitleState = { status: 'loading' } | { status: 'error' } | { status: 'ready'; title: string };
-
 export function LinkPanel({ videoId }: { videoId: string }) {
   const seconds = useCurrentSeconds(videoId);
-  const [title, setTitle] = useState<TitleState>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
-  const [copied, setCopied] = useState<LinkKind | null>(null);
-  const [failed, setFailed] = useState<{ kind: LinkKind; text: string } | null>(null);
+  const video = useVideoData(videoId, attempt);
+  const { copied, failed, copy, reset } = useCopy<LinkKind>();
   const manualRef = useRef<HTMLTextAreaElement>(null);
 
-  // 影片標題（Markdown 格式用）：換頁時重新讀取。
-  useEffect(() => {
-    let current = true;
-    setTitle({ status: 'loading' });
-    setCopied(null);
-    setFailed(null);
-    player
-      .getVideoData()
-      .then((data) => {
-        if (current) setTitle({ status: 'ready', title: data?.videoId === videoId ? data.title : '' });
-      })
-      .catch((err: unknown) => {
-        console.info(`${LOG_PREFIX} link panel: failed to read the video title`, err);
-        if (current) setTitle({ status: 'error' });
-      });
-    return () => {
-      current = false;
-    };
-  }, [videoId, attempt]);
-
-  // 「已複製」：一次性的計時器（001 NFR-3）。
-  useEffect(() => {
-    if (!copied) return;
-    const timer = setTimeout(() => setCopied(null), COPIED_MS);
-    return () => clearTimeout(timer);
-  }, [copied]);
+  // 換頁時清除「已複製」與複製失敗的文字框。
+  useEffect(reset, [videoId, reset]);
 
   // 複製失敗：選取文字框中的文字，方便手動複製。
   useEffect(() => {
@@ -83,30 +55,16 @@ export function LinkPanel({ videoId }: { videoId: string }) {
     }
   }, [failed]);
 
-  if (title.status === 'loading') return <PanelLoading />;
-  if (title.status === 'error') return <PanelError onRetry={() => setAttempt((n) => n + 1)} />;
-
-  const copy = (kind: LinkKind, text: string) => {
-    // 在點擊的使用者操作中直接呼叫（plan 3.7.1）。
-    const write = navigator.clipboard?.writeText(text) ?? Promise.reject(new Error('clipboard unavailable'));
-    write.then(
-      () => {
-        setFailed(null);
-        setCopied(kind);
-      },
-      (err: unknown) => {
-        console.info(`${LOG_PREFIX} link panel: copy failed`, err);
-        setCopied(null);
-        setFailed({ kind, text });
-      },
-    );
-  };
+  if (video.status === 'loading') return <PanelLoading />;
+  if (video.status === 'error') return <PanelError onRetry={() => setAttempt((n) => n + 1)} />;
+  // 影片標題（Markdown 格式用）。
+  const title = video.data?.title ?? '';
 
   return (
     <div class="ytm-copylink">
       <ul class="ytm-copylink-list">
         {LINK_KINDS.map((kind) => {
-          const text = linkText(kind, videoId, title.title || videoId, seconds);
+          const text = linkText(kind, videoId, title || videoId, seconds);
           const isCopied = copied === kind;
           return (
             <li key={kind}>
@@ -142,7 +100,7 @@ export function LinkPanel({ videoId }: { videoId: string }) {
             class="ytm-input ytm-copylink-manual-text"
             readOnly
             rows={2}
-            aria-label={t(LABELS[failed.kind])}
+            aria-label={t(LABELS[failed.key])}
             value={failed.text}
           />
         </div>

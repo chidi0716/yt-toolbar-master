@@ -6,7 +6,9 @@ import { render } from 'preact';
 import { Icon } from '@/components/icons';
 import { useLocale } from '@/components/useLocale';
 import { t } from '@/utils/i18n';
-import { floatingCorner, floatingPlayer } from '@/utils/settings';
+import { ensureStyle } from '@/utils/style';
+import { Z_INDEX } from '@/utils/z-index';
+import { floatingCorner, floatingPlayer, readSettings } from '@/utils/settings';
 import { findPlayerContainer, findVideo, mastheadHeight } from '@/utils/youtube/dom';
 import { isWatchPage } from '@/utils/youtube/page';
 import {
@@ -39,7 +41,7 @@ export interface FloatingFeature extends ViewingFeature {
 }
 
 const CONTROLS_CSS = `
-:host { all: initial; position: fixed; z-index: 2151; pointer-events: none; }
+:host { all: initial; position: fixed; z-index: ${Z_INDEX.floatingControls}; pointer-events: none; }
 .bar {
   position: absolute; inset: 0 0 auto 0; height: 36px;
   display: flex; align-items: center; justify-content: space-between;
@@ -106,13 +108,7 @@ export function createFloating(): FloatingFeature {
   /** 位置與尺寸寫在我們自己的 <style> 裡，不改 YouTube 元素的 style 屬性（plan 風險 R3）。 */
   const writeRect = (next: Rect) => {
     rect = next;
-    let style = document.getElementById(POSITION_STYLE_ID);
-    if (!style) {
-      style = document.createElement('style');
-      style.id = POSITION_STYLE_ID;
-      (document.head ?? document.documentElement).append(style);
-    }
-    style.textContent = `.${FLOATING_CLASS} { left: ${next.left}px !important; top: ${next.top}px !important; width: ${next.width}px !important; height: ${next.height}px !important; }`;
+    ensureStyle(POSITION_STYLE_ID, `.${FLOATING_CLASS} { left: ${next.left}px !important; top: ${next.top}px !important; width: ${next.width}px !important; height: ${next.height}px !important; }`);
     if (controls) {
       Object.assign(controls.style, {
         left: `${next.left}px`,
@@ -280,7 +276,7 @@ export function createFloating(): FloatingFeature {
       running = true;
       document.addEventListener('fullscreenchange', onFullscreen);
       window.addEventListener('resize', onResize);
-      void Promise.all([floatingPlayer.getValue(), floatingCorner.getValue()]).then(([enabled, savedCorner]) => {
+      void readSettings([floatingPlayer, floatingCorner] as const).then(([enabled, savedCorner]) => {
         if (!running) return;
         if (isCorner(savedCorner)) corner = savedCorner;
         setEnabled(enabled);

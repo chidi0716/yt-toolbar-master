@@ -36,10 +36,10 @@ try {
     h1: document.querySelector('h1').textContent,
     value: document.querySelector('#ui-language').value,
     options: [...document.querySelectorAll('#ui-language option')].map((o) => o.textContent).join('|'),
-    note: document.querySelector('#ui-language-note').textContent,
+    note: document.querySelector('#ui-language-desc').textContent,
   }));
   check('設定頁最上方有「介面語言」選單：跟隨瀏覽器（預設）、繁體中文、English（FR-1）', optEn.first === 'language' && optEn.value === 'auto' && optEn.options === 'Follow the browser|繁體中文|English', JSON.stringify(optEn));
-  check('選單下方說明擴充功能名稱等由瀏覽器顯示（FR-5）', /extensions page/.test(optEn.note), optEn.note);
+  check('選單下方說明擴充功能名稱等由瀏覽器顯示（FR-5）', optEn.note === "The extension's name, description and icon tooltip are shown by the browser in the browser's language.", optEn.note);
   await opt.screenshot({ path: join(shots, 'T35-options-language-en.png'), clip: { x: 0, y: 0, width: 1280, height: 420 } });
 
   // 切到繁體中文（以鍵盤操作時焦點在選單上）
@@ -68,7 +68,7 @@ try {
   const zhLabels = await labels();
   const after = await inToolbar(page, `return { title: root.querySelector('.ytm-panel-title')?.textContent, times: root.querySelector('#ytm-loop-times')?.value, pinned: root.querySelector('.ytm-panel-header button')?.getAttribute('aria-pressed') ?? root.querySelector('.ytm-panel-header button')?.getAttribute('aria-label'), tooltip: root.querySelector('.ytm-btn[data-button="video"] + .ytm-tooltip').textContent }`);
   const sameHost = await page.evaluate(() => document.querySelectorAll('ytm-toolbar').length === 1 && document.querySelector('ytm-toolbar').__marker === 'same-host');
-  check('已開啟的 YouTube 分頁中，工具列的提示文字變成中文（FR-3、驗收 1）', zhLabels.startsWith('影片|MP3|縮圖') && after.tooltip === '影片', `${zhLabels.slice(0, 40)} ${after.tooltip}`);
+  check('已開啟的 YouTube 分頁中，工具列的提示文字變成中文（FR-3、驗收 1；一鍵下載開啟時「影片」的提示為 009 FR-7 的說明）', zhLabels.startsWith('影片|MP3|縮圖') && after.tooltip === '一鍵下載：1080p MP4', `${zhLabels.slice(0, 40)} ${after.tooltip}`);
   check('釘選的面板仍展開、輸入的值保留，標題換成中文；工具列沒有重新掛載（NFR-1、驗收 2）', sameHost && after.times === '7' && after.title === '循環播放' && after.title !== pinnedBefore.title, JSON.stringify({ before: pinnedBefore, after, sameHost }));
   await shot(page, 'T35-toolbar-zh-TW-switched.png');
   // 收起釘選的面板，看說明面板與「更多」

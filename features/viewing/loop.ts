@@ -49,7 +49,9 @@ export function createLoop(): LoopController {
       if (ended || video.paused) void video.play().catch(() => {});
     }
     if (!loop.running) detach();
-    status.set({ running: loop.running, played: loop.played, config });
+    // timeupdate 每秒觸發數次：狀態真的改變時才通知（面板與按鈕才重新繪製）。
+    const prev = status.get();
+    if (prev.running !== loop.running || prev.played !== loop.played || prev.config !== config) status.set({ running: loop.running, played: loop.played, config });
   };
 
   function onTime() {

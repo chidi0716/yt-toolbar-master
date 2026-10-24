@@ -5,10 +5,10 @@
 // - 需要程式的選項：設定開啟時才啟動，關閉時停止並移除所有監聽（005 NFR-2）。
 // - 設定改變時立即生效，不需要重新整理（005 FR-3）。
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
-import { enabled, hideComments } from '@/utils/settings';
+import { enabled, hideComments, readSettings } from '@/utils/settings';
 import { applyPageClasses, pageClasses, PAGE_CLASS_TOGGLES, type ClassSource } from './classes';
 import { TIDY_OPTIONS, type TidyOptionId } from './options';
-import { ensureTidyStyles } from './styles';
+import { applyTidyStyles } from './styles';
 
 const LOG_PREFIX = '[yt-toolbar-master]';
 
@@ -19,14 +19,14 @@ export interface TidyScriptFeature {
 }
 
 export function startPageTidy(ctx: ContentScriptContext, scripts: Partial<Record<TidyOptionId, TidyScriptFeature>> = {}): void {
-  ensureTidyStyles();
-
   const values: Partial<Record<ClassSource, boolean>> = {};
   let toolbarEnabled = true;
   const running = new Set<TidyOptionId>();
 
   const sync = () => {
-    applyPageClasses(document.documentElement, pageClasses(values, toolbarEnabled));
+    const active = pageClasses(values, toolbarEnabled);
+    applyTidyStyles(active);
+    applyPageClasses(document.documentElement, active);
     for (const [id, feature] of Object.entries(scripts) as [TidyOptionId, TidyScriptFeature][]) {
       const on = values[id] === true;
       if (on === running.has(id)) continue;
@@ -73,16 +73,11 @@ export function startPageTidy(ctx: ContentScriptContext, scripts: Partial<Record
     applyPageClasses(document.documentElement, []);
   });
 
-  void Promise.all([
-    enabled.getValue().then((value) => {
-      toolbarEnabled = value !== false;
-    }),
-    ...items
-      .filter(([source]) => used.has(source))
-      .map(([source, item]) =>
-        item.getValue().then((value) => {
-          values[source] = value === true;
-        }),
-      ),
-  ]).then(sync, (err: unknown) => console.info(`${LOG_PREFIX} page tidy: failed to read settings`, err));
+  // 一次讀取所有用得到的設定。
+  const read = items.filter(([source]) => used.has(source));
+  void readSettings([enabled, ...read.map(([, item]) => item)]).then(([toolbar, ...rest]) => {
+    toolbarEnabled = toolbar !== false;
+    read.forEach(([source], i) => (values[source] = rest[i] === true));
+    sync();
+  });
 }

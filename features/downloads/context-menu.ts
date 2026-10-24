@@ -9,7 +9,8 @@ import { downloadContextMenu, uiLanguage } from '@/utils/settings';
 import { videoIdFromLink } from '@/utils/youtube/page';
 import { quickDownload, readQuickDefaults } from './host-background';
 import { errorInfo } from './jobs';
-import { contextMenuTitles, mp3SpecLabel, needsHelper, startNotificationId, videoSpecLabel, type QuickKind } from './quick';
+import { mp3Label } from './jobs';
+import { contextMenuTitles, needsHelper, startNotificationId, videoSpecLabel, type QuickKind } from './quick';
 
 const LOG_PREFIX = '[yt-toolbar-master]';
 
@@ -87,17 +88,18 @@ export async function downloadFromMenu(videoId: string, kind: QuickKind): Promis
   await initI18n();
   const id = startNotificationId(videoId, kind);
   const defaults = await readQuickDefaults();
-  const spec = kind === 'video' ? videoSpecLabel(defaults.height, defaults.container) : mp3SpecLabel(defaults.bitrate);
+  const spec = kind === 'video' ? videoSpecLabel(defaults.height, defaults.container) : mp3Label(defaults.bitrate);
   let title = '';
   try {
     const result = await quickDownload(videoId, kind, {
-      source: 'contextMenu',
       onStart: () => void notify(id, t('notifyStarted', videoId), spec),
       onInfo: (name) => {
         title = name;
         if (name) void notify(id, t('notifyStarted', name), spec);
       },
     });
+    // 同一個下載在工具列按了「改用其他畫質」而取消。
+    if (result.status === 'cancelled') return void browser.notifications.clear(id).catch(() => {});
     const name = result.title || title || videoId;
     await notify(id, t(result.status === 'running' ? 'notifyAlreadyDownloading' : 'notifyStarted', name), result.label);
   } catch (err) {

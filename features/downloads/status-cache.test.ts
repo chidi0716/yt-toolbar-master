@@ -3,17 +3,14 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { parseStatus } from '@/utils/native-protocol';
 import { getStatus } from './host-background';
-import { createStatusCache, isCacheableStatus, STATUS_TTL_MS } from './host-status';
+import { component, createStatusCache, isCacheableStatus, STATUS_TTL_MS } from './host-status';
 
-const tool = (found: boolean) => ({ found, version: found ? '1' : null });
+const tool = (name: string, found: boolean) => ({ name, found, version: found ? '1' : '', path: '', source: '', error: '' });
 const raw = (p: { ready: boolean; complete?: boolean; ffmpeg?: boolean; deno?: boolean }) => ({
   hostVersion: '0.1.0',
-  os: 'darwin',
   ready: p.ready,
   complete: p.complete ?? p.ready,
-  ytDlp: tool(true),
-  ffmpeg: tool(p.ffmpeg ?? p.ready),
-  deno: tool(p.deno ?? true),
+  components: [tool('helper', true), tool('yt-dlp', true), tool('ffmpeg', p.ffmpeg ?? p.ready), tool('deno', p.deno ?? true)],
   defaultDir: '/Users/me/Downloads',
   namePresets: [{ id: 'title-id' }],
 });
@@ -111,5 +108,19 @@ describe('getStatus（背景腳本）', () => {
     await getStatus(true);
     await getStatus(true);
     expect(statusCalls).toBe(2);
+  });
+});
+
+describe('component（status.components 為準）', () => {
+  it('小幫手看能否連線；其他元件看 found 與 error；沒有回報或連不上時無法確認', () => {
+    const connected = { state: 'connected', status: NO_FFMPEG } as const;
+    expect(component({ state: 'unreachable' }, 'helper')).toEqual({ ok: false, version: null, info: null });
+    expect(component({ state: 'unreachable' }, 'yt-dlp').ok).toBeNull();
+    expect(component(connected, 'helper')).toMatchObject({ ok: true, version: '0.1.0' });
+    expect(component(connected, 'yt-dlp')).toMatchObject({ ok: true, version: '1' });
+    expect(component(connected, 'ffmpeg')).toMatchObject({ ok: false, version: null });
+    const broken = parseStatus({ ready: false, components: [{ name: 'yt-dlp', found: true, version: '1', error: 'UNKNOWN' }] });
+    expect(component({ state: 'connected', status: broken }, 'yt-dlp')).toMatchObject({ ok: false, version: '1' });
+    expect(component({ state: 'connected', status: broken }, 'deno').ok).toBeNull();
   });
 });

@@ -1,6 +1,6 @@
 // 背景腳本端的新版本提醒（008 FR-26 至 FR-29a，plan 3.9）：
-// - 內容腳本在影片頁載入完成時送 updateCheck；可以提醒、沒有選「不再提醒」、距上次查詢 24 小時以上才查詢；
-// - 依結果更新擴充功能圖示的 NEW 標記；
+// - 內容腳本在影片頁載入、距上次查詢 24 小時以上時送 updateCheck；可以提醒、沒有選「不再提醒」、到期才查詢；
+// - 依結果更新擴充功能圖示的 NEW 標記（沒變時不重設）；
 // - 處理卡片與設定頁的操作（前往下載、跳過這個版本、不再提醒、重新開啟、卡片出現過）。
 // 相依的瀏覽器 API 由外部注入，單元測試以假的實作代替。
 import {
@@ -16,7 +16,7 @@ import {
   type ReminderAction,
   type ReminderView,
 } from '@/utils/update-check';
-import { updateCheck, updateReminder } from '@/utils/settings';
+import { readSettings, updateCheck, updateReminder } from '@/utils/settings';
 
 export interface UpdateServiceDeps {
   /** management.getSelf().installType（不需要 management 權限）。 */
@@ -49,19 +49,24 @@ export function createUpdateService(deps: UpdateServiceDeps): UpdateService {
     return eligibleCache;
   };
 
-  const read = async () => ({
-    check: normalizeCheckState(await updateCheck.getValue()),
-    reminder: normalizeReminderState(await updateReminder.getValue()),
-  });
+  const read = async () => {
+    const [check, reminder] = await readSettings([updateCheck, updateReminder] as const);
+    return { check: normalizeCheckState(check), reminder: normalizeReminderState(reminder) };
+  };
 
   const status = async (): Promise<ReminderView> => {
     const { check, reminder } = await read();
     return reminderView({ currentVersion: deps.currentVersion(), eligible: await eligible(), check, reminder, now: deps.now() });
   };
 
+  /** 目前的圖示標記；背景腳本重新啟動後為 null（一定設定一次）。 */
+  let badge: string | null = null;
   const applyBadge = async (view: ReminderView) => {
+    const text = view.pending ? BADGE_TEXT : '';
+    if (text === badge) return;
     try {
-      await deps.setBadge(view.pending ? BADGE_TEXT : '');
+      await deps.setBadge(text);
+      badge = text;
     } catch (err) {
       console.info('[yt-toolbar-master] failed to set the badge', err);
     }

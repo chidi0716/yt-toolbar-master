@@ -11,24 +11,18 @@ const VID = 'jNQXAC9IVRw';
 /** 依 plan 4.9 的通訊協定表格做出的假 status 回應。 */
 const FAKE_STATUS = {
   hostVersion: '0.2.0',
-  os: 'darwin',
   ready: true,
   complete: true,
-  missing: [],
-  ytDlp: { found: true, version: '2026.10.21' },
-  ffmpeg: { found: true, version: '7.1' },
-  deno: { found: true, version: '2.5.4' },
   defaultDir: '/Users/me/Downloads',
   namePresets: [{ id: 'title-id', example: 'x' }],
-  installDir: '/Users/me/Library/Application Support/yt-toolbar-master',
   components: [
-    { name: 'ffprobe', version: '7.1', path: '/usr/local/bin/ffprobe', source: 'path' },
-    { name: 'helper', version: '0.2.0', path: '/x/ytm-host', source: 'bundled' },
-    { name: 'yt-dlp', version: '2026.10.21', path: '/x/bin/yt-dlp', source: 'bundled' },
-    { name: 'deno', version: '2.5.4', path: '/opt/homebrew/bin/deno', source: 'homebrew' },
-    { name: 'ffmpeg', version: '7.1', path: 'C:\\ffmpeg.exe', source: 'winget' },
-    { name: 'rm -rf', version: '1', path: '/', source: 'bundled' },
-    { name: 'deno', version: 'dup', path: '/dup', source: 'path' },
+    { name: 'ffprobe', found: true, version: '7.1', path: '/usr/local/bin/ffprobe', source: 'path', error: '' },
+    { name: 'helper', found: true, version: '0.2.0', path: '/x/ytm-host', source: 'bundled', error: '' },
+    { name: 'yt-dlp', found: true, version: '2026.10.21', path: '/x/bin/yt-dlp', source: 'bundled', error: '' },
+    { name: 'deno', found: true, version: '2.5.4', path: '/opt/homebrew/bin/deno', source: 'homebrew', error: '' },
+    { name: 'ffmpeg', found: true, version: '7.1', path: 'C:\\ffmpeg.exe', source: 'winget', error: '' },
+    { name: 'rm -rf', found: true, version: '1', path: '/', source: 'bundled', error: '' },
+    { name: 'deno', found: true, version: 'dup', path: '/dup', source: 'path', error: '' },
   ],
   update: { auto: false, lastCheck: '2026-10-23T05:00:00Z', lastResult: 'updated', consecutiveFailures: 0, running: true },
 };
@@ -36,8 +30,7 @@ const FAKE_STATUS = {
 describe('status 的新增欄位（plan 4.9、008 FR-24）', () => {
   it('components：只接受已知的元件名稱與來源，依固定順序，不重複', () => {
     const s = parseStatus(FAKE_STATUS);
-    expect(s.installDir).toBe(FAKE_STATUS.installDir);
-    expect(s.components?.map((c) => `${c.name}:${c.source}:${c.version}`)).toEqual([
+    expect(s.components.map((c) => `${c.name}:${c.source}:${c.version}`)).toEqual([
       'helper:bundled:0.2.0',
       'yt-dlp:bundled:2026.10.21',
       'deno:homebrew:2.5.4',
@@ -45,7 +38,7 @@ describe('status 的新增欄位（plan 4.9、008 FR-24）', () => {
       'ffprobe:path:7.1',
     ]);
     expect(parseStatus({ ...FAKE_STATUS, components: [{ name: 'helper', version: 1, path: null, source: 'evil' }] }).components).toEqual([
-      { name: 'helper', version: null, path: null, source: null },
+      { name: 'helper', found: false, version: null, path: null, source: null, error: null },
     ]);
   });
 
@@ -60,9 +53,9 @@ describe('status 的新增欄位（plan 4.9、008 FR-24）', () => {
     });
   });
 
-  it('舊版小幫手（沒有這些欄位）：為 null，設定頁顯示「不會自動更新」', () => {
+  it('沒有回報 update 時為 null（設定頁顯示「不會自動更新」）；沒有 components 時為空清單', () => {
     const s = parseStatus({ hostVersion: '0.1.0', ready: true });
-    expect(s).toMatchObject({ installDir: null, components: null, update: null });
+    expect(s).toMatchObject({ components: [], update: null });
   });
 
   it('時間格式：ISO 字串、毫秒或秒', () => {

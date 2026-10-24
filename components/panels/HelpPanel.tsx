@@ -2,17 +2,10 @@
 // 名稱與一句話說明；有隱藏的工具時，最後加一行「隱藏的工具可以從『更多』選單使用」。
 // 並提供開啟設定頁的連結。內容完全內建，不開啟外部網站。
 import { t } from '@/utils/i18n';
-import type { ContentMessage } from '@/utils/messages';
+import { openSettings } from '@/utils/messages';
 import { defaultLayout, splitLayout, type ToolbarLayout } from '@/utils/toolbar-layout';
 import { Icon } from '../icons';
 import { FIXED, TOOLS } from '../toolbar/buttons';
-
-function openOptions() {
-  const message: ContentMessage = { type: 'openOptions' };
-  browser.runtime.sendMessage(message).catch((err: unknown) => {
-    console.info('[yt-toolbar-master] failed to open settings', err);
-  });
-}
 
 export function HelpPanel({ layout = defaultLayout() }: { layout?: ToolbarLayout }) {
   const { left, right, hidden } = splitLayout(layout);
@@ -33,7 +26,7 @@ export function HelpPanel({ layout = defaultLayout() }: { layout?: ToolbarLayout
         ))}
       </ul>
       {hidden.length > 0 && <p class="ytm-muted ytm-help-hidden">{t('helpHiddenTools')}</p>}
-      <button type="button" class="ytm-link" onClick={openOptions}>
+      <button type="button" class="ytm-link" onClick={openSettings}>
         <Icon name="settings" size={20} />
         <span>{t('helpOpenSettings')}</span>
       </button>

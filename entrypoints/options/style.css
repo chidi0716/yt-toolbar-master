@@ -8,6 +8,7 @@
   --group-background: rgba(0, 0, 0, 0.03);
   --switch-track: #909090;
   --accent: #065fd4;
+  --error: #c30027;
 }
 
 /* 深色（007 FR-20 至 FR-22）：<html data-theme="dark">；套用前（沒有 data-theme）依系統設定。 */
@@ -20,6 +21,7 @@
   --group-background: rgba(255, 255, 255, 0.05);
   --switch-track: #717171;
   --accent: #3ea6ff;
+  --error: #ff4e45;
 }
 
 :root[data-theme='light'] {
@@ -35,6 +37,7 @@
     --group-background: rgba(255, 255, 255, 0.05);
     --switch-track: #717171;
     --accent: #3ea6ff;
+    --error: #ff4e45;
   }
 }
 
@@ -173,37 +176,6 @@ h2 {
 
 .status-row + .status-row {
   border-top: 1px solid var(--outline);
-}
-
-.status-row[data-ok='false'] .option-desc {
-  color: #c30027;
-}
-
-:root[data-theme='dark'] .status-row[data-ok='false'] .option-desc {
-  color: #ff4e45;
-}
-
-.status-install {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 8px;
-  font-size: 13px;
-}
-
-.status-install a {
-  color: var(--accent);
-}
-
-.code {
-  display: block;
-  padding: 6px 8px;
-  border-radius: 6px;
-  background: var(--group-background);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 12px;
-  user-select: all;
-  overflow-wrap: anywhere;
 }
 
 .actions {
@@ -400,66 +372,49 @@ h2 {
   display: none;
 }
 
-/* ---------- 安裝說明（008 FR-2） ---------- */
+/* ---------- 連線狀態與安裝說明（008 FR-2、FR-24）：影片／MP3 面板的元件 ---------- */
 
-.install-title {
-  display: block;
-  margin: 8px 0 4px;
+/* 面板樣式使用的顏色（components/panels、components/controls）對應到設定頁的顏色。 */
+.ytm-root {
+  --ytm-text-primary: currentColor;
+  --ytm-text-secondary: var(--text-secondary);
+  --ytm-menu-background: Canvas;
+  --ytm-hover-background: var(--group-background);
+  --ytm-active-background: var(--outline);
+  --ytm-call-to-action: var(--accent);
+  --ytm-on-call-to-action: #fff;
+  --ytm-outline: var(--outline);
+  --ytm-switch-track: var(--switch-track);
+  --ytm-error: var(--error);
+  --ytm-badge-background: #606060;
+  --ytm-badge-text: #fff;
+  padding: 8px 0;
+  font-size: 14px;
+  line-height: 20px;
 }
 
-.command {
-  display: flex;
+.ytm-root .ytm-setup {
+  width: auto;
+}
+
+.ytm-root .ytm-setup-actions {
   flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
+  justify-content: flex-start;
 }
 
-.command .command-text {
-  flex: 1 1 320px;
-  min-width: 0;
+.ytm-root .ytm-setup-actions .ytm-link {
+  margin-right: auto;
 }
 
-.command .button,
+.ytm-root .ytm-muted {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
 .button.with-icon {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-}
-
-.command-status {
-  flex-basis: 100%;
-}
-
-.command-status:empty {
-  display: none;
-}
-
-.install-steps,
-.install-details ol {
-  margin: 8px 0;
-  padding-left: 20px;
-}
-
-.install-steps li + li,
-.install-details li + li {
-  margin-top: 4px;
-}
-
-.install-details summary {
-  color: var(--accent);
-  cursor: pointer;
-}
-
-.inline-code {
-  display: block;
-  color: var(--text-secondary);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 12px;
-  overflow-wrap: anywhere;
-}
-
-.review-code {
-  white-space: pre-wrap;
 }
 
 /* ---------- 自動更新與移除下載功能（008 FR-24、FR-30） ---------- */

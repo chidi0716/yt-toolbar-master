@@ -2,7 +2,8 @@
 // 由擴充功能直接下載並轉換（不需要橋接程式）。直接下載失敗時，若橋接程式可用就改由 yt-dlp 下載（T21），
 // 否則顯示錯誤並說明安裝橋接程式可改善（FR-44）。
 import { useEffect, useMemo, useState } from 'preact/hooks';
-import { currentTitle, sendToBackground } from '@/features/downloads/content';
+import { currentTitle } from '@/features/downloads/content';
+import { sendToBackground } from '@/utils/messages';
 import { checkHostStatus, HostError, startDownload } from '@/features/downloads/host-client';
 import { canDownload } from '@/features/downloads/host-status';
 import type { JobRecord } from '@/features/downloads/jobs';

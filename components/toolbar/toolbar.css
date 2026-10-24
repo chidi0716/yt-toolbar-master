@@ -14,12 +14,6 @@
   display: none !important;
 }
 
-/* 劇院模式（003 FR-20a）：工具列維持在調暗的兄弟區塊之上，展開的面板不會被遮住。 */
-:host(.ytm-cinema-raised) {
-  position: relative !important;
-  z-index: 2201 !important;
-}
-
 .ytm-root {
   --ytm-text-primary: var(--yt-spec-text-primary, var(--yt-sys-color-baseline--text-primary, #0f0f0f));
   --ytm-text-secondary: var(--yt-spec-text-secondary, var(--yt-sys-color-baseline--text-secondary, #606060));
@@ -179,7 +173,7 @@
 .ytm-panel {
   position: absolute;
   top: calc(100% + 4px);
-  z-index: 2100;
+  z-index: var(--ytm-z-panel);
   width: max-content;
   min-width: 280px;
   padding: 16px 24px 24px;
@@ -206,11 +200,6 @@
 
 .ytm-panel-body {
   min-width: 0;
-}
-
-.ytm-muted {
-  margin: 0;
-  color: var(--ytm-text-secondary);
 }
 
 /* ---------- 面板共通狀態（FR-14） ---------- */
@@ -289,42 +278,21 @@
   white-space: normal;
 }
 
-.ytm-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 8px 0 0 -8px;
-  padding: 6px 8px;
-  border: 0;
-  border-radius: 18px;
-  background: transparent;
-  color: var(--ytm-call-to-action);
-  font: inherit;
-  font-weight: 500;
-  cursor: pointer;
-  outline: none;
+/*
+ * 劇院模式時頁面背景是黑色：不論 YouTube 主題，工具列按鈕改用深色背景上的文字色，維持可見（003 FR-20a）。
+ * 變數由頁面樣式（features/viewing/page-styles.ts）在劇院模式時設定在宿主元素上。
+ */
+.ytm-btn {
+  color: var(--ytm-cinema-btn-color, var(--ytm-text-primary));
 }
 
-.ytm-link:hover {
-  background: var(--ytm-hover-background);
+.ytm-btn:hover {
+  background: var(--ytm-cinema-btn-hover, var(--ytm-hover-background));
 }
 
-.ytm-link:focus-visible {
-  box-shadow: 0 0 0 2px var(--ytm-call-to-action);
-}
-
-/* 劇院模式時頁面背景是黑色：不論 YouTube 主題，工具列按鈕改用深色背景上的文字色，維持可見（003 FR-20a）。 */
-:host(.ytm-cinema-raised) .ytm-btn {
-  color: var(--yt-sys-color-baseline--overlay-text-primary, #fff);
-}
-
-:host(.ytm-cinema-raised) .ytm-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-:host(.ytm-cinema-raised) .ytm-btn[data-on],
-:host(.ytm-cinema-raised) .ytm-btn[data-on]:hover {
-  background: rgba(255, 255, 255, 0.2);
+.ytm-btn[data-on],
+.ytm-btn[data-on]:hover {
+  background: var(--ytm-cinema-btn-on, var(--ytm-active-background));
 }
 
 /* 不能使用的切換按鈕（003 FR-32）：仍可聚焦以顯示原因。 */
@@ -573,13 +541,12 @@
 
 /*
  * 卡片在工具列下方、靠右（收合後成為「更多」上的小圓點），不疊在播放器上。
- * z-index 低於面板（2100）與浮動播放器（2151），不會蓋住浮動中的影片。
  */
 .ytm-update-card {
   position: absolute;
   top: calc(100% + 4px);
   right: 0;
-  z-index: 2050;
+  z-index: var(--ytm-z-update-card);
   display: flex;
   align-items: flex-start;
   gap: 12px;

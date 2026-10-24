@@ -1,6 +1,7 @@
 // 展開中面板的定位、焦點與「點外面／Esc 收起」（001 FR-10 至 FR-13、FR-19，plan 3.6）。
 import { createContext, type ComponentChildren } from 'preact';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
+import { LAYER_LEVEL, pushLayer } from '@/utils/layers';
 import { Panel } from './Panel';
 import { maxPanelWidth, placePanel, type HorizontalRange } from './position';
 
@@ -71,22 +72,10 @@ export function PanelHost(props: PanelHostProps) {
     panelRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
   }, [panelId, positioned]);
 
-  // 點面板與工具列以外的地方、按 Esc 收起；釘選時不監聽（FR-12、FR-13）。
+  // 點面板與工具列以外的地方、按 Esc 收起；釘選時不收起（FR-12、FR-13）。
   useEffect(() => {
     if (pinned) return;
-    const onPointerDown = (event: PointerEvent) => {
-      if (!event.composedPath().includes(host)) onOutside();
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onEscape();
-    };
-    // capture：工具列內的鍵盤事件會在 Shadow DOM 邊界被停止冒泡，capture 階段仍會先經過 document。
-    document.addEventListener('pointerdown', onPointerDown, true);
-    document.addEventListener('keydown', onKeyDown, true);
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown, true);
-      document.removeEventListener('keydown', onKeyDown, true);
-    };
+    return pushLayer({ level: LAYER_LEVEL.toolbar, onEscape, outside: { inside: (path) => path.includes(host), close: onOutside } });
   }, [pinned, host, onOutside, onEscape]);
 
   return (

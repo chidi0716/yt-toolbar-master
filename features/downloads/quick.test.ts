@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { setLocale } from '@/utils/i18n';
 import type { HostFormat, HostInfo } from '@/utils/native-protocol';
 import { newJob, type JobRecord } from './jobs';
-import { activeJobFor, existingQuickJob, initialDownloadMode, mp3SpecLabel, planQuickDownload, quickSummary, quickTooltip, toQuickDefaults, videoSpecLabel } from './quick';
+import { mp3Label } from './jobs';
+import { activeJobFor, downloadPanelReducer, existingQuickJob, initialDownloadMode, initialDownloadPanel, planQuickDownload, quickSummary, quickTooltip, toQuickDefaults, videoSpecLabel } from './quick';
 
 const ID = 'jNQXAC9IVRw';
 const f = (p: Partial<HostFormat> & { id: string }): HostFormat => ({
@@ -18,14 +19,11 @@ const f = (p: Partial<HostFormat> & { id: string }): HostFormat => ({
   filesizeApprox: null,
   protocol: 'https',
   dynamicRange: 'SDR',
-  language: '',
   note: '',
   ...p,
 });
 const info = (p: Partial<HostInfo> = {}): HostInfo => ({
-  id: ID,
   title: 'Me at the zoo',
-  channel: 'jawed',
   duration: 19,
   liveStatus: 'not_live',
   isLive: false,
@@ -34,8 +32,6 @@ const info = (p: Partial<HostInfo> = {}): HostInfo => ({
     f({ id: '136', ext: 'mp4', vcodec: 'avc1.4d401f', width: 1280, height: 720, fps: 30, filesize: 36_000_000 }),
     f({ id: '299', ext: 'mp4', vcodec: 'avc1.64002a', width: 1920, height: 1080, fps: 60, filesizeApprox: 316_000_000 }),
   ],
-  subtitles: [],
-  autoCaptions: [],
   ...p,
 });
 const defaults = toQuickDefaults(1080, 'mp4', 192);
@@ -67,7 +63,7 @@ describe('文字（009 FR-7、FR-20）', () => {
   it('不合法的設定值改用預設值', () => {
     expect(toQuickDefaults('9999', 'mkv', 999)).toEqual({ height: 1080, container: 'mp4', bitrate: 192 });
     expect(toQuickDefaults('best', 'any', 320)).toEqual({ height: 'best', container: 'any', bitrate: 320 });
-    expect(mp3SpecLabel(64)).toBe('MP3 64 kbps');
+    expect(mp3Label(64)).toBe('MP3 64 kbps');
   });
 });
 
@@ -90,7 +86,7 @@ describe('planQuickDownload（009 FR-2、FR-3、FR-6）', () => {
   });
 
   it('影片資訊沒有標題時用頁面上的標題；影片 ID 一律用請求的', () => {
-    const plan = planQuickDownload(ID, info({ title: '', id: '' }), 'mp3', defaults, 'Page title');
+    const plan = planQuickDownload(ID, info({ title: '' }), 'mp3', defaults, 'Page title');
     expect(plan.ok && plan.request).toMatchObject({ videoId: ID, title: 'Page title' });
   });
 
@@ -159,5 +155,28 @@ describe('面板一開始顯示什麼（009 FR-4、FR-8、FR-10、FR-11）', () 
         expect(initialDownloadMode({ quickEnabled: false, clickedForThisVideo, helperJustInstalled })).toBe('full');
       }
     }
+  });
+});
+
+describe('downloadPanelReducer（面板的流程，009 FR-4、FR-8、FR-10、FR-11）', () => {
+  it('一鍵下載開啟：點了按鈕直接開始；顯示安裝引導後偵測到小幫手時改為「開始下載」按鈕並標示已安裝', () => {
+    const open = initialDownloadPanel(true, ID);
+    expect(open.mode).toBe('quick');
+    const ready = downloadPanelReducer(open, { type: 'helperBecameReady' });
+    expect(ready).toMatchObject({ mode: 'confirm', installed: true });
+    expect(downloadPanelReducer(ready, { type: 'started' }).mode).toBe('quick');
+    expect(downloadPanelReducer(ready, { type: 'chooseOther' }).mode).toBe('full');
+  });
+
+  it('釘選的面板換了影片：顯示「開始下載」按鈕，不帶「已安裝」', () => {
+    const ready = downloadPanelReducer(initialDownloadPanel(true, ID), { type: 'helperBecameReady' });
+    expect(downloadPanelReducer(ready, { type: 'videoChanged', videoId: 'abcdefghijk' })).toMatchObject({ mode: 'confirm', installed: false, clicked: false });
+  });
+
+  it('一鍵下載關閉：一律是完整選項', () => {
+    const off = initialDownloadPanel(false, ID);
+    expect(off.mode).toBe('full');
+    expect(downloadPanelReducer(off, { type: 'helperBecameReady' })).toMatchObject({ mode: 'full', installed: true });
+    expect(downloadPanelReducer(off, { type: 'videoChanged', videoId: 'abcdefghijk' }).mode).toBe('full');
   });
 });

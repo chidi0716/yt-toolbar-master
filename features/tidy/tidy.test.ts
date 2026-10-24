@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { applyPageClasses, pageClasses, PAGE_CLASS_TOGGLES } from './classes';
 import { TIDY_CATEGORIES, TIDY_OPTIONS } from './options';
-import { TIDY_CSS } from './styles';
+import { tidyCss } from './styles';
 
 describe('設定頁的分類（005 FR-1）', () => {
   it('依序為觀看頁、干擾、Shorts、介面，選項與規格相同', () => {
@@ -48,6 +48,8 @@ function splitTopLevel(list: string): string[] {
   return out.filter(Boolean);
 }
 
+const TIDY_CSS = tidyCss(PAGE_CLASS_TOGGLES.map((t) => t.className));
+
 describe('CSS 開關機制（plan 3.7.2）', () => {
   it('每個 class 都有 ytm- 前綴、不重複', () => {
     const names = PAGE_CLASS_TOGGLES.map((t) => t.className);
@@ -64,6 +66,13 @@ describe('CSS 開關機制（plan 3.7.2）', () => {
       .flatMap(splitTopLevel);
     expect(selectors.length).toBeGreaterThan(0);
     for (const sel of selectors) expect(sel).toMatch(/^html\.ytm-[a-z-]+[\s.:[]/);
+  });
+
+  it('樣式只放開啟中的選項的規則', () => {
+    expect(tidyCss([])).toBe('');
+    const shorts = tidyCss(['ytm-hide-shorts']);
+    expect(shorts).toMatch(/^html\.ytm-hide-shorts /);
+    expect(shorts).not.toContain('ytm-full-titles');
   });
 
   it('隱藏留言只在工具列啟用時作用（003 FR-5）', () => {

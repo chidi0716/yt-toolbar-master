@@ -1,5 +1,6 @@
 // 下載檔名（002 FR-8、FR-51，plan 3.1）。純函式。
 // 檔名預設為「影片標題 [影片ID].副檔名」，移除作業系統不允許的字元。
+import { pad2, splitTime } from './time';
 
 /** 標題部分的長度上限（以字元計）；整個檔名還要加上影片 ID、時間與副檔名。 */
 export const MAX_TITLE_LENGTH = 150;
@@ -37,12 +38,8 @@ export function baseFilename(title: string, videoId: string): string {
 
 /** 檔名中的時間點：不到一小時為 `01m02s`，一小時以上為 `01h02m03s`（002 FR-8、FR-51）。 */
 export function timeTag(seconds: number): string {
-  const total = Number.isFinite(seconds) && seconds > 0 ? Math.floor(seconds) : 0;
-  const h = Math.floor(total / 3600);
-  const m = Math.floor((total % 3600) / 60);
-  const s = total % 60;
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return h > 0 ? `${pad(h)}h${pad(m)}m${pad(s)}s` : `${pad(m)}m${pad(s)}s`;
+  const { h, m, s } = splitTime(seconds);
+  return h > 0 ? `${pad2(h)}h${pad2(m)}m${pad2(s)}s` : `${pad2(m)}m${pad2(s)}s`;
 }
 
 /** 截圖：「影片標題 [影片ID] 01m02s.png」（002 FR-51）。 */

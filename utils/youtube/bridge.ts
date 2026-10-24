@@ -33,22 +33,29 @@ import {
 export const BRIDGE_REQUEST_EVENT = 'ytm-bridge:request';
 export const BRIDGE_RESPONSE_EVENT = 'ytm-bridge:response';
 
+/**
+ * 不帶參數的請求。getAvailableQualities、getQuality：鎖定畫質（004 第 1 節、plan 3.5）；getAudioTracks：原始語音
+ * （005 FR-10、plan 3.7.2）；getCaptionTracks：字幕直接下載（002 FR-44、plan 3.8），回傳的字幕網址只有 youtube.com 網域。
+ */
+const PLAIN_REQUESTS = [
+  'getVideoData',
+  'getVolume',
+  'getCurrentTime',
+  'markThemeOptions',
+  'getAvailableQualities',
+  'getQuality',
+  'getAudioTracks',
+  'getCaptionTracks',
+] as const;
+
 export type BridgeRequest =
-  | { id: string; type: 'getVideoData' }
-  | { id: string; type: 'getVolume' }
+  | { id: string; type: (typeof PLAIN_REQUESTS)[number] }
   | { id: string; type: 'setVolume'; volume: number }
   | { id: string; type: 'seekTo'; seconds: number }
-  | { id: string; type: 'getCurrentTime' }
-  | { id: string; type: 'markThemeOptions' }
-  // 鎖定畫質（004 第 1 節、plan 3.5）：setQuality 只接受 YouTube 畫質代號白名單與 auto。
-  | { id: string; type: 'getAvailableQualities' }
-  | { id: string; type: 'getQuality' }
+  // setQuality 只接受 YouTube 畫質代號白名單與 auto。
   | { id: string; type: 'setQuality'; quality: QualityCode | typeof AUTO_QUALITY }
-  // 永遠使用原始語音（005 FR-10、plan 3.7.2）：setAudioTrack 只接受目前清單中存在的語音軌 ID。
-  | { id: string; type: 'getAudioTracks' }
-  | { id: string; type: 'setAudioTrack'; trackId: string }
-  // 字幕直接下載（002 FR-44、plan 3.8）：只讀取，不帶參數；回傳的字幕網址只有 youtube.com 網域。
-  | { id: string; type: 'getCaptionTracks' };
+  // setAudioTrack 只接受目前清單中存在的語音軌 ID。
+  | { id: string; type: 'setAudioTrack'; trackId: string };
 
 export type BridgeRequestType = BridgeRequest['type'];
 
@@ -101,16 +108,8 @@ export function parseBridgeRequest(raw: unknown): BridgeRequest | null {
   const obj = parseJson(raw);
   if (!obj || typeof obj.id !== 'string' || !ID_PATTERN.test(obj.id)) return null;
   const id = obj.id;
+  if ((PLAIN_REQUESTS as readonly unknown[]).includes(obj.type)) return { id, type: obj.type as (typeof PLAIN_REQUESTS)[number] };
   switch (obj.type) {
-    case 'getVideoData':
-    case 'getVolume':
-    case 'getCurrentTime':
-    case 'getAvailableQualities':
-    case 'getQuality':
-    case 'getAudioTracks':
-    case 'getCaptionTracks':
-    case 'markThemeOptions':
-      return { id, type: obj.type };
     case 'setAudioTrack':
       return typeof obj.trackId === 'string' && AUDIO_TRACK_ID_PATTERN.test(obj.trackId)
         ? { id, type: 'setAudioTrack', trackId: obj.trackId }

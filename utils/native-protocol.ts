@@ -1,6 +1,9 @@
 // 與橋接程式（ytm-host）之間的原生訊息協定（plan 4.2、specs/notes/T11-T15-host.md）。純函式與型別。
 // 橋接程式的回應與事件一律先經過這裡驗證，欄位型別不對時視為無效（不信任外部程式的輸出）。
 
+import { isRecord, isValidJobId } from './validate';
+import { isValidVideoId } from './youtube/page';
+
 export const HOST_NAME = 'com.chidi0716.yt_toolbar_master';
 
 /** 橋接程式的錯誤代碼（筆記中的錯誤代碼表）；另加擴充功能端的 HOST_UNREACHABLE（找不到或無法啟動橋接程式）。 */
@@ -63,12 +66,6 @@ export type JobStage = 'updating-ytdlp';
 const STAGES: readonly string[] = ['updating-ytdlp'];
 const toStage = (v: unknown): JobStage | null => (typeof v === 'string' && STAGES.includes(v) ? (v as JobStage) : null);
 
-export interface HostRequest {
-  id: string;
-  cmd: HostCommand;
-  args?: Record<string, unknown>;
-}
-
 export type JobKind = 'video' | 'mp3' | 'subtitle';
 export type JobState = 'queued' | 'downloading' | 'processing' | 'done' | 'failed' | 'cancelled';
 export const FINAL_STATES: readonly JobState[] = ['done', 'failed', 'cancelled'];
@@ -87,11 +84,8 @@ export type HostMessage =
   | { kind: 'done'; jobId: string; videoId: string; jobKind: JobKind; path: string; fileName: string }
   | { kind: 'failed'; jobId: string; videoId: string; jobKind: JobKind; error: HostError };
 
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const str = (v: unknown): string | null => (typeof v === 'string' ? v : null);
 const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
-const JOB_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
-const VIDEO_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/;
 const KINDS: readonly string[] = ['video', 'mp3', 'subtitle'];
 
 function parseError(v: unknown): HostError {
@@ -105,12 +99,12 @@ export function parseHostMessage(raw: unknown): HostMessage | null {
   if ('event' in raw) {
     const jobId = str(raw.jobId);
     const stage = toStage(raw.stage);
-    if (raw.event === 'progress' && stage && jobId && JOB_ID_PATTERN.test(jobId) && (raw.videoId === undefined || raw.kind === undefined)) {
+    if (raw.event === 'progress' && stage && isValidJobId(jobId) && (raw.videoId === undefined || raw.kind === undefined)) {
       return { kind: 'stage', jobId, stage };
     }
     const videoId = str(raw.videoId);
     const jobKind = str(raw.kind);
-    if (!jobId || !JOB_ID_PATTERN.test(jobId) || !videoId || !VIDEO_ID_PATTERN.test(videoId) || !jobKind || !KINDS.includes(jobKind)) return null;
+    if (!isValidJobId(jobId) || !isValidVideoId(videoId) || !jobKind || !KINDS.includes(jobKind)) return null;
     const base = { jobId, videoId, jobKind: jobKind as JobKind };
     switch (raw.event) {
       case 'progress': {
@@ -151,37 +145,18 @@ export function parseHostMessage(raw: unknown): HostMessage | null {
 // 結果的型別與整理（只取擴充功能用到的欄位）
 // ---------------------------------------------------------------------------
 
-export interface ToolInfo {
-  found: boolean;
-  version: string | null;
-  /** 找到了但無法執行時的錯誤代碼。 */
-  error: string | null;
-  manager: string | null;
-  updateCommand: string | null;
-}
-
+/** status 的結果（plan 4.9，階段 11 起的格式）：只取擴充功能會讀的欄位。 */
 export interface HostStatusResult {
   hostVersion: string;
-  os: string;
   /** yt-dlp 與 ffmpeg 都可以使用（可以下載）。 */
   ready: boolean;
-  /** yt-dlp、ffmpeg、deno 都可以使用（T15a）。舊版橋接程式沒有回報時依 ready。 */
+  /** 另外 deno 也可以使用（T15a）。 */
   complete: boolean;
-  /** 缺少的元件，依序為 yt-dlp、ffmpeg、deno（T15a）。 */
-  missing: Array<'yt-dlp' | 'ffmpeg' | 'deno'>;
-  /** 一次安裝全部缺少元件的指令；沒有缺少時為空字串（T15a）。 */
-  installCommand: string;
-  ytDlp: ToolInfo;
-  ffmpeg: ToolInfo;
-  /** deno（002 FR-2）。舊版橋接程式沒有回報時為 null。 */
-  deno: ToolInfo | null;
+  /** 各元件的狀態、版本、位置與來源（008 FR-24），依 COMPONENT_NAMES 的順序。 */
+  components: HostComponentInfo[];
   defaultDir: string;
   namePresets: Array<{ id: string; example: string }>;
-  /** 小幫手的安裝資料夾（008，plan 4.9）；舊版小幫手沒有回報時為 null。 */
-  installDir: string | null;
-  /** 各元件的版本、位置與來源（008 FR-24）；舊版小幫手沒有回報時為 null。 */
-  components: HostComponentInfo[] | null;
-  /** 自動更新的狀態（008 FR-24、FR-25）；舊版小幫手沒有回報時為 null。 */
+  /** 自動更新的狀態（008 FR-24、FR-25）；沒有回報時為 null。 */
   update: HostUpdateInfo | null;
 }
 
@@ -192,10 +167,13 @@ export type ComponentSource = (typeof COMPONENT_SOURCES)[number];
 
 export interface HostComponentInfo {
   name: ComponentName;
+  found: boolean;
   version: string | null;
   path: string | null;
   /** bundled：小幫手安裝的；homebrew、winget：套件管理工具；path：系統上原本就有的。不明時為 null。 */
   source: ComponentSource | null;
+  /** 找到了但無法執行時的錯誤代碼；其他情況為 null。 */
+  error: string | null;
 }
 
 export interface HostUpdateInfo {
@@ -219,17 +197,18 @@ export function parseTime(v: unknown): number | null {
   return null;
 }
 
-function parseComponents(v: unknown): HostComponentInfo[] | null {
-  if (!Array.isArray(v)) return null;
+function parseComponents(v: unknown): HostComponentInfo[] {
   const out: HostComponentInfo[] = [];
-  for (const c of v) {
+  for (const c of Array.isArray(v) ? v : []) {
     if (!isRecord(c) || !(COMPONENT_NAMES as readonly unknown[]).includes(c.name)) continue;
     if (out.some((o) => o.name === c.name)) continue;
     out.push({
       name: c.name as ComponentName,
+      found: c.found === true,
       version: str(c.version)?.slice(0, 64) || null,
       path: str(c.path)?.slice(0, 1024) || null,
       source: (COMPONENT_SOURCES as readonly unknown[]).includes(c.source) ? (c.source as ComponentSource) : null,
+      error: str(c.error)?.slice(0, 64) || null,
     });
   }
   return COMPONENT_NAMES.flatMap((n) => out.filter((o) => o.name === n));
@@ -247,42 +226,19 @@ function parseUpdateInfo(v: unknown): HostUpdateInfo | null {
   };
 }
 
-function parseTool(v: unknown): ToolInfo {
-  const t = isRecord(v) ? v : {};
-  return {
-    found: t.found === true,
-    version: str(t.version),
-    error: str(t.error),
-    manager: str(t.manager),
-    updateCommand: str(t.updateCommand),
-  };
-}
-
-const TOOLS = ['yt-dlp', 'ffmpeg', 'deno'] as const;
-
 export function parseStatus(result: Record<string, unknown>): HostStatusResult {
   const presets = Array.isArray(result.namePresets) ? result.namePresets : [];
   const ready = result.ready === true;
-  const missing = (Array.isArray(result.missing) ? result.missing : []).filter((m): m is (typeof TOOLS)[number] =>
-    (TOOLS as readonly unknown[]).includes(m),
-  );
   return {
     hostVersion: str(result.hostVersion) ?? '',
-    os: str(result.os) ?? '',
     ready,
-    complete: typeof result.complete === 'boolean' ? result.complete : ready,
-    missing: TOOLS.filter((t) => missing.includes(t)),
-    installCommand: (str(result.installCommand) ?? '').slice(0, 300),
-    ytDlp: parseTool(result.ytDlp),
-    ffmpeg: parseTool(result.ffmpeg),
-    deno: isRecord(result.deno) ? parseTool(result.deno) : null,
+    complete: ready && result.complete === true,
+    components: parseComponents(result.components),
     defaultDir: str(result.defaultDir) ?? '',
     namePresets: presets
       .filter(isRecord)
       .map((p) => ({ id: str(p.id) ?? '', example: str(p.example) ?? '' }))
       .filter((p) => /^[a-z-]{1,32}$/.test(p.id)),
-    installDir: str(result.installDir) || null,
-    components: parseComponents(result.components),
     update: parseUpdateInfo(result.update),
   };
 }
@@ -301,21 +257,19 @@ export interface HostFormat {
   filesizeApprox: number | null;
   protocol: string;
   dynamicRange: string;
-  language: string;
   note: string;
 }
 
 export interface HostInfo {
-  id: string;
   title: string;
-  channel: string;
   duration: number | null;
   liveStatus: string;
   isLive: boolean;
   formats: HostFormat[];
-  subtitles: Array<{ lang: string; name: string }>;
-  autoCaptions: Array<{ lang: string; name: string }>;
 }
+
+/** 直播中或首播尚未開始（002 FR-1、009 FR-6）。 */
+export const isLiveInfo = (info: HostInfo) => info.isLive || info.liveStatus === 'is_live' || info.liveStatus === 'is_upcoming';
 
 export function parseInfo(result: Record<string, unknown>): HostInfo {
   const formats = (Array.isArray(result.formats) ? result.formats : []).filter(isRecord).map(
@@ -333,22 +287,15 @@ export function parseInfo(result: Record<string, unknown>): HostInfo {
       filesizeApprox: num(f.filesizeApprox),
       protocol: str(f.protocol) ?? '',
       dynamicRange: str(f.dynamicRange) ?? '',
-      language: str(f.language) ?? '',
       note: str(f.note) ?? '',
     }),
   );
-  const tracks = (v: unknown) =>
-    (Array.isArray(v) ? v : []).filter(isRecord).map((s) => ({ lang: str(s.lang) ?? '', name: str(s.name) ?? '' })).filter((s) => s.lang);
   return {
-    id: str(result.id) ?? '',
     title: str(result.title) ?? '',
-    channel: str(result.channel) ?? '',
     duration: num(result.duration),
     liveStatus: str(result.liveStatus) ?? '',
     isLive: result.isLive === true,
     formats: formats.filter((f) => f.id),
-    subtitles: tracks(result.subtitles),
-    autoCaptions: tracks(result.autoCaptions),
   };
 }
 
@@ -376,7 +323,7 @@ export function parseJobs(result: Record<string, unknown>): HostJob[] {
     const videoId = str(j.videoId);
     const kind = str(j.kind);
     const state = str(j.state);
-    if (!jobId || !JOB_ID_PATTERN.test(jobId) || !videoId || !VIDEO_ID_PATTERN.test(videoId) || !kind || !KINDS.includes(kind) || !state || !STATES.includes(state)) continue;
+    if (!isValidJobId(jobId) || !isValidVideoId(videoId) || !kind || !KINDS.includes(kind) || !state || !STATES.includes(state)) continue;
     out.push({
       jobId,
       videoId,
@@ -396,7 +343,6 @@ export function parseJobs(result: Record<string, unknown>): HostJob[] {
 export interface UpdateResult {
   ran: boolean;
   updated: boolean;
-  upToDate: boolean;
   command: string | null;
   version: string | null;
 }
@@ -405,7 +351,6 @@ export function parseUpdate(result: Record<string, unknown>): UpdateResult {
   return {
     ran: result.ran === true,
     updated: result.updated === true,
-    upToDate: result.upToDate === true,
     command: str(result.command),
     version: str(result.version),
   };

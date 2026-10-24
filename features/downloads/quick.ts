@@ -2,13 +2,12 @@
 import { pickDefaultFormat } from '@/utils/default-format';
 import { formatSize } from '@/utils/format-list';
 import { t } from '@/utils/i18n';
-import type { HostErrorCode, HostInfo } from '@/utils/native-protocol';
+import { isLiveInfo, type HostErrorCode, type HostInfo } from '@/utils/native-protocol';
 import { toDefaultVideoContainer, toDefaultVideoHeight, type DefaultVideoContainer, type DefaultVideoHeight } from '@/utils/settings';
-import { isActive, MP3_BITRATES, type DownloadRequest, type JobRecord, type Mp3Bitrate } from './jobs';
+import { isActive, isMp3Bitrate, mp3Label, videoLabel, type DownloadRequest, type JobRecord, type Mp3Bitrate } from './jobs';
 
 /** 可以一鍵下載的種類（字幕不支援）。 */
 export type QuickKind = 'video' | 'mp3';
-export const QUICK_KINDS: readonly QuickKind[] = ['video', 'mp3'];
 
 /** 一鍵下載與右鍵下載使用的預設值（009 FR-2、FR-3）。 */
 export interface QuickDefaults {
@@ -17,9 +16,7 @@ export interface QuickDefaults {
   bitrate: Mp3Bitrate;
 }
 
-export const DEFAULT_QUICK_DEFAULTS: QuickDefaults = { height: 1080, container: 'mp4', bitrate: 192 };
-
-const toBitrate = (v: unknown): Mp3Bitrate => ((MP3_BITRATES as readonly unknown[]).includes(v) ? (v as Mp3Bitrate) : 192);
+const toBitrate = (v: unknown): Mp3Bitrate => (isMp3Bitrate(v) ? v : 192);
 
 /** 從設定讀到的值整理成預設值（不合法的值改用預設）。 */
 export function toQuickDefaults(height: unknown, container: unknown, bitrate: unknown): QuickDefaults {
@@ -36,12 +33,9 @@ export function videoSpecLabel(height: DefaultVideoHeight, container: DefaultVid
   return t(container === 'mp4' ? 'quickSpecMp4' : 'quickSpecAny', h);
 }
 
-/** MP3 的說明，例如「MP3 192 kbps」（與一般下載的標籤相同）。 */
-export const mp3SpecLabel = (bitrate: Mp3Bitrate) => `MP3 ${bitrate} kbps`;
-
 /** 工具列「影片」「MP3」按鈕的提示文字（009 FR-7），例如「一鍵下載：1080p MP4」。 */
 export function quickTooltip(kind: QuickKind, d: QuickDefaults): string {
-  return t('quickTooltip', kind === 'video' ? videoSpecLabel(d.height, d.container) : mp3SpecLabel(d.bitrate));
+  return t('quickTooltip', kind === 'video' ? videoSpecLabel(d.height, d.container) : mp3Label(d.bitrate));
 }
 
 /** 面板中這次下載的說明（009 FR-4），例如「1080p60 MP4，約 320 MB」。 */
@@ -70,8 +64,6 @@ export type QuickPlan =
   | { ok: true; request: DownloadRequest; estimate: { size: number | null; approx: boolean } | null }
   | { ok: false; error: HostErrorCode };
 
-const isLiveInfo = (info: HostInfo) => info.isLive || info.liveStatus === 'is_live' || info.liveStatus === 'is_upcoming';
-
 /**
  * 依影片資訊與預設值組出下載請求。直播中、首播尚未開始的影片不自動開始（FR-6）；
  * 沒有可下載的影片格式時回傳 FORMAT_UNAVAILABLE。需要登入等情況在 getInfo 就會以錯誤代碼失敗。
@@ -80,7 +72,7 @@ export function planQuickDownload(videoId: string, info: HostInfo, kind: QuickKi
   if (isLiveInfo(info)) return { ok: false, error: 'LIVE_NOT_SUPPORTED' };
   const title = (info.title || fallbackTitle).slice(0, 500);
   if (kind === 'mp3') {
-    return { ok: true, request: { kind: 'mp3', videoId, title, label: mp3SpecLabel(d.bitrate), bitrate: d.bitrate, section: null }, estimate: null };
+    return { ok: true, request: { kind: 'mp3', videoId, title, label: mp3Label(d.bitrate), bitrate: d.bitrate, section: null }, estimate: null };
   }
   const row = pickDefaultFormat(info.formats, { height: d.height, container: d.container });
   if (!row) return { ok: false, error: 'FORMAT_UNAVAILABLE' };
@@ -90,7 +82,7 @@ export function planQuickDownload(videoId: string, info: HostInfo, kind: QuickKi
       kind: 'video',
       videoId,
       title,
-      label: `${row.resolution}${row.hdr ? ' HDR' : ''} ${row.container.toUpperCase()}`,
+      label: videoLabel(row),
       formatId: row.formatId,
       container: row.container,
       section: null,
@@ -134,4 +126,46 @@ export type DownloadMode = 'quick' | 'confirm' | 'full';
 export function initialDownloadMode(o: { quickEnabled: boolean; clickedForThisVideo: boolean; helperJustInstalled: boolean }): DownloadMode {
   if (!o.quickEnabled) return 'full';
   return o.clickedForThisVideo && !o.helperJustInstalled ? 'quick' : 'confirm';
+}
+
+/** 下載面板目前顯示什麼，與決定它的條件（一鍵下載是否開啟在面板打開時讀取）。 */
+export interface DownloadPanelState {
+  quickEnabled: boolean;
+  /** 這個狀態所屬的影片。 */
+  videoId: string;
+  /** 使用者為目前這部影片點了按鈕（釘選的面板換了影片時為 false）。 */
+  clicked: boolean;
+  /** 這次打開面板時顯示過安裝引導、之後才偵測到小幫手（FR-11：顯示「小幫手已安裝完成」）。 */
+  installed: boolean;
+  mode: DownloadMode;
+}
+
+export type DownloadPanelEvent =
+  /** 顯示安裝引導之後偵測到小幫手（FR-10、FR-11）。 */
+  | { type: 'helperBecameReady' }
+  /** 釘選的面板換到別部影片。 */
+  | { type: 'videoChanged'; videoId: string }
+  /** 「改用其他畫質」：顯示完整選項。 */
+  | { type: 'chooseOther' }
+  /** 按了「開始下載」。 */
+  | { type: 'started' };
+
+const withMode = (s: Omit<DownloadPanelState, 'mode'>): DownloadPanelState => ({
+  ...s,
+  mode: initialDownloadMode({ quickEnabled: s.quickEnabled, clickedForThisVideo: s.clicked, helperJustInstalled: s.installed }),
+});
+
+export const initialDownloadPanel = (quickEnabled: boolean, videoId: string): DownloadPanelState => withMode({ quickEnabled, videoId, clicked: true, installed: false });
+
+export function downloadPanelReducer(state: DownloadPanelState, event: DownloadPanelEvent): DownloadPanelState {
+  switch (event.type) {
+    case 'helperBecameReady':
+      return withMode({ ...state, installed: true });
+    case 'videoChanged':
+      return withMode({ ...state, videoId: event.videoId, clicked: false, installed: false });
+    case 'chooseOther':
+      return { ...state, mode: 'full' };
+    case 'started':
+      return { ...state, mode: 'quick' };
+  }
 }

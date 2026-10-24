@@ -1,11 +1,16 @@
 // 觀看輔助功能加在 YouTube 頁面上的樣式（constitution 第 6 點：只用 ytm- 前綴的 class，
 // 不改 YouTube 原本的屬性）。選擇器來自 utils/youtube/dom.ts。
+import { ensureStyle } from '@/utils/style';
+import { Z_INDEX } from '@/utils/z-index';
 import { APPEARANCE_MENU, CINEMA_DIMMED_REGIONS, SELECTORS } from '@/utils/youtube/dom';
 
 const STYLE_ID = 'ytm-page-styles';
 
 /** 深色模式操作 YouTube 外觀選單期間加在 <html> 上的 class（003 FR-11：選單不得被看見）。 */
 export const THEME_MENU_BUSY_CLASS = 'ytm-theme-menu-busy';
+
+/** 工具列 Shadow DOM 的宿主元素（entrypoints/youtube.content/mount.tsx 的 createShadowRootUi name）。 */
+export const TOOLBAR_TAG = 'ytm-toolbar';
 
 /** 劇院模式時加在 <html> 上的 class。 */
 export const CINEMA_CLASS = 'ytm-cinema';
@@ -26,6 +31,14 @@ html.${CINEMA_CLASS} :is(${CINEMA_DIMMED_REGIONS.join(', ')}) {
   opacity: ${CINEMA_DIM_OPACITY} !important;
   cursor: pointer;
 }
+/* 工具列維持在調暗的兄弟區塊之上，展開的面板不會被遮住；按鈕改用深色背景上的顏色（toolbar.css）。 */
+html.${CINEMA_CLASS} ${TOOLBAR_TAG} {
+  position: relative !important;
+  z-index: ${Z_INDEX.cinemaToolbar} !important;
+  --ytm-cinema-btn-color: var(--yt-sys-color-baseline--overlay-text-primary, #fff);
+  --ytm-cinema-btn-hover: rgba(255, 255, 255, 0.1);
+  --ytm-cinema-btn-on: rgba(255, 255, 255, 0.2);
+}
 
 /* 深色模式（003 FR-11）：擴充功能代替使用者操作 YouTube 外觀選單時，選單不可見也不可點。 */
 html.${THEME_MENU_BUSY_CLASS} ${APPEARANCE_MENU.popup} {
@@ -38,7 +51,7 @@ html.${THEME_MENU_BUSY_CLASS} ${APPEARANCE_MENU.popup} {
   position: fixed !important;
   right: auto !important;
   bottom: auto !important;
-  z-index: 2150 !important;
+  z-index: ${Z_INDEX.floatingPlayer} !important;
   overflow: hidden !important;
   border-radius: 12px !important;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5) !important;
@@ -57,9 +70,5 @@ html.ytm-audio-only ${SELECTORS.videoContainer} video {
 
 /** 在頁面加入一次共用樣式（重複呼叫沒有作用）。 */
 export function ensurePageStyles(doc: Document = document): void {
-  if (doc.getElementById(STYLE_ID)) return;
-  const style = doc.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = PAGE_CSS;
-  (doc.head ?? doc.documentElement).append(style);
+  ensureStyle(STYLE_ID, PAGE_CSS, doc);
 }

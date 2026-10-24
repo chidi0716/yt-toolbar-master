@@ -1,5 +1,35 @@
 /* 各面板的內容樣式（顏色使用 toolbar.css 的 --ytm-* 別名）。 */
 
+/* 面板共用的灰色文字與連結樣式的按鈕（設定頁也使用）。 */
+.ytm-muted {
+  margin: 0;
+  color: var(--ytm-text-secondary);
+}
+
+.ytm-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 0 -8px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  color: var(--ytm-call-to-action);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+}
+
+.ytm-link:hover {
+  background: var(--ytm-hover-background);
+}
+
+.ytm-link:focus-visible {
+  box-shadow: 0 0 0 2px var(--ytm-call-to-action);
+}
+
 .ytm-visually-hidden {
   position: absolute;
   width: 1px;
@@ -430,7 +460,7 @@
   font-size: 12px;
 }
 
-.ytm-setup-components li[data-component='host'][data-missing] .ytm-setup-state {
+.ytm-setup-components li[data-component='helper'][data-missing] .ytm-setup-state {
   color: var(--ytm-error);
 }
 

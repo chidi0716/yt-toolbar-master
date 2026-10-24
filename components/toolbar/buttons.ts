@@ -13,7 +13,6 @@ export type ButtonKind = 'panel' | 'toggle' | 'action';
 
 /** 固定工具：不能隱藏、也不能移動，永遠在工具列最右邊（006）。 */
 export type FixedId = 'more' | 'close';
-export const FIXED_IDS: readonly FixedId[] = ['more', 'close'];
 
 export type ButtonId = ToolId | FixedId;
 
@@ -59,14 +58,21 @@ export function getButton(id: ButtonId): ButtonDef {
   return id === 'more' || id === 'close' ? FIXED[id] : TOOLS[id];
 }
 
-/** 工具目前的狀態（給「更多」按鈕的提示圓點判斷）。 */
-export interface ToolActivity {
-  progress?: Partial<Record<ButtonId, number | 'indeterminate' | null>>;
-  activePanels?: ReadonlySet<ButtonId>;
-  toggles?: Partial<Record<ButtonId, { active: boolean }>>;
+/** 工具按鈕目前的狀態；各功能模組以 store 提供，每個按鈕各自訂閱。 */
+export interface ToolStatus {
+  /** 切換類：開啟中（FR-9）；面板類：背後的功能正在進行中（例如循環播放，003 FR-52）。 */
+  active?: boolean;
+  /** 不能使用時的原因：按鈕停用，提示文字顯示原因（003 FR-32）。 */
+  disabledReason?: string;
+  /** 短暫顯示在提示文字中的訊息（003 FR-15）。 */
+  notice?: string;
+  /** 下載進度（002 FR-3）：0–100、不確定（FR-6b）或沒有進行中的下載（null）。 */
+  progress?: number | 'indeterminate' | null;
+  /** 取代按鈕名稱的提示文字（009 FR-7）。 */
+  tooltip?: string;
 }
 
 /** 工具是否有進行中的狀態：下載中、面板功能進行中（循環）、或開啟中的切換類工具（深色模式除外）（006 FR-17）。 */
-export function isToolOngoing(id: ToolId, { progress, activePanels, toggles }: ToolActivity): boolean {
-  return (progress?.[id] ?? null) !== null || !!activePanels?.has(id) || (!!TOOLS[id].ongoing && !!toggles?.[id]?.active);
+export function isToolOngoing(id: ToolId, status: ToolStatus): boolean {
+  return (status.progress ?? null) !== null || (!!status.active && (TOOLS[id].kind === 'panel' || !!TOOLS[id].ongoing));
 }
