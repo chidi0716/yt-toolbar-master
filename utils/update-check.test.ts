@@ -106,12 +106,12 @@ describe('GitHub 回應的整理', () => {
     expect(normalizeCheckState({ lastCheckedAt: 'x', latest: { version: '0.2.0', url: 'https://evil.example/' } })).toEqual(EMPTY_CHECK);
     expect(normalizeCheckState({ lastCheckedAt: 5, latest: release(), lastResult: 'ok' })).toEqual({ lastCheckedAt: 5, latest: release(), lastResult: 'ok' });
     expect(normalizeReminderState('x')).toEqual(EMPTY_REMINDER);
-    expect(normalizeReminderState({ skippedVersion: 'v0.2.0', disabled: 'yes', lastCardShownAt: { version: '0.2.0', at: 7 }, handledVersion: 'bad' })).toEqual({
-      skippedVersion: '0.2.0',
+    expect(normalizeReminderState({ dismissedVersion: 'v0.2.0', disabled: 'yes', lastCardShownAt: { version: '0.2.0', at: 7 } })).toEqual({
+      dismissedVersion: '0.2.0',
       disabled: false,
       lastCardShownAt: { version: '0.2.0', at: 7 },
-      handledVersion: null,
     });
+    expect(normalizeReminderState({ dismissedVersion: 'bad' }).dismissedVersion).toBeNull();
   });
 });
 
@@ -171,21 +171,21 @@ describe('是否提醒、是否以卡片出現（FR-28、FR-29、FR-29a）', () 
   });
 
   it('跳過這個版本：同版本不再提醒，更新的版本出現時再提醒', () => {
-    expect(view({ skippedVersion: '0.2.0' })).toMatchObject({ pending: false, showCard: false });
+    expect(view({ dismissedVersion: '0.2.0' })).toMatchObject({ pending: false, showCard: false });
     const newer = reminderView({
       currentVersion: '0.1.0',
       eligible: true,
       check: { ...check, latest: release('0.2.1') },
-      reminder: { ...EMPTY_REMINDER, skippedVersion: '0.2.0' },
+      reminder: { ...EMPTY_REMINDER, dismissedVersion: '0.2.0' },
       now: at(23, 12),
     });
     expect(newer).toMatchObject({ pending: true, showCard: true });
   });
 
   it('前往下載後（已處理）這個版本不再提醒；更新的版本出現時再提醒', () => {
-    expect(view({ handledVersion: '0.2.0' }).pending).toBe(false);
+    expect(view({ dismissedVersion: '0.2.0' }).pending).toBe(false);
     expect(
-      reminderView({ currentVersion: '0.1.0', eligible: true, check: { ...check, latest: release('0.3.0') }, reminder: { ...EMPTY_REMINDER, handledVersion: '0.2.0' }, now: at(23, 12) }).pending,
+      reminderView({ currentVersion: '0.1.0', eligible: true, check: { ...check, latest: release('0.3.0') }, reminder: { ...EMPTY_REMINDER, dismissedVersion: '0.2.0' }, now: at(23, 12) }).pending,
     ).toBe(true);
   });
 
@@ -199,8 +199,10 @@ describe('是否提醒、是否以卡片出現（FR-28、FR-29、FR-29a）', () 
 
   it('操作的結果', () => {
     const now = at(23, 12);
-    expect(applyReminderAction(EMPTY_REMINDER, 'open', '0.2.0', now).handledVersion).toBe('0.2.0');
-    expect(applyReminderAction(EMPTY_REMINDER, 'skip', '0.2.0', now).skippedVersion).toBe('0.2.0');
+    expect(applyReminderAction(EMPTY_REMINDER, 'open', '0.2.0', now).dismissedVersion).toBe('0.2.0');
+    expect(applyReminderAction(EMPTY_REMINDER, 'skip', '0.2.0', now).dismissedVersion).toBe('0.2.0');
+    // 已處理過更新的版本時不往回改。
+    expect(applyReminderAction({ ...EMPTY_REMINDER, dismissedVersion: '0.3.0' }, 'open', '0.2.0', now).dismissedVersion).toBe('0.3.0');
     expect(applyReminderAction(EMPTY_REMINDER, 'disable', null, now).disabled).toBe(true);
     expect(applyReminderAction({ ...EMPTY_REMINDER, disabled: true }, 'enable', null, now).disabled).toBe(false);
     expect(applyReminderAction(EMPTY_REMINDER, 'cardShown', '0.2.0', now).lastCardShownAt).toEqual({ version: '0.2.0', at: now });

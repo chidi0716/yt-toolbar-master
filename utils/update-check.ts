@@ -35,14 +35,14 @@ export interface UpdateCheckState {
 
 /** local:updateReminder（plan 3.9）。 */
 export interface UpdateReminderState {
-  skippedVersion: string | null;
+  /** 「跳過這個版本」或「前往下載」處理過的最新版本；這個版本以下不再提醒。 */
+  dismissedVersion: string | null;
   disabled: boolean;
   lastCardShownAt: { version: string; at: number } | null;
-  handledVersion: string | null;
 }
 
 export const EMPTY_CHECK: UpdateCheckState = { lastCheckedAt: null, latest: null, lastResult: null };
-export const EMPTY_REMINDER: UpdateReminderState = { skippedVersion: null, disabled: false, lastCardShownAt: null, handledVersion: null };
+export const EMPTY_REMINDER: UpdateReminderState = { dismissedVersion: null, disabled: false, lastCardShownAt: null };
 
 // ---------------------------------------------------------------------------
 // 版本
@@ -141,10 +141,9 @@ export function normalizeReminderState(value: unknown): UpdateReminderState {
   const shown = v.lastCardShownAt && typeof v.lastCardShownAt === 'object' ? (v.lastCardShownAt as Record<string, unknown>) : null;
   const shownVersion = shown ? normalizeVersion(shown.version) : null;
   return {
-    skippedVersion: normalizeVersion(v.skippedVersion),
+    dismissedVersion: normalizeVersion(v.dismissedVersion),
     disabled: v.disabled === true,
     lastCardShownAt: shown && shownVersion && typeof shown.at === 'number' && Number.isFinite(shown.at) ? { version: shownVersion, at: shown.at } : null,
-    handledVersion: normalizeVersion(v.handledVersion),
   };
 }
 
@@ -202,8 +201,7 @@ export function reminderView(input: {
     !reminder.disabled &&
     !!latest &&
     isNewer(latest.version, currentVersion) &&
-    (reminder.skippedVersion === null || isNewer(latest.version, reminder.skippedVersion)) &&
-    (reminder.handledVersion === null || isNewer(latest.version, reminder.handledVersion));
+    (reminder.dismissedVersion === null || isNewer(latest.version, reminder.dismissedVersion));
   const shownToday =
     !!latest &&
     reminder.lastCardShownAt !== null &&
@@ -229,9 +227,8 @@ export const REMINDER_ACTIONS: readonly ReminderAction[] = ['open', 'skip', 'dis
 export function applyReminderAction(state: UpdateReminderState, action: ReminderAction, version: string | null, now: number): UpdateReminderState {
   switch (action) {
     case 'open':
-      return version ? { ...state, handledVersion: version } : state;
     case 'skip':
-      return version ? { ...state, skippedVersion: version } : state;
+      return version && (state.dismissedVersion === null || isNewer(version, state.dismissedVersion)) ? { ...state, dismissedVersion: version } : state;
     case 'disable':
       return { ...state, disabled: true };
     case 'enable':
