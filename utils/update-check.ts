@@ -152,7 +152,7 @@ export function normalizeReminderState(value: unknown): UpdateReminderState {
 // ---------------------------------------------------------------------------
 
 /**
- * 只有無法自動更新的安裝方式才查詢與提醒（FR-26）：Chrome 載入未封裝、Firefox／Zen 臨時附加元件，
+ * 只有無法自動更新的安裝方式才查詢與提醒（FR-26）：Chrome 載入未封裝、Firefox 臨時附加元件，
  * 兩者的 management.getSelf().installType 都是 development。
  */
 export const isReminderEligible = (installType: unknown): boolean => installType === 'development';

@@ -2,7 +2,7 @@
 
 [English](./README.md) | **繁體中文**
 
-一個 YouTube 瀏覽器擴充功能，在影片播放器下方加入一條看起來像 YouTube 原生介面的工具列，提供下載與觀看輔助功能。使用 [WXT](https://wxt.dev) + TypeScript 開發，支援 Chrome 與 Firefox（Zen 等以 Firefox 為基礎的瀏覽器比照 Firefox）。
+一個 YouTube 瀏覽器擴充功能，在影片播放器下方加入一條看起來像 YouTube 原生介面的工具列，提供下載與觀看輔助功能。使用 [WXT](https://wxt.dev) + TypeScript 開發，支援 Chrome 與 Firefox。
 
 > **狀態：測試版。**[v0.1.0 Beta](https://github.com/chidi0716/yt-toolbar-master/releases) 是第一個公開測試版。遇到問題請[回報](https://github.com/chidi0716/yt-toolbar-master/issues/new/choose)。
 
@@ -93,7 +93,7 @@ YouTube 上的工具列  →  擴充功能背景腳本  →  本機小幫手  �
    - yt-dlp：[yt-dlp 官方正式版本](https://github.com/yt-dlp/yt-dlp/releases)，核對官方檢查碼；
    - deno：[deno 官方正式版本](https://github.com/denoland/deno/releases)，核對官方檢查碼；
    - ffmpeg 與 ffprobe：macOS 從 [Martin Riedl 的 FFmpeg Build Server](https://ffmpeg.martin-riedl.de)、Windows 從 [yt-dlp/FFmpeg-Builds](https://github.com/yt-dlp/FFmpeg-Builds) 下載，核對發佈時記錄的檢查碼。電腦上已經有 ffmpeg 與 ffprobe（例如 Homebrew）時沿用，不另外下載。
-3. 全部放在 `~/Library/Application Support/yt-toolbar-master/`（macOS）或 `%LOCALAPPDATA%\yt-toolbar-master\`（Windows），並為 Chrome 與 Firefox（含 Zen）註冊小幫手。
+3. 全部放在 `~/Library/Application Support/yt-toolbar-master/`（macOS）或 `%LOCALAPPDATA%\yt-toolbar-master\`（Windows），並為 Chrome 與 Firefox註冊小幫手。
 
 每個下載的檔案都必須符合發佈清單中的 SHA-256，否則刪除且不替換任何東西。
 
@@ -154,7 +154,7 @@ irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/unin
 
 ### 疑難排解
 
-- **面板仍顯示找不到小幫手**：安裝後請重新啟動瀏覽器。Zen 等以 Firefox 為基礎的瀏覽器使用 Firefox 的註冊。
+- **面板仍顯示找不到小幫手**：安裝後請重新啟動瀏覽器。
 - **指令顯示「失敗」後停止**：看印出的原因（網路、磁碟空間、檔案與檢查碼不符等），必要時排除後再執行一次同一個指令，會從停下的地方繼續。
 - **顯示「yt-dlp 版本過舊」或缺少部分畫質**：小幫手會自動更新 yt-dlp；也可以在設定頁按「立即檢查更新」。若使用自己安裝的 yt-dlp（Homebrew 或 winget），請以 `brew upgrade yt-dlp` 或 `winget upgrade --id yt-dlp.yt-dlp` 更新。
 - **記錄檔**：`~/Library/Logs/yt-toolbar-master/host.log`（macOS）或 `%LOCALAPPDATA%\yt-toolbar-master\logs\host.log`（Windows）。只記錄指令名稱與錯誤訊息，不含 cookie 或帳號資訊。
@@ -173,8 +173,8 @@ irm https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/unin
 **macOS 顯示小幫手「無法打開」或「來自未識別的開發者」（Gatekeeper）**
 在「終端機」以 `curl` 下載的檔案不會被標記為「來自網路」，所以一行指令安裝不會遇到這個問題。若是從瀏覽器下載 zip 手動安裝，請在該資料夾再執行一次 `sh install.sh`（會移除隔離屬性），或改用一行指令安裝；不要加 `sudo`。
 
-**Zen（或其他以 Firefox 為基礎的瀏覽器）找不到小幫手**
-安裝程式為 Firefox 註冊小幫手，Zen 使用同一個註冊。安裝後請完全結束 Zen 再開啟，並按「重新檢查」。若仍顯示尚未連接，請開 issue 回報 Zen 版本、macOS 或 Windows 版本，以及 `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.yt_toolbar_master.json`（macOS）是否存在；擴充功能主控台（`about:debugging` 中找到本擴充功能，按「檢查」）裡 `[yt-toolbar-master]` 開頭的訊息也請一併附上。
+**Firefox 找不到小幫手**
+安裝後請完全結束瀏覽器再開啟，並按「重新檢查」。若仍顯示尚未連接，請開 issue 回報瀏覽器版本、macOS 或 Windows 版本，以及 `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.yt_toolbar_master.json`（macOS）是否存在；擴充功能主控台（`about:debugging` 中找到本擴充功能，按「檢查」）裡 `[yt-toolbar-master]` 開頭的訊息也請一併附上。
 
 **下載失敗，顯示「無法寫入下載資料夾」**
 設定頁選擇的資料夾被移動或刪除、磁碟已滿，或資料夾沒有寫入權限。請在設定頁改選其他資料夾或按「使用預設」。macOS 上出現詢問是否允許存取「桌面」「文件」等資料夾時，請允許。
@@ -206,11 +206,11 @@ npm run release:dry     # 不需要 Secret，產生所有發佈檔案 → releas
 
 ## 手動載入擴充功能
 
-[版本頁面](https://github.com/chidi0716/yt-toolbar-master/releases)有打包好的 `yt-toolbar-master-<版本>-chrome.zip` 與 `yt-toolbar-master-<版本>-firefox.xpi`（尚未經 Mozilla 簽署的版本改附 `yt-toolbar-master-<版本>-firefox-temporary.zip`，Firefox 與 Zen 只能以臨時附加元件載入）。使用自己建置的版本時，改用 `.output/chrome-mv3` 或 `.output/firefox-mv3`。
+[版本頁面](https://github.com/chidi0716/yt-toolbar-master/releases)有打包好的 `yt-toolbar-master-<版本>-chrome.zip` 與 `yt-toolbar-master-<版本>-firefox.xpi`（尚未經 Mozilla 簽署的版本改附 `yt-toolbar-master-<版本>-firefox-temporary.zip`，Firefox 只能以暫時附加元件載入）。使用自己建置的版本時，改用 `.output/chrome-mv3` 或 `.output/firefox-mv3`。
 
 - **Chrome**：把 Chrome 版解壓縮到一個會保留的資料夾，開啟 `chrome://extensions`，打開「開發人員模式」，點「載入未封裝項目」，選擇該資料夾（或 `.output/chrome-mv3`）。Chrome 無法自動更新這個擴充功能；有新版本時擴充功能會顯示提醒。更新方式：把新版本解壓縮覆蓋同一個資料夾，再到 `chrome://extensions` 按「重新載入」。
 - **Firefox（開發用）**：開啟 `about:debugging#/runtime/this-firefox`，點「載入臨時附加元件」，選擇 `.output/firefox-mv3/manifest.json`。臨時附加元件在 Firefox 重新啟動後會被移除。
-- **Firefox（永久安裝，Firefox 140 以上，含 Zen）**：正式版 Firefox 只能安裝經 Mozilla 簽署的附加元件，因此本擴充功能以 addons.mozilla.org 的「不公開（unlisted）」頻道簽署，不在 AMO 網站上架。用 Firefox 開啟簽署後的 `.xpi` 檔（或拖進 Firefox 視窗），在安裝提示中確認即可。簽署版會自動更新（想立即更新：`about:addons` → 齒輪圖示 →「檢查更新」）。
+- **Firefox（永久安裝，Firefox 140 以上）**：正式版 Firefox 只能安裝經 Mozilla 簽署的附加元件，因此本擴充功能以 addons.mozilla.org 的「不公開（unlisted）」頻道簽署，不在 AMO 網站上架。用 Firefox 開啟簽署後的 `.xpi` 檔（或拖進 Firefox 視窗），在安裝提示中確認即可。簽署版會自動更新（想立即更新：`about:addons` → 齒輪圖示 →「檢查更新」）。
 
 ### 簽署 Firefox 版（維護者）
 
@@ -231,16 +231,16 @@ npm run release:dry     # 不需要 Secret，產生所有發佈檔案 → releas
 #### 第一次設定
 
 1. 在本機試跑整個流程：`npm run release:dry`（輸出在 `release/dist/`，Firefox 版不送簽署）。
-2. 建立第一個版本（見下方）。不需要任何 Secret：沒有 Mozilla API 金鑰時，Release 會附上未簽署的 `yt-toolbar-master-<版本>-firefox-temporary.zip`（Firefox／Zen 只能以臨時附加元件載入）、不產生 `updates.json`，並在說明中註明。
+2. 建立第一個版本（見下方）。不需要任何 Secret：沒有 Mozilla API 金鑰時，Release 會附上未簽署的 `yt-toolbar-master-<版本>-firefox-temporary.zip`（Firefox 只能以臨時附加元件載入）、不產生 `updates.json`，並在說明中註明。
 
-**之後（選用）：Firefox／Zen 的 Mozilla 簽署**。在 <https://addons.mozilla.org/developers/addon/api/key/> 建立 API 金鑰，加到 repo 的 Secrets（**Settings → Secrets and variables → Actions → New repository secret**）：`AMO_JWT_ISSUER`（「JWT issuer」）與 `AMO_JWT_SECRET`（「JWT secret」）。下一個版本起 `.xpi` 會經過簽署，Firefox／Zen 也會自動更新。
+**之後（選用）：Firefox 的 Mozilla 簽署**。在 <https://addons.mozilla.org/developers/addon/api/key/> 建立 API 金鑰，加到 repo 的 Secrets（**Settings → Secrets and variables → Actions → New repository secret**）：`AMO_JWT_ISSUER`（「JWT issuer」）與 `AMO_JWT_SECRET`（「JWT secret」）。下一個版本起 `.xpi` 會經過簽署，Firefox 也會自動更新。
 
 #### 發佈步驟
 
 1. 修改 `package.json` 的 `version`（例如 `0.2.0`）並 commit。
 2. 需要時更新 `release/components.lock.json` 中固定的第三方版本（見 [`specs/notes/ffmpeg-source.md`](./specs/notes/ffmpeg-source.md)），並以 `cd host && go run ./cmd/ytm-release lock-check -download` 檢查。
 3. 推送標籤（`git tag v0.2.0 && git push origin v0.2.0`，必須與 `package.json` 相同），或推送到 `release` 分支（`git push origin main:release`），流程會自己建立 `v<package.json 的版本>` 標籤。
-4. 流程完成後檢查版本頁面。簽署版的 Firefox／Zen 會自動更新；Chrome（與 Firefox 臨時附加元件）使用者會在擴充功能中看到附有版本連結的提醒。
+4. 流程完成後檢查版本頁面。簽署版的 Firefox 會自動更新；Chrome（與 Firefox 臨時附加元件）使用者會在擴充功能中看到附有版本連結的提醒。
 
 ### 從原始碼建置（給附加元件審查者）
 

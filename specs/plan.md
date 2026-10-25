@@ -103,7 +103,7 @@ host/                           橋接程式（Go），見第 4 節
 
 ### 3.3.1 Firefox 發佈方式
 
-- Firefox 正式版與 Zen 只能永久安裝經 Mozilla 簽署的附加元件，因此以 AMO「不公開（unlisted）」頻道送簽署，取得 `.xpi` 自行發佈；不在 AMO 網站上架。
+- Firefox 正式版只能永久安裝經 Mozilla 簽署的附加元件，因此以 AMO「不公開（unlisted）」頻道送簽署，取得 `.xpi` 自行發佈；不在 AMO 網站上架。
 - manifest 的 `browser_specific_settings.gecko` 加入：
   - `strict_min_version: "140.0"`（main world 內容腳本需要 128，`data_collection_permissions` 需要 140；140 為 ESR 版本）；
   - `data_collection_permissions: { "required": ["none"] }`（依 constitution 第 2 點，不收集任何資料）。
@@ -441,7 +441,7 @@ install/
 
 - `.github/workflows/release.yml`，在推送 `v*` 標籤時執行：
   1. `npm ci`、`npm test`、`npm run compile`、`go test ./...`。
-  2. 建置 Chrome 版 zip 與 Firefox 版；Firefox 以 `web-ext sign --channel unlisted` 送簽署（Secrets：`AMO_JWT_ISSUER`、`AMO_JWT_SECRET`，上傳原始碼同 3.3.1）。**Secrets 尚未設定時略過簽署**，附上未簽署的 `yt-toolbar-master-<版本>-firefox-temporary.zip`，不產生 `updates.json`，Release 說明加註「Firefox／Zen 版本尚未簽署，只能以臨時附加元件載入」（008 FR-52）。
+  2. 建置 Chrome 版 zip 與 Firefox 版；Firefox 以 `web-ext sign --channel unlisted` 送簽署（Secrets：`AMO_JWT_ISSUER`、`AMO_JWT_SECRET`，上傳原始碼同 3.3.1）。**Secrets 尚未設定時略過簽署**，附上未簽署的 `yt-toolbar-master-<版本>-firefox-temporary.zip`，不產生 `updates.json`，Release 說明加註「Firefox 版本尚未簽署，只能以臨時附加元件載入」（008 FR-52）。
   3. 建置三種小幫手。
   4. 依 `release/components.lock.json` 產生並驗證 `components.json`。
   5. 產生 `updates.json`（Firefox 更新資訊，列出這個版本與 `.xpi` 的下載網址）。

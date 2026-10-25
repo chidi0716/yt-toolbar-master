@@ -37,7 +37,7 @@
 | 記錄檔 | `~/Library/Logs/yt-toolbar-master/host.log` | `%LOCALAPPDATA%\yt-toolbar-master\logs\host.log` |
 | 瀏覽器註冊 | `~/Library/Application Support/Google/Chrome/NativeMessagingHosts/` 與 `~/Library/Application Support/Mozilla/NativeMessagingHosts/`（各一個小檔案） | `HKCU\Software\Google\Chrome\NativeMessagingHosts\` 與 `HKCU\Software\Mozilla\NativeMessagingHosts\` 下的兩個登錄機碼 |
 
-瀏覽器註冊告訴 Chrome 與 Firefox（以及 Zen 等以 Firefox 為基礎的瀏覽器）小幫手在哪裡，並限定**只有本擴充功能**能啟動它。
+瀏覽器註冊告訴 Chrome 與 Firefox小幫手在哪裡，並限定**只有本擴充功能**能啟動它。
 
 記錄檔只記錄指令名稱與錯誤訊息（不含 cookie、密碼或帳號資訊），大小上限 5 MB。
 

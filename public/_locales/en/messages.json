@@ -1164,7 +1164,7 @@
     "description": "Install step description (008 FR-11)."
   },
   "installDetailFolder": {
-    "message": "Puts everything in one folder in your user account and registers the helper with Chrome and Firefox (including Zen):",
+    "message": "Puts everything in one folder in your user account and registers the helper with Chrome and Firefox:",
     "description": "Install step description (008 FR-11)."
   },
   "installDetailDone": {

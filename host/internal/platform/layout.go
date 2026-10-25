@@ -14,7 +14,7 @@ const (
 
 // ManifestLocation 是一個瀏覽器的原生訊息設定檔位置。
 type ManifestLocation struct {
-	Browser string // chrome 或 firefox（Zen 等以 Firefox 為基礎的瀏覽器讀取 Firefox 的位置）
+	Browser string // chrome 或 firefox（以 Firefox 為基礎的瀏覽器讀取 Firefox 的位置）
 	Path    string // 設定檔的路徑
 	// RegistryKey 是 HKCU 下的登錄機碼（只有 Windows），預設值為 Path。
 	RegistryKey string

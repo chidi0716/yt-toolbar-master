@@ -31,7 +31,7 @@
 
 ## 5. 支援範圍
 
-- 瀏覽器：Chrome（Manifest V3）、Firefox 140 以上。Zen 等以 Firefox 為基礎的瀏覽器一律比照 Firefox 處理，不做特別調整；之後若發現問題再修正。
+- 瀏覽器：Chrome（Manifest V3）、Firefox 140 以上。以 Firefox 為基礎的瀏覽器一律比照 Firefox 處理，不做特別調整；介面與文件不特別提及個別的衍生瀏覽器。
 - 作業系統：macOS（Apple Silicon 與 Intel）、Windows 10/11（x64）。
 - 不需要原生橋接程式的功能，在沒安裝橋接程式時也必須能正常使用。
 

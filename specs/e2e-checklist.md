@@ -19,7 +19,7 @@
 2. 在 repo 中：`npm install`、`npm run build`、`npm run build:firefox`、`npm run build:host`（需要 Go 1.24 以上）。
 3. **先不要安裝橋接程式**，載入擴充功能，完成第 4 節的「未安裝」項目後再安裝：
    - Chrome：`chrome://extensions` 開啟「開發人員模式」→「載入未封裝項目」→ 選 `.output/chrome-mv3`。擴充功能 ID 應為 `bkjlangdjfpllnkcpfpdlajchbginjdj`。
-   - Firefox／Zen：`about:debugging#/runtime/this-firefox` →「載入暫時附加元件」→ 選 `.output/firefox-mv3/manifest.json`
+   - Firefox：`about:debugging#/runtime/this-firefox` →「載入暫時附加元件」→ 選 `.output/firefox-mv3/manifest.json`
      （暫時附加元件在瀏覽器重新啟動後會消失，需要重新載入；長期使用請依 README 以簽署過的 `.xpi` 安裝）。
 4. 安裝橋接程式：`sh host/dist/yt-toolbar-master-host-macos/install.sh`（不要 sudo）。輸出中兩個「Registered」路徑存在，
    `~/Library/Application Support/yt-toolbar-master/ytm-host --version` 印出版本；未安裝 yt-dlp、ffmpeg 或 deno 時印出 `brew install …`。
@@ -228,8 +228,8 @@
 | 9.14 | 離線或 GitHub 無法連線時：不顯示任何東西、頁面沒有錯誤；設定頁「關於」顯示查詢失敗與時間。 | ✔ | ☐ | ☐ | — | — |
 | 9.15 | 設定頁「關於」：目前版本、最新版本、最近一次查詢時間；有新版本時顯示「前往下載」。 | ✔ | ☐ | ☐ | — | — |
 | 9.16 | 更新到最新版本（重新載入擴充功能）後，圖示的 NEW 與小圓點消失。 | 單元 | ☐ | ☐ | — | — |
-| 9.17 | **Firefox／Zen 臨時附加元件**：與 Chrome 相同會出現提醒（`about:debugging` 載入）。若沒有出現，請在背景頁 Console 執行 `browser.management.getSelf()` 並回報 `installType`。 | — | — | ☐ | — | — |
-| 9.18 | **Firefox／Zen 簽署版（.xpi）**：不顯示提醒、不查詢；設定頁「關於」顯示「由瀏覽器自動更新」。 | 單元 | — | ☐ | — | — |
+| 9.17 | **Firefox 臨時附加元件**：與 Chrome 相同會出現提醒（`about:debugging` 載入）。若沒有出現，請在背景頁 Console 執行 `browser.management.getSelf()` 並回報 `installType`。 | — | — | ☐ | — | — |
+| 9.18 | **Firefox 簽署版（.xpi）**：不顯示提醒、不查詢；設定頁「關於」顯示「由瀏覽器自動更新」。 | 單元 | — | ☐ | — | — |
 | 9.19 | 介面語言切換為英文／繁體中文時，卡片、「更多」中的提醒、「關於」區的文字跟著改變。 | ✔ | ☐ | ☐ | — | — |
 
 ### 9.2 安裝說明與下載區設定（008 FR-1、FR-2、FR-22、FR-24、FR-25、FR-30）
@@ -320,7 +320,7 @@
 
 **改名（T52）後的準備**：Firefox 附加元件 ID 改為 `yt-toolbar-master@chidi0716`、原生訊息名稱改為 `com.chidi0716.yt_toolbar_master`、
 安裝資料夾改為 `yt-toolbar-master`。測試過舊版本的電腦，請先以舊的移除指令（或手動刪除改名前的安裝資料夾與舊的原生訊息設定檔）移除舊版小幫手，
-再執行一次新的安裝指令；Firefox／Zen 要移除舊的附加元件後重新載入。
+再執行一次新的安裝指令；Firefox 要移除舊的附加元件後重新載入。
 
 ### 11.1 一鍵下載（009 FR-1 至 FR-8）
 
@@ -361,8 +361,8 @@
 | 11.3.6 | 沒有小幫手時右鍵下載：通知「下載影片需要先安裝小幫手」，點通知打開設定頁並捲到「下載」區（含安裝引導）。 | — | ☐ | ☐ | ☐ | ☐ |
 | 11.3.7 | 右鍵下載不受「一鍵下載」開關影響，一律使用預設畫質與 MP3 位元率。 | 單元 | ☐ | ☐ | — | — |
 | 11.3.8 | 設定頁關閉「在影片連結的右鍵選單顯示下載選項」：選單項目消失；重新開啟後出現。切換介面語言、改預設畫質後，選單文字立即改變。 | 單元（重建） | ☐ | ☐ | — | — |
-| 11.3.9 | 瀏覽器重新啟動後選單仍在（Chrome、Firefox／Zen）。 | — | ☐ | ☐ | — | — |
-| 11.3.10 | 從舊版本更新（或第一次安裝）時，Chrome、Firefox／Zen 沒有顯示新的權限警告（`contextMenus` 不會產生警告）。 | — | ☐ | ☐ | — | — |
+| 11.3.9 | 瀏覽器重新啟動後選單仍在（Chrome、Firefox）。 | — | ☐ | ☐ | — | — |
+| 11.3.10 | 從舊版本更新（或第一次安裝）時，Chrome、Firefox 沒有顯示新的權限警告（`contextMenus` 不會產生警告）。 | — | ☐ | ☐ | — | — |
 
 ### 11.4 與既有功能的組合（constitution 第 7b 點）
 

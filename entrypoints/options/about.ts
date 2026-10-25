@@ -35,7 +35,7 @@ export function renderAbout(root: HTMLElement): () => void {
     list.replaceChildren(row(t('aboutCurrentVersion'), current, 'about-current'));
     actions.replaceChildren();
     if (!view || !view.eligible) {
-      // Firefox／Zen 簽署版：由瀏覽器自動更新，不查詢也不提醒（FR-26）。
+      // Firefox 簽署版：由瀏覽器自動更新，不查詢也不提醒（FR-26）。
       status.textContent = view ? t('aboutAutoUpdated') : '';
       note.textContent = '';
       return;

@@ -23,4 +23,4 @@
 
 - Shorts 與內嵌播放器上的工具列。
 - Linux 支援。
-- Zen 等 Firefox 衍生瀏覽器的特別處理（目前比照 Firefox，出現問題再處理）。
+- Firefox 衍生瀏覽器的特別處理（目前比照 Firefox，出現問題再處理）。

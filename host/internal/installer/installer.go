@@ -142,7 +142,7 @@ func (in *Installer) Install(ctx context.Context, manifest []byte) error {
 		return err
 	}
 
-	in.step(5, "為 Chrome 與 Firefox（含 Zen）註冊小幫手", "Registering the helper for Chrome and Firefox (including Zen)")
+	in.step(5, "為 Chrome 與 Firefox註冊小幫手", "Registering the helper for Chrome and Firefox")
 	if err := in.register(); err != nil {
 		return err
 	}

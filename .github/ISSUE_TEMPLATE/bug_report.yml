@@ -22,7 +22,7 @@ body:
     id: browser
     attributes:
       label: Browser / 瀏覽器
-      options: [Chrome, Firefox, Zen, Other / 其他]
+      options: [Chrome, Firefox, Other / 其他]
     validations:
       required: true
   - type: dropdown

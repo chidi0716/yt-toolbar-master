@@ -2,7 +2,7 @@
 
 **English** | [繁體中文](./README.zh-TW.md)
 
-A YouTube browser extension that adds a native-looking toolbar under the video player, with download tools and viewing tools. Built with [WXT](https://wxt.dev) + TypeScript for Chrome and Firefox (Firefox-based browsers such as Zen are treated as Firefox).
+A YouTube browser extension that adds a native-looking toolbar under the video player, with download tools and viewing tools. Built with [WXT](https://wxt.dev) + TypeScript for Chrome and Firefox.
 
 > **Status: beta.** [v0.1.0 Beta](https://github.com/chidi0716/yt-toolbar-master/releases) is the first public test version. Please [report problems](https://github.com/chidi0716/yt-toolbar-master/issues/new/choose).
 
@@ -91,7 +91,7 @@ The same command and steps are shown in the extension's Video and MP3 panels and
    - yt-dlp from the [official yt-dlp releases](https://github.com/yt-dlp/yt-dlp/releases), checked against the official checksums;
    - deno from the [official deno releases](https://github.com/denoland/deno/releases), checked against the official checksums;
    - ffmpeg and ffprobe from [Martin Riedl's FFmpeg build server](https://ffmpeg.martin-riedl.de) (macOS) or [yt-dlp/FFmpeg-Builds](https://github.com/yt-dlp/FFmpeg-Builds) (Windows), checked against the checksums recorded when the release was made. If ffmpeg and ffprobe are already on your computer (for example from Homebrew), they are used instead.
-3. Puts everything in `~/Library/Application Support/yt-toolbar-master/` (macOS) or `%LOCALAPPDATA%\yt-toolbar-master\` (Windows) and registers the helper for Chrome and Firefox (including Zen).
+3. Puts everything in `~/Library/Application Support/yt-toolbar-master/` (macOS) or `%LOCALAPPDATA%\yt-toolbar-master\` (Windows) and registers the helper for Chrome and Firefox.
 
 Every downloaded file must match the SHA-256 in the release list, or it is deleted and nothing is replaced.
 
@@ -152,7 +152,7 @@ To remove a manual install, run `uninstall.sh` or `uninstall.ps1` from the same 
 
 ### Troubleshooting
 
-- **The panel still says the helper is missing:** restart the browser after installing. Firefox-based browsers such as Zen use the Firefox registration.
+- **The panel still says the helper is missing:** restart the browser after installing.
 - **The command stops with “Failed”:** read the reason it prints (network, disk space, a file that did not match its checksum). Fix it if needed and run the same command again; it continues where it stopped.
 - **“yt-dlp is out of date” or some qualities are missing:** the helper updates yt-dlp automatically; you can also click **Check for updates now** in the settings page. If you use your own yt-dlp (Homebrew or winget), update it with `brew upgrade yt-dlp` or `winget upgrade --id yt-dlp.yt-dlp`.
 - **Logs:** `~/Library/Logs/yt-toolbar-master/host.log` (macOS) or `%LOCALAPPDATA%\yt-toolbar-master\logs\host.log` (Windows). They contain command names and error messages only, never cookies or account data.
@@ -171,8 +171,8 @@ Yes. Without deno, yt-dlp can't get some YouTube formats. Run the [one-line inst
 **macOS says the helper “cannot be opened” or is from an unidentified developer (Gatekeeper).**
 Files downloaded by `curl` in Terminal are not marked as coming from the internet, so the one-line install does not trigger this. If you installed manually from a zip downloaded in the browser, run `sh install.sh` from that folder again (it removes the quarantine attribute), or use the one-line install. Do not use `sudo`.
 
-**Zen (or another Firefox-based browser) cannot find the helper.**
-The installer registers the helper for Firefox; Zen uses the same registration. Restart Zen completely after installing and click **Check again**. If it still says the helper isn't connected, open an issue with your Zen version, your macOS or Windows version, and whether `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.yt_toolbar_master.json` (macOS) exists. Also include messages starting with `[yt-toolbar-master]` from the extension's console (open `about:debugging`, find the extension, click **Inspect**).
+**Firefox cannot find the helper.**
+Restart the browser completely after installing and click **Check again**. If it still says the helper isn't connected, open an issue with your browser version, your macOS or Windows version, and whether `~/Library/Application Support/Mozilla/NativeMessagingHosts/com.chidi0716.yt_toolbar_master.json` (macOS) exists. Also include messages starting with `[yt-toolbar-master]` from the extension's console (open `about:debugging`, find the extension, click **Inspect**).
 
 **Downloads fail with “Couldn't write to the download folder.”**
 The folder chosen in the settings page was moved or deleted, the disk is full, or the folder isn't writable. Choose another folder or click **Use default** in the settings page. On macOS, if a prompt asks for access to a folder such as Desktop or Documents, allow it.
@@ -204,11 +204,11 @@ npm run release:dry     # all release files, without secrets → release/dist (s
 
 ## Load the extension manually
 
-Ready-made packages are on the [releases page](https://github.com/chidi0716/yt-toolbar-master/releases): `yt-toolbar-master-<version>-chrome.zip` and `yt-toolbar-master-<version>-firefox.xpi` (a release that is not signed by Mozilla yet has `yt-toolbar-master-<version>-firefox-temporary.zip` instead, which Firefox and Zen can only load as a temporary add-on). To use your own build, use `.output/chrome-mv3` or `.output/firefox-mv3` instead.
+Ready-made packages are on the [releases page](https://github.com/chidi0716/yt-toolbar-master/releases): `yt-toolbar-master-<version>-chrome.zip` and `yt-toolbar-master-<version>-firefox.xpi` (a release that is not signed by Mozilla yet has `yt-toolbar-master-<version>-firefox-temporary.zip` instead, which Firefox can only load as a temporary add-on). To use your own build, use `.output/chrome-mv3` or `.output/firefox-mv3` instead.
 
 - **Chrome:** unzip the Chrome package to a folder you keep, open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked**, and choose that folder (or `.output/chrome-mv3`). Chrome cannot update it by itself; when a new version is out the extension shows a reminder. To update, unzip the new package over the same folder and click the reload button in `chrome://extensions`.
 - **Firefox (development):** open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on**, and choose `.output/firefox-mv3/manifest.json`. Temporary add-ons are removed when Firefox restarts.
-- **Firefox (permanent, Firefox 140 or later, including Zen):** release builds of Firefox only install add-ons signed by Mozilla, so the extension is signed through the *unlisted* channel of addons.mozilla.org (it is not published on the AMO website). Open the signed `.xpi` file in Firefox (or drag it onto a Firefox window) and confirm the install prompt. Signed releases update themselves (`about:addons` → gear icon → **Check for Updates** to update now).
+- **Firefox (permanent, Firefox 140 or later):** release builds of Firefox only install add-ons signed by Mozilla, so the extension is signed through the *unlisted* channel of addons.mozilla.org (it is not published on the AMO website). Open the signed `.xpi` file in Firefox (or drag it onto a Firefox window) and confirm the install prompt. Signed releases update themselves (`about:addons` → gear icon → **Check for Updates** to update now).
 
 ### Signing the Firefox build (maintainers)
 
@@ -229,16 +229,16 @@ This project does not use a signing key of its own. The helper only accepts `com
 #### First-time setup
 
 1. Try everything locally: `npm run release:dry` (output in `release/dist/`; the Firefox package is not signed).
-2. Create the first release (below). No secrets are needed: without the Mozilla API key, the release gets an unsigned `yt-toolbar-master-<version>-firefox-temporary.zip` (Firefox/Zen can only load it as a temporary add-on), no `updates.json`, and a note in the release text.
+2. Create the first release (below). No secrets are needed: without the Mozilla API key, the release gets an unsigned `yt-toolbar-master-<version>-firefox-temporary.zip` (Firefox can only load it as a temporary add-on), no `updates.json`, and a note in the release text.
 
-**Later (optional): Mozilla signing for Firefox/Zen.** Create an API key at <https://addons.mozilla.org/developers/addon/api/key/> and add it as repository secrets (**Settings → Secrets and variables → Actions → New repository secret**): `AMO_JWT_ISSUER` (“JWT issuer”) and `AMO_JWT_SECRET` (“JWT secret”). From the next release on, the `.xpi` is signed and Firefox/Zen update by themselves.
+**Later (optional): Mozilla signing for Firefox.** Create an API key at <https://addons.mozilla.org/developers/addon/api/key/> and add it as repository secrets (**Settings → Secrets and variables → Actions → New repository secret**): `AMO_JWT_ISSUER` (“JWT issuer”) and `AMO_JWT_SECRET` (“JWT secret”). From the next release on, the `.xpi` is signed and Firefox update by themselves.
 
 #### Making a release
 
 1. Update `version` in `package.json` (for example `0.2.0`) and commit.
 2. Optionally update the pinned third-party versions in `release/components.lock.json` (see [`specs/notes/ffmpeg-source.md`](./specs/notes/ffmpeg-source.md)) and check them with `cd host && go run ./cmd/ytm-release lock-check -download`.
 3. Either push a tag (`git tag v0.2.0 && git push origin v0.2.0`; it must match `package.json`), or push to the `release` branch (`git push origin main:release`); the workflow then creates the tag `v<package.json version>` itself.
-4. After the workflow finishes, check the release page. Signed Firefox/Zen installs get the new version automatically; Chrome users (and temporary Firefox add-ons) get a reminder in the extension with a link to the release.
+4. After the workflow finishes, check the release page. Signed Firefox installs get the new version automatically; Chrome users (and temporary Firefox add-ons) get a reminder in the extension with a link to the release.
 
 ### Building from source (for add-on reviewers)
 

@@ -35,7 +35,7 @@ func ManifestContent(browser, helperPath string) ([]byte, error) {
 	return append(b, '\n'), nil
 }
 
-// Register 為 Chrome 與 Firefox（含 Zen）註冊小幫手：寫入原生訊息設定檔，
+// Register 為 Chrome 與 Firefox註冊小幫手：寫入原生訊息設定檔，
 // Windows 另外在 HKCU 建立登錄機碼（plan 4.8）。回傳寫入的位置。
 func Register(l platform.Layout) ([]string, error) {
 	var done []string

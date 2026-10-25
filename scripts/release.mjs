@@ -232,13 +232,13 @@ console.log(`  release-notes.md (${prerelease ? 'prerelease' : 'release'} ${tag}
 function firefoxSignedNotes() {
   return {
     en:
-      '**Firefox / Zen (signed add-on):** updates install automatically. To update now, open `about:addons`, click the gear icon and choose **Check for Updates**.\n' +
-      'First install: download `yt-toolbar-master-{{version}}-firefox.xpi` below and open it in Firefox or Zen.',
+      '**Firefox (signed add-on):** updates install automatically. To update now, open `about:addons`, click the gear icon and choose **Check for Updates**.\n' +
+      'First install: download `yt-toolbar-master-{{version}}-firefox.xpi` below and open it in Firefox.',
     zh:
-      '**Firefox／Zen（簽署版）**：會自動更新。想立即更新：開啟 `about:addons`，按齒輪圖示選「檢查更新」。\n' +
-      '第一次安裝：下載下方的 `yt-toolbar-master-{{version}}-firefox.xpi`，用 Firefox 或 Zen 開啟。',
+      '**Firefox（簽署版）**：會自動更新。想立即更新：開啟 `about:addons`，按齒輪圖示選「檢查更新」。\n' +
+      '第一次安裝：下載下方的 `yt-toolbar-master-{{version}}-firefox.xpi`，用 Firefox 開啟。',
     files:
-      '| `yt-toolbar-master-{{version}}-firefox.xpi` | Firefox / Zen add-on, signed by Mozilla |\n' +
+      '| `yt-toolbar-master-{{version}}-firefox.xpi` | Firefox add-on, signed by Mozilla |\n' +
       '| `updates.json` | Firefox update information |',
   };
 }
@@ -247,12 +247,12 @@ function firefoxSignedNotes() {
 function firefoxUnsignedNotes() {
   return {
     en:
-      '**Firefox / Zen:** this version is **not signed by Mozilla yet**, so it can only be loaded as a temporary add-on (it is removed when the browser restarts). ' +
+      '**Firefox:** this version is **not signed by Mozilla yet**, so it can only be loaded as a temporary add-on (it is removed when the browser restarts). ' +
       'Open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on…** and choose `yt-toolbar-master-{{version}}-firefox-temporary.zip`.',
     zh:
-      '**Firefox／Zen**：這個版本**尚未經 Mozilla 簽署**，只能以暫時附加元件載入（瀏覽器重新啟動後會被移除）。' +
+      '**Firefox**：這個版本**尚未經 Mozilla 簽署**，只能以暫時附加元件載入（瀏覽器重新啟動後會被移除）。' +
       '開啟 `about:debugging#/runtime/this-firefox`，按「載入暫時附加元件」，選擇 `yt-toolbar-master-{{version}}-firefox-temporary.zip`。',
-    files: '| `yt-toolbar-master-{{version}}-firefox-temporary.zip` | Firefox / Zen add-on, **not signed** (temporary add-on only) |',
+    files: '| `yt-toolbar-master-{{version}}-firefox-temporary.zip` | Firefox add-on, **not signed** (temporary add-on only) |',
   };
 }
 

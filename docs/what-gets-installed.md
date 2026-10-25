@@ -37,7 +37,7 @@ If ffmpeg and ffprobe are already on your computer, the installer uses them inst
 | Log file | `~/Library/Logs/yt-toolbar-master/host.log` | `%LOCALAPPDATA%\yt-toolbar-master\logs\host.log` |
 | Browser registration | `~/Library/Application Support/Google/Chrome/NativeMessagingHosts/` and `~/Library/Application Support/Mozilla/NativeMessagingHosts/` (one small file each) | Two registry keys under `HKCU\Software\Google\Chrome\NativeMessagingHosts\` and `HKCU\Software\Mozilla\NativeMessagingHosts\` |
 
-The browser registration tells Chrome and Firefox (and Firefox-based browsers such as Zen) where the helper is, and that **only this extension** can start it.
+The browser registration tells Chrome and Firefox where the helper is, and that **only this extension** can start it.
 
 The log file only contains command names and error messages (never cookies, passwords or account data) and is limited to 5 MB.
 

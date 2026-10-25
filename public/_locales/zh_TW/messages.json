@@ -1164,7 +1164,7 @@
     "description": "Install step description (008 FR-11)."
   },
   "installDetailFolder": {
-    "message": "全部放在你帳號內的一個專屬資料夾，並為 Chrome 與 Firefox（含 Zen）註冊小幫手：",
+    "message": "全部放在你帳號內的一個專屬資料夾，並為 Chrome 與 Firefox註冊小幫手：",
     "description": "Install step description (008 FR-11)."
   },
   "installDetailDone": {
