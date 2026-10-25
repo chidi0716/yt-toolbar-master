@@ -93,7 +93,7 @@ The same command and steps are shown in the extension's Video and MP3 panels and
    - ffmpeg and ffprobe from [Martin Riedl's FFmpeg build server](https://ffmpeg.martin-riedl.de) (macOS) or [yt-dlp/FFmpeg-Builds](https://github.com/yt-dlp/FFmpeg-Builds) (Windows), checked against the checksums recorded when the release was made. If ffmpeg and ffprobe are already on your computer (for example from Homebrew), they are used instead.
 3. Puts everything in `~/Library/Application Support/yt-toolbar-master/` (macOS) or `%LOCALAPPDATA%\yt-toolbar-master\` (Windows) and registers the helper for Chrome and Firefox (including Zen).
 
-Every downloaded file must match the SHA-256 in the release list, or it is deleted and nothing is replaced. The project's releases are immutable on GitHub: once published, their files cannot be changed.
+Every downloaded file must match the SHA-256 in the release list, or it is deleted and nothing is replaced.
 
 Every step is printed as it happens. Running the command again only repairs or updates what is needed; if a step fails, it prints the reason and running the same command again continues from there. Programs you installed yourself (for example yt-dlp from Homebrew) are never changed; the helper prefers its own copies, and the settings page shows which copy is used.
 
@@ -224,13 +224,12 @@ Ready-made packages are on the [releases page](https://github.com/chidi0716/yt-t
 
 Pushing a `v*` tag runs [`.github/workflows/release.yml`](./.github/workflows/release.yml). It runs the tests, builds the extension and the three helpers, checks every third-party file against [`release/components.lock.json`](./release/components.lock.json) and the official checksums, writes `components.json` (the address and SHA-256 of every file), and creates the GitHub release with the install scripts, helpers, `components.json`, the Chrome zip, the Firefox package and `SHA256SUMS`. When the Mozilla API key is set, the Firefox build is signed by Mozilla (unlisted channel) and `updates.json` (Firefox auto-update) is added. Tags with a `-` (for example `v0.2.0-beta.1`) become prereleases: they are never “latest”, so they trigger no update reminders or automatic updates, and their Firefox build is not sent for signing (Mozilla signs each version number only once).
 
-This project does not use a signing key of its own. The helper only accepts `components.json` from this project's GitHub releases over HTTPS and checks every file it downloads against the SHA-256 in it; with immutable releases turned on, files of a published release cannot be changed or replaced.
+This project does not use a signing key of its own. The helper only accepts `components.json` from this project's GitHub releases over HTTPS and checks every file it downloads against the SHA-256 in it.
 
 #### First-time setup
 
-1. **Turn on immutable releases:** repository **Settings → General**, in the **Releases** section enable immutable releases. Published releases (and their files) can then no longer be modified.
-2. Try everything locally: `npm run release:dry` (output in `release/dist/`; the Firefox package is not signed).
-3. Create the first release (below). No secrets are needed: without the Mozilla API key, the release gets an unsigned `yt-toolbar-master-<version>-firefox-temporary.zip` (Firefox/Zen can only load it as a temporary add-on), no `updates.json`, and a note in the release text.
+1. Try everything locally: `npm run release:dry` (output in `release/dist/`; the Firefox package is not signed).
+2. Create the first release (below). No secrets are needed: without the Mozilla API key, the release gets an unsigned `yt-toolbar-master-<version>-firefox-temporary.zip` (Firefox/Zen can only load it as a temporary add-on), no `updates.json`, and a note in the release text.
 
 **Later (optional): Mozilla signing for Firefox/Zen.** Create an API key at <https://addons.mozilla.org/developers/addon/api/key/> and add it as repository secrets (**Settings → Secrets and variables → Actions → New repository secret**): `AMO_JWT_ISSUER` (“JWT issuer”) and `AMO_JWT_SECRET` (“JWT secret”). From the next release on, the `.xpi` is signed and Firefox/Zen update by themselves.
 

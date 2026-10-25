@@ -385,7 +385,7 @@ install/
 **信任鏈**：
 - 第一次安裝：引導腳本從同一個 Release 以 HTTPS 下載 `components.json`，核對小幫手的 sha256 後執行。這與「執行從 GitHub 下載的腳本」本身的信任來源相同（引導腳本無法在 macOS／Windows 內建工具中可靠地驗證 Ed25519）。
 - 小幫手執行 `--install` 與之後每一次更新，都只接受從本專案 GitHub（`github.com/chidi0716/yt-toolbar-master/releases/`，含其轉址）以 HTTPS 取得的清單，並嚴格檢查格式與允許的網址；每個下載的檔案都必須符合清單中的 SHA256（008 SR-2）。
-- repo 開啟「不可變更版本」，版本發佈後清單與檔案不能被替換。
+- 「不可變更版本」為選用（008 FR-51），目前不開啟。
 - 小幫手自我更新時，新版本的檔案必須符合已驗證清單中的 sha256。
 
 **引導腳本**（`install/bootstrap/install.sh`、`install/bootstrap/install.ps1`，以發佈流程附在 Release）：
@@ -449,7 +449,7 @@ install/
 - Firefox manifest 加入 `browser_specific_settings.gecko.update_url: "https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/updates.json"`（Firefox 會跟隨轉址；實作時確認）。
 - 新增 `npm run release:dry`：在本機完成第 1、3、4、5 步，輸出到 `release/dist/`，方便沒有 Secrets 時驗證。
 - 預先發行版本（標籤含 `-`，例如 `v0.2.0-beta.1`）建立為 prerelease，不會被 `releases/latest` 取得，因此不觸發提醒與自動更新；預先發行版本**不送 Firefox 簽署**（AMO 同一個數字版本只能簽一次），需要給 Firefox 使用者測試時直接發正式的小版本。
-- README「維護者」章節：開啟「不可變更版本」、（之後）設定兩個 Mozilla Secrets、建立第一個版本的步驟。
+- README「維護者」章節：建立版本的步驟、（選用）開啟「不可變更版本」、（之後）設定兩個 Mozilla Secrets。
 
 ## 5. 測試策略
 

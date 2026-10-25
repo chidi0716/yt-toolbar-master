@@ -97,7 +97,7 @@
 - **FR-50**：建立版本標籤後，GitHub Actions 自動：建置擴充功能與小幫手、產生元件清單（含每個檔案的 SHA256）、送 Mozilla 簽署、建立 GitHub Release（含安裝腳本、小幫手、擴充功能套件）、更新 Firefox 的更新資訊檔。
 - **FR-51**：本專案**不使用自己的簽章金鑰**（2026-10-23 決定）：能修改 Release 的人也能取得 GitHub Secrets 中的金鑰，額外保護有限。改為：
   - 所有檔案只從本專案 GitHub 的固定版本網址以 HTTPS 取得，並核對元件清單中的 SHA256；
-  - repo 開啟 GitHub 的「不可變更版本」（immutable releases），版本發佈後檔案不能再被修改或替換。
+  - （選用）repo 可開啟 GitHub 的「不可變更版本」（immutable releases），版本發佈後檔案不能再被修改或替換；專案擁有者目前不開啟（2026-10-25）。
 - **FR-52**：Mozilla API 金鑰只存在 GitHub 加密 Secrets。**尚未設定時發佈流程照常完成**：略過 Firefox 簽署，附上未簽署的 Firefox 套件（只能以臨時附加元件載入），不產生 `updates.json`，並在 Release 說明註明。README「維護者」章節寫明第一次設定步驟。
 
 ## 安全需求

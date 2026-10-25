@@ -1,7 +1,6 @@
 # 發佈流程（plan 4.10、008 FR-50 至 FR-52）：推送 v* 標籤時建立 GitHub Release。
 #
-# 本專案不使用自己的簽章金鑰（008 FR-51）：components.json 列出每個檔案的 SHA256，repo 開啟
-# GitHub 的「不可變更版本」（Settings → General → Releases），發佈後檔案不能被替換。
+# 本專案不使用自己的簽章金鑰（008 FR-51）：components.json 列出每個檔案的 SHA256。
 #
 # 選用的 Secrets（Settings → Secrets and variables → Actions，見 README「維護者」章節）：
 #   AMO_JWT_ISSUER       Mozilla 附加元件 API 金鑰（JWT issuer）

@@ -9,7 +9,7 @@
 //                                且不是預先發行版本時，Firefox 版以 web-ext sign 送 Mozilla 簽署。
 //
 // 本專案不使用自己的簽章金鑰（008 FR-51）：components.json 列出每個檔案的 SHA256，只從本專案
-// GitHub 以 HTTPS 取得，repo 開啟 GitHub 的「不可變更版本」。
+// GitHub 以 HTTPS 取得。
 //
 // 沒有 Mozilla 金鑰（或預先發行版本、試跑）時照常完成（008 FR-52）：附上未簽署的
 // yt-toolbar-master-<版本>-firefox-temporary.zip，不產生 updates.json，Release 說明加註。

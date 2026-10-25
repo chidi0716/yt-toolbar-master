@@ -26,7 +26,6 @@ If ffmpeg and ffprobe are already on your computer, the installer uses them inst
 ## How downloads are checked
 
 - Every release of this project includes a list of the exact files to install and their SHA-256 checksums (`components.json`). The helper only accepts this list from this project's GitHub releases, over HTTPS, and refuses a list that is not in the expected format or points anywhere other than the sources above.
-- The project's GitHub releases are **immutable**: once a release is published, its files (including the list) cannot be changed or replaced.
 - Each downloaded file must match the checksum in that list. Before a release is published, the release process downloads every file and compares it with the checksum published by yt-dlp, deno or the ffmpeg build site.
 - Anything that does not match is deleted and the old version is kept.
 

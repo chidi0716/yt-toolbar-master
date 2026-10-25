@@ -95,7 +95,7 @@ YouTube 上的工具列  →  擴充功能背景腳本  →  本機小幫手  �
    - ffmpeg 與 ffprobe：macOS 從 [Martin Riedl 的 FFmpeg Build Server](https://ffmpeg.martin-riedl.de)、Windows 從 [yt-dlp/FFmpeg-Builds](https://github.com/yt-dlp/FFmpeg-Builds) 下載，核對發佈時記錄的檢查碼。電腦上已經有 ffmpeg 與 ffprobe（例如 Homebrew）時沿用，不另外下載。
 3. 全部放在 `~/Library/Application Support/yt-toolbar-master/`（macOS）或 `%LOCALAPPDATA%\yt-toolbar-master\`（Windows），並為 Chrome 與 Firefox（含 Zen）註冊小幫手。
 
-每個下載的檔案都必須符合發佈清單中的 SHA-256，否則刪除且不替換任何東西。本專案的版本在 GitHub 上設為不可變更，發佈後檔案不能再被修改。
+每個下載的檔案都必須符合發佈清單中的 SHA-256，否則刪除且不替換任何東西。
 
 每一步都會即時印出說明。重複執行只會修復或更新需要的部分；任何一步失敗時會印出原因，再執行一次同一個指令即可從失敗處繼續。你自己安裝的程式（例如 Homebrew 的 yt-dlp）不會被修改；小幫手優先使用自己資料夾中的版本，設定頁會標示目前使用哪一份。
 
@@ -226,13 +226,12 @@ npm run release:dry     # 不需要 Secret，產生所有發佈檔案 → releas
 
 推送 `v*` 標籤時會執行 [`.github/workflows/release.yml`](./.github/workflows/release.yml)：執行測試、建置擴充功能與三種小幫手、依 [`release/components.lock.json`](./release/components.lock.json) 與官方檢查碼核對每個第三方檔案、產生 `components.json`（每個檔案的網址與 SHA-256），最後建立 GitHub Release，附上安裝腳本、小幫手、`components.json`、Chrome zip、Firefox 套件與 `SHA256SUMS`。設定了 Mozilla API 金鑰時，Firefox 版會送 Mozilla 簽署（不公開頻道），並附上 `updates.json`（Firefox 自動更新用）。標籤含「-」（例如 `v0.2.0-beta.1`）時建立為預先發行版本：不會成為「最新版本」，所以不會觸發新版本提醒與自動更新，Firefox 版也不送簽署（Mozilla 每個版本號只能簽署一次）。
 
-本專案不使用自己的簽章金鑰。小幫手只接受以 HTTPS 從本專案 GitHub 正式版本取得的 `components.json`，並以其中的 SHA-256 核對每個下載的檔案；開啟「不可變更版本」後，已發佈版本的檔案無法再被修改或替換。
+本專案不使用自己的簽章金鑰。小幫手只接受以 HTTPS 從本專案 GitHub 正式版本取得的 `components.json`，並以其中的 SHA-256 核對每個下載的檔案。
 
 #### 第一次設定
 
-1. **開啟不可變更版本**：repo 的 **Settings → General**，在 **Releases** 區開啟不可變更版本（immutable releases）。之後已發佈的版本與檔案就不能再修改。
-2. 在本機試跑整個流程：`npm run release:dry`（輸出在 `release/dist/`，Firefox 版不送簽署）。
-3. 建立第一個版本（見下方）。不需要任何 Secret：沒有 Mozilla API 金鑰時，Release 會附上未簽署的 `yt-toolbar-master-<版本>-firefox-temporary.zip`（Firefox／Zen 只能以臨時附加元件載入）、不產生 `updates.json`，並在說明中註明。
+1. 在本機試跑整個流程：`npm run release:dry`（輸出在 `release/dist/`，Firefox 版不送簽署）。
+2. 建立第一個版本（見下方）。不需要任何 Secret：沒有 Mozilla API 金鑰時，Release 會附上未簽署的 `yt-toolbar-master-<版本>-firefox-temporary.zip`（Firefox／Zen 只能以臨時附加元件載入）、不產生 `updates.json`，並在說明中註明。
 
 **之後（選用）：Firefox／Zen 的 Mozilla 簽署**。在 <https://addons.mozilla.org/developers/addon/api/key/> 建立 API 金鑰，加到 repo 的 Secrets（**Settings → Secrets and variables → Actions → New repository secret**）：`AMO_JWT_ISSUER`（「JWT issuer」）與 `AMO_JWT_SECRET`（「JWT secret」）。下一個版本起 `.xpi` 會經過簽署，Firefox／Zen 也會自動更新。
 
