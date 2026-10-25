@@ -69,6 +69,6 @@ jobs:
             *-*) prerelease="--prerelease" ;;
           esac
           gh release create "$GITHUB_REF_NAME" release/dist/upload/* \
-            --title "$GITHUB_REF_NAME" \
+            --title "$(cat release/dist/release-title.txt)" \
             --notes-file release/dist/release-notes.md \
             --verify-tag $prerelease

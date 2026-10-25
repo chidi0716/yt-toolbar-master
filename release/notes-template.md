@@ -1,5 +1,7 @@
 **English** | [繁體中文](#繁體中文)
 
+{{highlights}}
+
 ## How to update
 
 {{firefoxSteps}}
@@ -30,11 +32,12 @@ See [what gets installed](https://github.com/chidi0716/yt-toolbar-master/blob/{{
 | `components.json` | List of component versions, download addresses and SHA-256 checksums (the helper checks every file against it) |
 | `SHA256SUMS` | SHA-256 of every file in this release |
 
-This repository uses GitHub immutable releases: files of a published release cannot be changed or replaced.
 
 ---
 
 ## 繁體中文
+
+{{highlightsZh}}
 
 ### 如何更新
 

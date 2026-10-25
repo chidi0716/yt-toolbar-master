@@ -196,7 +196,22 @@ if (signFirefox || dry) {
 step('8. release notes and SHA256SUMS');
 const notesTemplate = readFileSync(join(root, 'release', 'notes-template.md'), 'utf8');
 const firefoxNotes = signFirefox ? firefoxSignedNotes() : firefoxUnsignedNotes();
+// 選用的版本說明 release/notes/<tag>.md：第一行「title: …」為 Release 標題，其後以 <!-- en -->、<!-- zh --> 分成兩種語言。
+const highlightsPath = join(root, 'release', 'notes', `${tag}.md`);
+const highlights = { title: tag, en: '', zh: '' };
+if (existsSync(highlightsPath)) {
+  const text = readFileSync(highlightsPath, 'utf8');
+  const title = /^title:\s*(.+)$/m.exec(text);
+  if (title) highlights.title = title[1].trim();
+  const en = /<!-- en -->\n([\s\S]*?)(?=<!-- zh -->|$)/.exec(text);
+  const zh = /<!-- zh -->\n([\s\S]*)$/.exec(text);
+  highlights.en = en ? `${en[1].trim()}\n` : '';
+  highlights.zh = zh ? `${zh[1].trim()}\n` : '';
+}
+writeFileSync(join(distDir, 'release-title.txt'), `${highlights.title}\n`);
 const notes = notesTemplate
+  .replaceAll('{{highlights}}', highlights.en)
+  .replaceAll('{{highlightsZh}}', highlights.zh)
   .replaceAll('{{firefoxSteps}}', firefoxNotes.en)
   .replaceAll('{{firefoxStepsZh}}', firefoxNotes.zh)
   .replaceAll('{{firefoxFiles}}', firefoxNotes.files)
@@ -233,12 +248,10 @@ function firefoxUnsignedNotes() {
   return {
     en:
       '**Firefox / Zen:** this version is **not signed by Mozilla yet**, so it can only be loaded as a temporary add-on (it is removed when the browser restarts). ' +
-      'Download `yt-toolbar-master-{{version}}-firefox-temporary.zip`, unzip it, open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on** and choose `manifest.json`. ' +
-      'Signed versions that update themselves will be attached to later releases.',
+      'Open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on…** and choose `yt-toolbar-master-{{version}}-firefox-temporary.zip`.',
     zh:
-      '**Firefox／Zen**：這個版本**尚未經 Mozilla 簽署**，只能以臨時附加元件載入（瀏覽器重新啟動後會被移除）。' +
-      '下載 `yt-toolbar-master-{{version}}-firefox-temporary.zip` 並解壓縮，開啟 `about:debugging#/runtime/this-firefox`，按「載入臨時附加元件」，選擇 `manifest.json`。' +
-      '之後的版本會附上會自動更新的簽署版。',
+      '**Firefox／Zen**：這個版本**尚未經 Mozilla 簽署**，只能以暫時附加元件載入（瀏覽器重新啟動後會被移除）。' +
+      '開啟 `about:debugging#/runtime/this-firefox`，按「載入暫時附加元件」，選擇 `yt-toolbar-master-{{version}}-firefox-temporary.zip`。',
     files: '| `yt-toolbar-master-{{version}}-firefox-temporary.zip` | Firefox / Zen add-on, **not signed** (temporary add-on only) |',
   };
 }

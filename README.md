@@ -4,7 +4,7 @@
 
 A YouTube browser extension that adds a native-looking toolbar under the video player, with download tools and viewing tools. Built with [WXT](https://wxt.dev) + TypeScript for Chrome and Firefox (Firefox-based browsers such as Zen are treated as Firefox).
 
-> **Status:** all planned features are implemented and are waiting for hands-on testing on macOS, Windows, Chrome and Firefox/Zen (see the [test checklist](./specs/e2e-checklist.md)).
+> **Status: beta.** [v0.1.0 Beta](https://github.com/chidi0716/yt-toolbar-master/releases) is the first public test version. Please [report problems](https://github.com/chidi0716/yt-toolbar-master/issues/new/choose).
 
 ## Features
 

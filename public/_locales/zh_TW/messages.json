@@ -4,7 +4,7 @@
     "description": "Extension name shown in the browser and the popup heading."
   },
   "extDescription": {
-    "message": "YouTube 瀏覽器擴充功能",
+    "message": "YouTube 播放器下方的工具列：下載影片、MP3、字幕與縮圖，以及深色模式、劇院模式、循環播放等觀看工具。",
     "description": "Extension description shown in the browser's extension list."
   },
   "popupEnable": {

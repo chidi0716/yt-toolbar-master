@@ -4,7 +4,7 @@
 
 一個 YouTube 瀏覽器擴充功能，在影片播放器下方加入一條看起來像 YouTube 原生介面的工具列，提供下載與觀看輔助功能。使用 [WXT](https://wxt.dev) + TypeScript 開發，支援 Chrome 與 Firefox（Zen 等以 Firefox 為基礎的瀏覽器比照 Firefox）。
 
-> **狀態：**規劃的功能已全部完成，待在 macOS、Windows、Chrome 與 Firefox／Zen 上實測（見[實測檢查清單](./specs/e2e-checklist.md)）。
+> **狀態：測試版。**[v0.1.0 Beta](https://github.com/chidi0716/yt-toolbar-master/releases) 是第一個公開測試版。遇到問題請[回報](https://github.com/chidi0716/yt-toolbar-master/issues/new/choose)。
 
 ## 功能
 
