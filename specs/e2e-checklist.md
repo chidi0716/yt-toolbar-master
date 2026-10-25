@@ -319,7 +319,7 @@
 | # | 項目 | 自動化 | Apple Silicon | Intel |
 |---|---|---|---|---|
 | 10.6.1 | 全新安裝（一行指令）：`bin/yt-dlp/` 中有 `yt-dlp_macos` 與 `_internal/`（含 `_internal/Python.framework`），沒有 `bin/yt-dlp` 單一檔案；`ls -l bin/yt-dlp/yt-dlp_macos` 為 `-rwxr-xr-x`。 | ✔（假伺服器、實際 zip 解壓） | ☐ | ☐ |
-| 10.6.2 | 由 **Firefox** 與 **Chrome** 各開啟影片面板並下載影片與 MP3：沒有「Python.framework 已損毀」或其他 Gatekeeper 視窗，下載成功（008 驗收第 1 項）。 | — | ☐ | ☐ |
+| 10.6.2 | 由 **Firefox** 與 **Chrome** 各開啟影片面板並下載影片與 MP3：沒有「Python.framework 已損毀」或其他 Gatekeeper 視窗，下載成功（008 驗收第 1 項）。 | — | ☑（2026-10-25，擁有者以 v0.1.1 實測：Firefox，未跳出警告） | ☐ |
 | 10.6.3 | 10.6.2 之後安裝資料夾沒有隔離屬性；`/tmp`、`$TMPDIR` 中沒有新增 `_MEI*` 資料夾（未封裝版本不解壓到暫存資料夾）。 | — | ☐ | ☐ |
 | 10.6.4 | 從 v0.1.0 升級（重新執行一行指令）：安裝輸出的第 2 步下載 `yt-dlp_macos.zip`；之後 `bin/yt-dlp` 是資料夾，`bin/` 中沒有 `yt-dlp.old-*`；設定頁的 yt-dlp 來源為安裝資料夾、路徑為 `…/bin/yt-dlp/yt-dlp_macos`。 | ✔（假伺服器） | ☐ | ☐ |
 | 10.6.5 | 從 v0.1.0 自動升級：v0.1.0 安裝、自動更新開啟，發佈 v0.1.1 後在 v0.1.0 下載一次（這次仍會出現一次警告，屬 v0.1.0 的行為）。`host.log` 的 `update` 紀錄沒有 `MANIFEST_INVALID`，小幫手變成 0.1.1（v0.1.0 讀得懂新的 `components.json`）。之後開啟面板：面板先顯示缺少 yt-dlp，`host.log` 出現 `starting the update to replace the single-file yt-dlp`，約一分鐘內（面板自動重新偵測）變成可以下載，`bin/yt-dlp` 變成資料夾，下載沒有警告。 | ✔（假伺服器，分段） | ☐ | ☐ |
