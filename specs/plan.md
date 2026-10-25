@@ -375,7 +375,7 @@ install/
 - 第三方工具的網址一律指向**官方或指定來源的固定版本網址**（不使用會變動的 latest 網址），本專案不轉存第三方檔案。
 - 固定的版本記在 repo 的 `release/components.lock.json`；發佈流程下載每個檔案，**先與官方公布的檢查碼比對**，再把 sha256 寫入 `components.json`。
 - 來源：
-  - yt-dlp：`github.com/yt-dlp/yt-dlp` 正式版本（macOS 用 `yt-dlp_macos`，Windows 用 `yt-dlp.exe`），官方檢查碼 `SHA2-256SUMS`。
+  - yt-dlp：`github.com/yt-dlp/yt-dlp` 正式版本（macOS 用未封裝版本 `yt-dlp_macos.zip`，安裝到 `bin/yt-dlp/`；Windows 用 `yt-dlp.exe`），官方檢查碼 `SHA2-256SUMS`（008 FR-15a）。
   - deno：`github.com/denoland/deno` 正式版本，官方 `.sha256sum`。
   - ffmpeg（含 ffprobe）：
     - macOS：Martin Riedl 的 FFmpeg Build Server（`ffmpeg.martin-riedl.de`）正式版本（非 snapshot），arm64 與 amd64 各自的 zip，以網站公布的 SHA256 比對。
@@ -412,7 +412,7 @@ install/
 - `--update`：
   1. 下載 `https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/components.json`，檢查格式與允許的網址。
   2. 等到沒有進行中的工作（每 10 秒檢查一次，最多 6 小時）。
-  3. yt-dlp：執行 `yt-dlp -U`（只限安裝資料夾中的 yt-dlp；套件管理工具安裝的不動）。
+  3. yt-dlp（只限安裝資料夾中的；套件管理工具安裝的不動）：Windows 執行 `yt-dlp -U`；macOS 從 yt-dlp 最新正式版本取得 `SHA2-256SUMS` 與 `yt-dlp_macos.zip`，檢查碼不同時下載、核對並整個資料夾替換（詳見 `specs/notes/T61-macos-unpacked-ytdlp.md`）。寫入後移除隔離屬性（008 FR-15b）。
   4. deno、ffmpeg（只限安裝資料夾中的）：版本與清單不同時依清單下載替換。
   5. 小幫手：清單版本比自己新時，下載、核對 sha256，把自己改名為 `ytm-host.old`（Windows 可以改名執行中的檔案）再放入新版本；下次啟動時刪除 `.old`。
   6. 寫入 `lastCheck`、結果、`consecutiveFailures`；用鎖檔避免同時執行兩個 `--update`。
