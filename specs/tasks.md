@@ -204,6 +204,16 @@ T11 可以和階段 1、2 同時進行。
 
 - **完成條件**：同階段 10，加上四組頁面測試（fixture、downloads、viewing、convenience）全部通過；每個項目一個 commit。
 
+## 階段 12：macOS 的 yt-dlp 改用未封裝版本（v0.1.1）
+
+- **T61**（008 FR-15a、FR-15b、FR-20）：
+  - `release/components.lock.json` 的 macOS yt-dlp 改為 `yt-dlp_macos.zip`（zip 內有 `yt-dlp_macos` 與 `_internal/`），安裝到 `bin/yt-dlp/`，執行檔為 `bin/yt-dlp/yt-dlp_macos`；尋找工具時認得這個位置。zip 解壓沿用防路徑穿越，並保留執行權限與 framework 內的符號連結。
+  - 安裝與更新寫入後，macOS 一律遞迴移除 `com.apple.quarantine`。
+  - macOS yt-dlp 更新：從 `https://github.com/yt-dlp/yt-dlp/releases/latest/download/` 取得 `SHA2-256SUMS` 與 `yt-dlp_macos.zip`，版本較新時下載、核對、解壓到暫存資料夾後整個替換（失敗保留舊版）；FR-22 的立即更新也用這個流程。Windows 維持 `yt-dlp -U`。允許的網址清單加入 yt-dlp 的 `releases/latest/download/` 路徑（只限這兩個檔名）。
+  - 從舊版升級：已安裝單一執行檔 `bin/yt-dlp` 的電腦，重新執行安裝指令或下一次自動更新時改裝未封裝版本並刪除舊檔。
+  - 測試：假伺服器的 zip（含符號連結與執行權限）、更新流程、舊版遷移；macOS 專屬部分以建置標籤或可替換的函式測試。
+- **完成條件**：同階段 11；`package.json` 版本改為 `0.1.1`。
+
 ## 階段 5：收尾
 
 - **T24 E2E 檢查清單**
