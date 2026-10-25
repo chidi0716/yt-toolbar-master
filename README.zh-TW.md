@@ -239,7 +239,7 @@ npm run release:dry     # 不需要 Secret，產生所有發佈檔案 → releas
 
 1. 修改 `package.json` 的 `version`（例如 `0.2.0`）並 commit。
 2. 需要時更新 `release/components.lock.json` 中固定的第三方版本（見 [`specs/notes/ffmpeg-source.md`](./specs/notes/ffmpeg-source.md)），並以 `cd host && go run ./cmd/ytm-release lock-check -download` 檢查。
-3. 建立並推送標籤：`git tag v0.2.0 && git push origin v0.2.0`（必須與 `package.json` 相同）。
+3. 推送標籤（`git tag v0.2.0 && git push origin v0.2.0`，必須與 `package.json` 相同），或推送到 `release` 分支（`git push origin main:release`），流程會自己建立 `v<package.json 的版本>` 標籤。
 4. 流程完成後檢查版本頁面。簽署版的 Firefox／Zen 會自動更新；Chrome（與 Firefox 臨時附加元件）使用者會在擴充功能中看到附有版本連結的提醒。
 
 ### 從原始碼建置（給附加元件審查者）

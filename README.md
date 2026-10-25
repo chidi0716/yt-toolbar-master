@@ -237,7 +237,7 @@ This project does not use a signing key of its own. The helper only accepts `com
 
 1. Update `version` in `package.json` (for example `0.2.0`) and commit.
 2. Optionally update the pinned third-party versions in `release/components.lock.json` (see [`specs/notes/ffmpeg-source.md`](./specs/notes/ffmpeg-source.md)) and check them with `cd host && go run ./cmd/ytm-release lock-check -download`.
-3. Tag and push: `git tag v0.2.0 && git push origin v0.2.0`. The tag must match `package.json`.
+3. Either push a tag (`git tag v0.2.0 && git push origin v0.2.0`; it must match `package.json`), or push to the `release` branch (`git push origin main:release`); the workflow then creates the tag `v<package.json version>` itself.
 4. After the workflow finishes, check the release page. Signed Firefox/Zen installs get the new version automatically; Chrome users (and temporary Firefox add-ons) get a reminder in the extension with a link to the release.
 
 ### Building from source (for add-on reviewers)
