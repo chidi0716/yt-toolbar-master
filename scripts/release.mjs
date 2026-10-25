@@ -214,7 +214,6 @@ const notes = notesTemplate
   .replaceAll('{{highlightsZh}}', highlights.zh)
   .replaceAll('{{firefoxSteps}}', firefoxNotes.en)
   .replaceAll('{{firefoxStepsZh}}', firefoxNotes.zh)
-  .replaceAll('{{firefoxFiles}}', firefoxNotes.files)
   .replaceAll('{{version}}', version)
   .replaceAll('{{tag}}', tag);
 if (/\{\{\w+\}\}/.test(notes)) fail('unknown placeholder in release/notes-template.md');
@@ -231,28 +230,16 @@ console.log(`  release-notes.md (${prerelease ? 'prerelease' : 'release'} ${tag}
 /** Firefox 已簽署時的說明（{{version}} 之後再代入）。 */
 function firefoxSignedNotes() {
   return {
-    en:
-      '**Firefox (signed add-on):** updates install automatically. To update now, open `about:addons`, click the gear icon and choose **Check for Updates**.\n' +
-      'First install: download `yt-toolbar-master-{{version}}-firefox.xpi` below and open it in Firefox.',
-    zh:
-      '**Firefox（簽署版）**：會自動更新。想立即更新：開啟 `about:addons`，按齒輪圖示選「檢查更新」。\n' +
-      '第一次安裝：下載下方的 `yt-toolbar-master-{{version}}-firefox.xpi`，用 Firefox 開啟。',
-    files:
-      '| `yt-toolbar-master-{{version}}-firefox.xpi` | Firefox add-on, signed by Mozilla |\n' +
-      '| `updates.json` | Firefox update information |',
+    en: '**Firefox:** open `yt-toolbar-master-{{version}}-firefox.xpi` in Firefox. It updates itself.',
+    zh: '**Firefox**：用 Firefox 開啟 `yt-toolbar-master-{{version}}-firefox.xpi`，之後會自動更新。',
   };
 }
 
 /** Firefox 未簽署時的說明（008 FR-52）。 */
 function firefoxUnsignedNotes() {
   return {
-    en:
-      '**Firefox:** this version is **not signed by Mozilla yet**, so it can only be loaded as a temporary add-on (it is removed when the browser restarts). ' +
-      'Open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on…** and choose `yt-toolbar-master-{{version}}-firefox-temporary.zip`.',
-    zh:
-      '**Firefox**：這個版本**尚未經 Mozilla 簽署**，只能以暫時附加元件載入（瀏覽器重新啟動後會被移除）。' +
-      '開啟 `about:debugging#/runtime/this-firefox`，按「載入暫時附加元件」，選擇 `yt-toolbar-master-{{version}}-firefox-temporary.zip`。',
-    files: '| `yt-toolbar-master-{{version}}-firefox-temporary.zip` | Firefox add-on, **not signed** (temporary add-on only) |',
+    en: '**Firefox:** open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on…** and choose `yt-toolbar-master-{{version}}-firefox-temporary.zip`. Not signed by Mozilla: removed when Firefox restarts.',
+    zh: '**Firefox**：開啟 `about:debugging#/runtime/this-firefox`，按「載入暫時附加元件」，選擇 `yt-toolbar-master-{{version}}-firefox-temporary.zip`。未經 Mozilla 簽署，Firefox 重新啟動後會被移除。',
   };
 }
 
