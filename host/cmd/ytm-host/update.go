@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"errors"
+	"io"
 	"runtime"
 	"time"
 
+	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/installer"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/logx"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
@@ -17,7 +19,7 @@ import (
 // MaxUpdateDuration 是一次 --update 的時間上限（等待下載最多 6 小時，加上下載與替換的時間）。
 const MaxUpdateDuration = 8 * time.Hour
 
-// updateYtDlp 在 path 上執行 yt-dlp -U（yt-dlp 自己的更新機制會驗證官方檢查碼，008 FR-20），
+// updateYtDlp 在 path 上執行 yt-dlp -U（macOS 以外；yt-dlp 自己的更新機制會驗證官方檢查碼，008 FR-20），
 // 回傳是否安裝了新版本。
 func updateYtDlp(ctx context.Context, path string) (bool, error) {
 	t := &ytdlp.Tools{Env: ytdlp.SystemEnv(), YtDlp: path}
@@ -67,6 +69,28 @@ func ytDlpUpdater(t *ytdlp.Tools) func(context.Context) (bool, error) {
 	if !t.Env.IsBundled(t.YtDlp) {
 		return nil
 	}
+	if t.Env.GOOS == "darwin" {
+		return updateMacYtDlp
+	}
 	path := t.YtDlp
 	return func(ctx context.Context) (bool, error) { return updateYtDlp(ctx, path) }
+}
+
+// updateMacYtDlp 下載替換安裝資料夾中的未封裝版 yt-dlp（macOS 不支援 yt-dlp -U，008 FR-20、FR-22）。
+// 持有更新鎖檔，避免與 --update 同時替換；--update 正在執行時回傳 BUSY。
+func updateMacYtDlp(ctx context.Context) (bool, error) {
+	l := platform.CurrentLayout()
+	unlock, err := updater.Lock(l.InstallDir)
+	if errors.Is(err, updater.ErrLocked) {
+		return false, errs.New(errs.Busy, "an update is already running")
+	}
+	if err != nil {
+		return false, err
+	}
+	defer unlock()
+	in := newInstaller()
+	in.Out = io.Discard
+	updated, err := in.UpdateMacYtDlp(ctx)
+	in.ClearQuarantine()
+	return updated, err
 }

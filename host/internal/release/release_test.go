@@ -35,7 +35,7 @@ func sampleManifest() *Manifest {
 	dn := Tool{Version: "2.9.8", Platforms: map[string]Platform{}}
 	ff := Tool{Version: "9.0.2", Platforms: map[string]Platform{}}
 	for _, p := range []string{DarwinARM64, DarwinAMD64} {
-		yt.Platforms[p] = Platform{Files: []File{{URL: gh + "yt-dlp_macos", SHA256: hex64('b'), Name: "yt-dlp"}}}
+		yt.Platforms[p] = Platform{Files: []File{{URL: gh + "yt-dlp_macos.zip", SHA256: hex64('b'), Archive: "zip", Extract: []string{"yt-dlp"}}}}
 		dn.Platforms[p] = Platform{Files: []File{{URL: deno + "deno-" + p + ".zip", SHA256: hex64('c'), Archive: "zip", Extract: []string{"deno"}}}}
 		ff.Platforms[p] = Platform{Files: []File{
 			{URL: mr + "ffmpeg.zip", SHA256: hex64('d'), Archive: "zip", Extract: []string{"ffmpeg"}},
@@ -160,6 +160,21 @@ func TestManifestValidation(t *testing.T) {
 			p.Files[0].Archive = "tar.gz"
 			m.Tools[ToolDeno].Platforms[DarwinARM64] = p
 		}},
+		// 008 FR-15a：macOS 的 yt-dlp 必須是一個整個解壓的 zip，不接受單一執行檔。
+		{"mac yt-dlp single file", func(m *Manifest) {
+			m.Tools[ToolYtDlp].Platforms[DarwinARM64] = Platform{Files: []File{{URL: "https://github.com/yt-dlp/yt-dlp/releases/download/2026.10.21/yt-dlp_macos", SHA256: hex64('b'), Name: "yt-dlp"}}}
+		}},
+		{"mac yt-dlp extract name", func(m *Manifest) {
+			p := m.Tools[ToolYtDlp].Platforms[DarwinAMD64]
+			p.Files = []File{p.Files[0]}
+			p.Files[0].Extract = []string{"yt-dlp_macos"}
+			m.Tools[ToolYtDlp].Platforms[DarwinAMD64] = p
+		}},
+		{"mac yt-dlp two files", func(m *Manifest) {
+			p := m.Tools[ToolYtDlp].Platforms[DarwinARM64]
+			p.Files = append([]File{}, p.Files[0], File{URL: p.Files[0].URL, SHA256: hex64('c'), Name: "yt-dlp"})
+			m.Tools[ToolYtDlp].Platforms[DarwinARM64] = p
+		}},
 		{"checksums in manifest", func(m *Manifest) {
 			p := m.Tools[ToolDeno].Platforms[DarwinARM64]
 			p.Files[0].Checksums = "https://github.com/denoland/deno/releases/download/v2.9.8/x.sha256sum"
@@ -195,6 +210,8 @@ func TestAllowedURL(t *testing.T) {
 	allowed := []string{
 		"https://github.com/chidi0716/yt-toolbar-master/releases/download/v0.2.0/components.json",
 		"https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/components.json",
+		"https://github.com/yt-dlp/yt-dlp/releases/latest/download/SHA2-256SUMS",
+		"https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos.zip",
 		"https://github.com/yt-dlp/yt-dlp/releases/download/2026.10.21/yt-dlp_macos",
 		"https://github.com/denoland/deno/releases/download/v2.9.8/deno-aarch64-apple-darwin.zip",
 		"https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2026-09-30-18-57/checksums.sha256",
@@ -215,6 +232,12 @@ func TestAllowedURL(t *testing.T) {
 		"https://github.com.evil.example/yt-dlp/yt-dlp/releases/download/x",
 		"https://evil.example/https://github.com/yt-dlp/yt-dlp/releases/",
 		"https://ffmpeg.martin-riedl.de/redirect/latest/macos/arm64/release/ffmpeg.zip",
+		// latest 只允許 components.json 與 yt-dlp 的 SHA2-256SUMS、yt-dlp_macos.zip。
+		"https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos",
+		"https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe",
+		"https://github.com/yt-dlp/yt-dlp/releases/latest/download/sha2-256sums",
+		"https://github.com/denoland/deno/releases/latest/download/deno-x86_64-apple-darwin.zip",
+		"https://github.com/chidi0716/yt-toolbar-master/releases/latest/download/ytm-host-darwin-arm64",
 		"https://www.youtube.com/watch?v=aaaaaaaaaaa",
 		"file:///etc/passwd",
 		"",
@@ -361,6 +384,15 @@ func TestRepoLockFile(t *testing.T) {
 	for _, f := range l.uniqueFiles() {
 		if !AllowedURLString(f.Checksums) {
 			t.Errorf("%s: checksums url %q", f.URL, f.Checksums)
+		}
+	}
+	// 008 FR-15a：macOS 用未封裝版本。寫法必須是 v0.1.0 的小幫手也接受的形式
+	// （archive zip、extract 只有 yt-dlp），v0.1.0 才能讀新的清單並自我更新。
+	for _, p := range []string{DarwinARM64, DarwinAMD64} {
+		files := l.Tools[ToolYtDlp].Platforms[p].Files
+		if len(files) != 1 || !strings.HasSuffix(files[0].URL, "/yt-dlp_macos.zip") || files[0].Archive != "zip" ||
+			files[0].Name != "" || strings.Join(files[0].Extract, ",") != "yt-dlp" {
+			t.Errorf("%s yt-dlp: %+v", p, files)
 		}
 	}
 }

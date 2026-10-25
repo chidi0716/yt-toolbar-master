@@ -534,3 +534,40 @@
 
 - **狀況**：X7 要求設定頁的連線狀態改為掛載面板既有的 Preact 元件（`entrypoints/options/connection.tsx`）。Preact 因此打包進設定頁，`web-ext lint --self-hosted` 在 `chunks/options-*.js` 多出一個 `UNSAFE_VAR_ASSIGNMENT`（Unsafe assignment to innerHTML），與 `specs/notes/lint-exceptions.md` 已接受的 `content-scripts/youtube.js` 那一項來源相同（Preact 內部對 `dangerouslySetInnerHTML` 的支援；本專案不使用該屬性）。目前結果：0 個錯誤、3 個警告。
 - **請規格方確認**是否把設定頁的 chunk 加入 `lint-exceptions.md` 的例外（檔名含建置雜湊，建議寫成 `chunks/options-*.js`）。我沒有修改該檔。
+
+## 階段 12（T61）
+
+### Q76 從 v0.1.0 自動升級時，由 status 啟動改裝（T61、008 FR-15a、FR-20）
+
+- **狀況**：v0.1.1 的小幫手不能執行 v0.1.0 安裝的單一執行檔 `bin/yt-dlp`：status（`--version`）與 getInfo 都會執行 yt-dlp，由瀏覽器啟動時每次都跳出「Python.framework 已損毀」。所以 macOS 上不使用這個檔案（`Find` 略過它），status 回報找不到 yt-dlp。但這樣就不會開始下載，FR-20「開始下載時檢查更新」永遠不會發生，T61 說的「下一次自動更新時改裝」也就不會發生。
+- **目前做法**：status 發現 macOS 上還是舊的單一執行檔時，在自動更新開啟、版本為 x.y.z、沒有 `--update` 在執行、上一次更新不是在 10 分鐘內失敗的條件下，立即啟動 `--update`，其中一律改裝未封裝版本。這是「沒有下載也會連網」的例外，只在舊的單一執行檔還在時發生，改裝成功後不再發生。docs 的「Updates」已加一行說明。
+- 已知限制：v0.1.0 的小幫手在更新成 v0.1.1 的那次下載與 `--update`（`yt-dlp -U`）仍會執行舊檔，可能再出現一次警告。
+- **請規格方確認**這個例外，或改為只靠重新執行安裝指令（面板會依 status 顯示缺少 yt-dlp 與安裝指令）。
+
+### Q77 「版本較新」以檢查碼判斷、zip 從 latest 下載（T61、008 FR-20）
+
+- **狀況**：T61 要求從 `releases/latest/download/` 取得 `SHA2-256SUMS` 與 `yt-dlp_macos.zip`，「版本較新時」下載。`SHA2-256SUMS` 只有檢查碼，沒有版本號。
+- **目前做法**：安裝與每次更新後，在 `install-state.json` 的 `archives.yt-dlp` 記錄目前安裝的 zip 的 SHA256；latest 的 `SHA2-256SUMS` 中 `yt-dlp_macos.zip` 的檢查碼與記錄不同，就視為有新版本（latest 只會往前）。沒有記錄時（例如狀態檔遺失）會重新下載一次。zip 依 T61 從 latest 網址下載；若兩次請求之間 yt-dlp 剛好發佈新版本，檢查碼不符、保留舊版，下次再更新。
+- **替代做法**：以 latest 轉址到的 `releases/download/<版本>/` 取得版本號並從同一個版本下載 zip（網址已在允許清單中），可以避免上述情況，但需要讀取轉址鏈。
+- **請規格方確認**。
+
+### Q78 下載中的立即更新與「更新 yt-dlp」按鈕遇到 `--update` 正在執行（T61、008 FR-22）
+
+- **目前做法**：macOS 上這兩者會替換 `bin/yt-dlp/`，所以持有與 `--update` 相同的 `update.lock`。`--update` 正在執行（包括等待下載結束，最多 6 小時）時回傳 `BUSY`：下載中的立即更新不重試、回報原本的錯誤（之後由 `--update` 更新）；按鈕顯示失敗。按鈕觸發的更新時限 5 分鐘（擴充功能等待 6 分鐘），下載約 54 MB。
+- **請規格方確認**。
+
+### Q79 安裝大小的說明文字（008 FR-1、README、docs）
+
+- **實測**（Apple Silicon，2026-10-25 的 lock 版本；MB = 10⁶ 位元組）：
+  | | 下載量 | 安裝後 |
+  |---|---|---|
+  | v0.1.0（單一執行檔） | 約 139 MB | 約 258 MB |
+  | v0.1.1（未封裝版本） | 約 156 MB | 約 349 MB |
+  （yt-dlp 37.2 MB → zip 53.9 MB、解壓後 128.8 MB；deno 38.8 MB、解壓後 81.5 MB；ffmpeg、ffprobe 各約 28 MB、解壓後各約 66 MB；小幫手 6.6 MB。系統已有 ffmpeg 時少約 57 MB／132 MB。）
+- 介面、README、docs 的「macOS 約 150 MB」以下載量來看仍然接近；以安裝後的大小來看，v0.1.0 起就不符。我沒有修改這些文字。
+- **請規格方決定**是否改寫（例如「下載約 160 MB，安裝後約 350 MB」），Windows 的數字也可以一併確認。
+
+### Q80 plan 4.9 與 T40–T43 筆記中 macOS yt-dlp 的描述（T61）
+
+- plan 4.9 仍寫「macOS 用 `yt-dlp_macos`」「yt-dlp：執行 `yt-dlp -U`」「yt-dlp：已存在時不覆蓋（之後由 `yt-dlp -U` 自行更新）」，`T40-T43-install-and-release.md` 的工具表為 `bin/yt-dlp`。我沒有修改 plan 與舊的筆記，新的做法寫在 `specs/notes/T61-macos-unpacked-ytdlp.md`。
+- **請規格方**依需要更新 plan 4.9。

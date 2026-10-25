@@ -277,7 +277,7 @@
 | 10.2.4 | 安裝後面板在幾秒內自動切換成可下載畫面；成功下載 1080p 影片與 MP3。 | — | ☐ | ☐ |
 | 10.2.5 | 設定頁「下載」區顯示五個元件（小幫手、yt-dlp、deno、ffmpeg、ffprobe）的版本與來源，來源為安裝資料夾。 | ✔（假 status） | ☐ | ☐ |
 | 10.2.6 | 已用 Homebrew 安裝 ffmpeg 的 Mac：安裝時印出沿用系統的 ffmpeg，不下載；Homebrew 的 yt-dlp 不受影響（`brew list --versions yt-dlp` 不變），設定頁的 yt-dlp 來源為安裝資料夾。 | ✔（假伺服器） | ☐ | — |
-| 10.2.7 | 再執行一次指令：每一步顯示「已是最新版本，略過」（yt-dlp 為「已安裝，略過」），不重新下載。 | ✔ | ☐ | ☐ |
+| 10.2.7 | 再執行一次指令：每一步顯示「已是最新版本，略過」（yt-dlp 為「已安裝，略過（之後自動更新）」），不重新下載。 | ✔ | ☐ | ☐ |
 | 10.2.8 | 下載途中中斷網路：印出網路錯誤與「再執行一次」的說明；恢復後再執行，從失敗處繼續完成。 | ✔（假伺服器） | ☐ | ☐ |
 | 10.2.9 | 用 `sudo` 執行 macOS 指令：被拒絕並說明原因。 | ✔ | ☐ | — |
 | 10.2.10 | 安裝後使用者資料夾以外沒有新增檔案；PATH 沒有改變（重新開一個終端機，`which yt-dlp` 結果與安裝前相同）。 | — | ☐ | ☐ |
@@ -311,6 +311,25 @@
 | 10.5.1 | Firefox：安裝 Release 的 `.xpi`（簽署版）。發佈更新的版本後，`about:addons` → 齒輪 →「檢查更新」會更新到新版本（確認 Firefox 會跟隨 `releases/latest/download/updates.json` 的轉址，Q58）。 | — | ☐ |
 | 10.5.2 | Zen 同上。 | — | ☐ |
 | 10.5.3 | Chrome 依 Release 說明的步驟（解壓覆蓋原資料夾、重新載入）更新後，設定保留、擴充功能 ID 不變。 | — | ☐ |
+
+### 10.6 macOS 的未封裝版 yt-dlp（v0.1.1，008 FR-15a、FR-15b、FR-20、FR-22）
+
+容器中已驗證的部分見 `specs/notes/T61-macos-unpacked-ytdlp.md`。以下的「安裝資料夾」為 `~/Library/Application Support/yt-toolbar-master/`。檢查隔離屬性：`xattr -lr "$HOME/Library/Application Support/yt-toolbar-master" | grep quarantine` 沒有輸出。
+
+| # | 項目 | 自動化 | Apple Silicon | Intel |
+|---|---|---|---|---|
+| 10.6.1 | 全新安裝（一行指令）：`bin/yt-dlp/` 中有 `yt-dlp_macos` 與 `_internal/`（含 `_internal/Python.framework`），沒有 `bin/yt-dlp` 單一檔案；`ls -l bin/yt-dlp/yt-dlp_macos` 為 `-rwxr-xr-x`。 | ✔（假伺服器、實際 zip 解壓） | ☐ | ☐ |
+| 10.6.2 | 由 **Firefox** 與 **Chrome** 各開啟影片面板並下載影片與 MP3：沒有「Python.framework 已損毀」或其他 Gatekeeper 視窗，下載成功（008 驗收第 1 項）。 | — | ☐ | ☐ |
+| 10.6.3 | 10.6.2 之後安裝資料夾沒有隔離屬性；`/tmp`、`$TMPDIR` 中沒有新增 `_MEI*` 資料夾（未封裝版本不解壓到暫存資料夾）。 | — | ☐ | ☐ |
+| 10.6.4 | 從 v0.1.0 升級（重新執行一行指令）：安裝輸出的第 2 步下載 `yt-dlp_macos.zip`；之後 `bin/yt-dlp` 是資料夾，`bin/` 中沒有 `yt-dlp.old-*`；設定頁的 yt-dlp 來源為安裝資料夾、路徑為 `…/bin/yt-dlp/yt-dlp_macos`。 | ✔（假伺服器） | ☐ | ☐ |
+| 10.6.5 | 從 v0.1.0 自動升級：v0.1.0 安裝、自動更新開啟，發佈 v0.1.1 後在 v0.1.0 下載一次（這次仍會出現一次警告，屬 v0.1.0 的行為）。`host.log` 的 `update` 紀錄沒有 `MANIFEST_INVALID`，小幫手變成 0.1.1（v0.1.0 讀得懂新的 `components.json`）。之後開啟面板：面板先顯示缺少 yt-dlp，`host.log` 出現 `starting the update to replace the single-file yt-dlp`，約一分鐘內（面板自動重新偵測）變成可以下載，`bin/yt-dlp` 變成資料夾，下載沒有警告。 | ✔（假伺服器，分段） | ☐ | ☐ |
+| 10.6.6 | 10.6.5 中把網路關掉：改裝失敗後面板維持缺少 yt-dlp，10 分鐘內不再重試（`host.log` 沒有新的 `starting the update…`），恢復網路 10 分鐘後開啟面板再試並成功。設定頁關閉自動更新時不會自動改裝，重新執行一行指令即可。 | ✔（條件） | ☐ | ☐ |
+| 10.6.7 | yt-dlp 自動更新：把 `install-state.json` 的 `archives.yt-dlp` 改成任意 64 個 0，設定頁按「立即檢查更新」：`bin/yt-dlp/` 被整個替換成 yt-dlp 最新正式版本，`archives.yt-dlp` 等於 `https://github.com/yt-dlp/yt-dlp/releases/latest/download/SHA2-256SUMS` 中 `yt-dlp_macos.zip` 的值；完成後沒有隔離屬性，下載沒有警告（由瀏覽器啟動的更新程序寫入的檔案）。 | ✔（假伺服器） | ☐ | ☐ |
+| 10.6.8 | 面板的「更新 yt-dlp」按鈕：已是最新時顯示「yt-dlp 已是最新版本。」；以 10.6.7 的方式改掉檢查碼後顯示「yt-dlp 已更新到 <版本>。」；不會出現「yt-dlp -U」相關的錯誤。 | ✔（假函式） | ☐ | ☐ |
+| 10.6.9 | FR-22：把 `bin/yt-dlp/` 換成舊版本的 `yt-dlp_macos.zip` 解壓結果（並把 `archives.yt-dlp` 改成該 zip 的 SHA256），觸發 `YTDLP_OUTDATED`：面板顯示「正在更新 yt-dlp…」，更新後自動重試成功。 | ✔（假 yt-dlp、假伺服器） | ☐ | ☐ |
+| 10.6.10 | yt-dlp 之後的版本若在 `Python.framework` 中使用符號連結（2026.10.21 沒有）：`ls -l bin/yt-dlp/_internal/Python.framework` 顯示符號連結保留，yt-dlp 正常執行。 | ✔（測試用 zip） | ☐ | ☐ |
+| 10.6.11 | 已用 Homebrew 安裝 yt-dlp 的 Mac：自動更新與「更新 yt-dlp」不動 Homebrew 的版本；只有 v0.1.0 的單一執行檔時，status 不使用它而改用 Homebrew 的 yt-dlp。 | ✔ | ☐ | ☐ |
+| 10.6.12 | 安裝資料夾的大小（`du -sh`），供 Q79 更新文件中的大小。 | — | ☐ | ☐ |
 
 ## 11. 一鍵下載與右鍵下載（009）
 

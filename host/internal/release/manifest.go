@@ -57,6 +57,18 @@ func ExeName(name, platform string) string {
 	return name
 }
 
+// MacYtDlpExe 是 macOS 未封裝版 yt-dlp（yt-dlp_macos.zip）資料夾中的執行檔（008 FR-15a）。
+const MacYtDlpExe = "yt-dlp_macos"
+
+// UnpackedExe 回傳 tool 在 platform 上以整個資料夾安裝時，資料夾中的執行檔名稱；否則回傳空字串。
+// 目前只有 macOS 的 yt-dlp：yt-dlp_macos.zip 整個解壓到 bin/yt-dlp/，執行檔為 bin/yt-dlp/yt-dlp_macos。
+func UnpackedExe(tool, platform string) string {
+	if tool == ToolYtDlp && strings.HasPrefix(platform, "darwin-") {
+		return MacYtDlpExe
+	}
+	return ""
+}
+
 // HelperFileName 回傳小幫手在 Release 中的檔名。
 func HelperFileName(platform string) string {
 	return ExeName("ytm-host-"+platform, platform)
@@ -72,6 +84,8 @@ type Asset struct {
 //
 //   - Archive 為空字串：下載的檔案本身就是執行檔，安裝為 Name。
 //   - Archive 為 "zip"：從壓縮檔中取出 Extract 列出的檔案（只比對檔名，不使用壓縮檔中的路徑）。
+//     UnpackedExe 不為空字串的工具例外：整個壓縮檔解壓到 bin/<Extract[0]>/。
+//     這個寫法讓 v0.1.0 的小幫手仍然接受新的清單（它只檢查 Extract 是工具的名稱），才能自我更新。
 //
 // Checksums 只出現在 release/components.lock.json：官方公布檢查碼的網址，發佈流程以它核對 SHA256。
 type File struct {
@@ -222,6 +236,9 @@ func validateFiles(tool, platform string, files []File, allow URLCheck, lock boo
 	where := "tools." + tool + "." + platform
 	if len(files) == 0 {
 		return invalid("%s has no files", where)
+	}
+	if UnpackedExe(tool, platform) != "" && (len(files) != 1 || files[0].Archive != "zip") {
+		return invalid("%s must be a single zip that is unpacked as a folder", where)
 	}
 	want := map[string]bool{}
 	for _, b := range Binaries(tool, platform) {

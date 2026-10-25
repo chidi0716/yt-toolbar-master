@@ -43,6 +43,84 @@ func makeZip(t testing.TB, entries map[string]string) []byte {
 	return buf.Bytes()
 }
 
+// zipEntry 是 makeTreeZip 的一個項目：mode 含 os.ModeDir 或 os.ModeSymlink 時分別為資料夾與
+// 符號連結（content 為連結目標）。
+type zipEntry struct {
+	name, content string
+	mode          os.FileMode
+}
+
+// makeTreeZip 依順序建立 zip，保留每個項目的權限與類型。
+func makeTreeZip(t testing.TB, entries ...zipEntry) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	for _, en := range entries {
+		h := &zip.FileHeader{Name: en.name, Method: zip.Deflate}
+		h.SetMode(en.mode)
+		w, err := zw.CreateHeader(h)
+		if err != nil {
+			t.Fatal(err)
+		}
+		w.Write([]byte(en.content))
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return buf.Bytes()
+}
+
+// macYtDlpZip 模擬 yt-dlp_macos.zip：執行檔、_internal/ 與含符號連結的 Python.framework。
+func macYtDlpZip(t testing.TB, version string) []byte {
+	return makeTreeZip(t,
+		zipEntry{"yt-dlp_macos", "#!yt-dlp " + version, 0o755},
+		zipEntry{"_internal/", "", os.ModeDir | 0o755},
+		zipEntry{"_internal/base_library.zip", "lib " + version, 0o644},
+		zipEntry{"_internal/Python.framework/Versions/3.14/Python", "python", 0o755},
+		zipEntry{"_internal/Python.framework/Versions/3.14/Resources/Info.plist", "plist", 0o644},
+		zipEntry{"_internal/Python.framework/Versions/Current", "3.14", os.ModeSymlink | 0o777},
+		zipEntry{"_internal/Python.framework/Python", "Versions/Current/Python", os.ModeSymlink | 0o777},
+		zipEntry{"_internal/Python.framework/Resources", "Versions/Current/Resources", os.ModeSymlink | 0o777},
+		zipEntry{"_internal/Python", "Python.framework/Versions/3.14/Python", os.ModeSymlink | 0o777},
+	)
+}
+
+// checkMacYtDlp 確認 dir（bin/yt-dlp）是 macYtDlpZip(version) 解壓的結果：執行權限與符號連結都保留。
+func checkMacYtDlp(t *testing.T, dir, version string) {
+	t.Helper()
+	exe := filepath.Join(dir, "yt-dlp_macos")
+	if got := readFile(t, exe); got != "#!yt-dlp "+version {
+		t.Errorf("yt-dlp_macos = %q", got)
+	}
+	for p, want := range map[string]os.FileMode{
+		exe: 0o755,
+		filepath.Join(dir, "_internal", "base_library.zip"):                                                0o644,
+		filepath.Join(dir, "_internal", "Python.framework", "Versions", "3.14", "Python"):                  0o755,
+		filepath.Join(dir, "_internal", "Python.framework", "Versions", "3.14", "Resources"):               os.ModeDir | 0o755,
+		filepath.Join(dir, "_internal", "Python.framework", "Versions", "3.14", "Resources", "Info.plist"): 0o644,
+	} {
+		st, err := os.Lstat(p)
+		if err != nil {
+			t.Errorf("%s: %v", p, err)
+		} else if st.Mode() != want {
+			t.Errorf("%s: mode %v, want %v", p, st.Mode(), want)
+		}
+	}
+	for link, target := range map[string]string{
+		"_internal/Python.framework/Versions/Current": "3.14",
+		"_internal/Python.framework/Python":           "Versions/Current/Python",
+		"_internal/Python.framework/Resources":        "Versions/Current/Resources",
+		"_internal/Python":                            "Python.framework/Versions/3.14/Python",
+	} {
+		if got, err := os.Readlink(filepath.Join(dir, filepath.FromSlash(link))); err != nil || got != target {
+			t.Errorf("%s -> %q (%v), want %q", link, got, err, target)
+		}
+	}
+	if readFile(t, filepath.Join(dir, "_internal", "Python.framework", "Python")) != "python" {
+		t.Error("framework symlink does not resolve")
+	}
+}
+
 // fakeServer 模擬 GitHub 與 ffmpeg 網站：files 是「路徑 → 內容」，fail 中的路徑回 500。
 type fakeServer struct {
 	*httptest.Server
@@ -129,7 +207,8 @@ func newEnv(t *testing.T) *env {
 	e := &env{t: t, srv: newFakeServer(t), home: home,
 		layout: platform.LayoutFor("darwin", home, nil), out: &bytes.Buffer{}, helper: []byte("helper v0.2.0")}
 	e.srv.set("/helper", e.helper)
-	e.srv.set("/yt-dlp_macos", []byte("#!yt-dlp"))
+	e.srv.set("/yt-dlp_macos.zip", macYtDlpZip(t, "2026.10.21"))
+	e.srv.set("/yt-dlp.exe", []byte("yt-dlp.exe"))
 	e.srv.set("/deno.zip", makeZip(t, map[string]string{"deno": "deno-2.9.8"}))
 	e.srv.set("/ffmpeg.zip", makeZip(t, map[string]string{"ffmpeg": "ffmpeg-9"}))
 	e.srv.set("/ffprobe.zip", makeZip(t, map[string]string{"ffprobe": "ffprobe-9"}))
@@ -153,7 +232,10 @@ func (e *env) manifest(denoVersion, ffVersion string) *release.Manifest {
 	ff := release.Tool{Version: ffVersion, Platforms: map[string]release.Platform{}}
 	for _, p := range release.Platforms {
 		m.Helper[p] = release.Asset{URL: e.url("/helper"), SHA256: e.sum("/helper")}
-		yt.Platforms[p] = release.Platform{Files: []release.File{{URL: e.url("/yt-dlp_macos"), SHA256: e.sum("/yt-dlp_macos"), Name: release.ExeName("yt-dlp", p)}}}
+		yt.Platforms[p] = release.Platform{Files: []release.File{{URL: e.url("/yt-dlp_macos.zip"), SHA256: e.sum("/yt-dlp_macos.zip"), Archive: "zip", Extract: []string{"yt-dlp"}}}}
+		if p == release.WindowsAMD64 {
+			yt.Platforms[p] = release.Platform{Files: []release.File{{URL: e.url("/yt-dlp.exe"), SHA256: e.sum("/yt-dlp.exe"), Name: "yt-dlp.exe"}}}
+		}
 		dn.Platforms[p] = release.Platform{Files: []release.File{{URL: e.url("/deno.zip"), SHA256: e.sum("/deno.zip"), Archive: "zip", Extract: []string{release.ExeName("deno", p)}}}}
 		ff.Platforms[p] = release.Platform{Files: []release.File{
 			{URL: e.url("/ffmpeg.zip"), SHA256: e.sum("/ffmpeg.zip"), Archive: "zip", Extract: []string{release.ExeName("ffmpeg", p)}},
@@ -214,7 +296,8 @@ func TestInstallFreshAndRepeat(t *testing.T) {
 		t.Fatalf("install: %v\n%s", err, e.out)
 	}
 	bin := e.layout.BinDir
-	want := map[string]string{"yt-dlp": "#!yt-dlp", "deno": "deno-2.9.8", "ffmpeg": "ffmpeg-9", "ffprobe": "ffprobe-9"}
+	checkMacYtDlp(t, filepath.Join(bin, "yt-dlp"), "2026.10.21")
+	want := map[string]string{"deno": "deno-2.9.8", "ffmpeg": "ffmpeg-9", "ffprobe": "ffprobe-9"}
 	for name, content := range want {
 		p := filepath.Join(bin, name)
 		if got := readFile(t, p); got != content {
@@ -240,6 +323,9 @@ func TestInstallFreshAndRepeat(t *testing.T) {
 	st := LoadState(e.layout.InstallDir)
 	if st.Tools["deno"] != "2.9.8" || st.Tools["ffmpeg"] != "9.0.2" || st.Tools["yt-dlp"] != "2026.10.21" {
 		t.Errorf("state: %v", st.Tools)
+	}
+	if st.Archives["yt-dlp"] != e.sum("/yt-dlp_macos.zip") || len(st.Archives) != 1 {
+		t.Errorf("archives: %v", st.Archives)
 	}
 	out := e.out.String()
 	for _, s := range []string{"[1/5]", "[5/5]", "完成！回到瀏覽器即可下載", "Done!", e.url("/deno.zip")} {
@@ -268,8 +354,63 @@ func TestInstallFreshAndRepeat(t *testing.T) {
 	if err := e.install(e.installer(), m2); err != nil {
 		t.Fatal(err)
 	}
-	if readFile(t, filepath.Join(bin, "deno")) != "deno-2.9.9" || e.srv.hit("/yt-dlp_macos") != 1 || e.srv.hit("/ffmpeg.zip") != 1 {
-		t.Errorf("deno update: deno=%q yt-dlp hits=%d ffmpeg hits=%d", readFile(t, filepath.Join(bin, "deno")), e.srv.hit("/yt-dlp_macos"), e.srv.hit("/ffmpeg.zip"))
+	if readFile(t, filepath.Join(bin, "deno")) != "deno-2.9.9" || e.srv.hit("/yt-dlp_macos.zip") != 1 || e.srv.hit("/ffmpeg.zip") != 1 {
+		t.Errorf("deno update: deno=%q yt-dlp hits=%d ffmpeg hits=%d", readFile(t, filepath.Join(bin, "deno")), e.srv.hit("/yt-dlp_macos.zip"), e.srv.hit("/ffmpeg.zip"))
+	}
+}
+
+// TestInstallReplacesSingleFileYtDlp：v0.1.0 安裝的單一執行檔 bin/yt-dlp 在重新執行安裝指令時
+// 改成未封裝版本，舊檔刪除（008 FR-15a）；所有寫入的檔案都移除隔離屬性（FR-15b）。
+func TestInstallReplacesSingleFileYtDlp(t *testing.T) {
+	e := newEnv(t)
+	var mu sync.Mutex
+	var cleared []string
+	// 三個工具同時下載，會從不同的 goroutine 呼叫。
+	removeQuarantine = func(p string) { mu.Lock(); cleared = append(cleared, p); mu.Unlock() }
+	t.Cleanup(func() { removeQuarantine = platform.ClearQuarantine })
+	os.MkdirAll(e.layout.BinDir, 0o755)
+	os.WriteFile(filepath.Join(e.layout.BinDir, "yt-dlp"), []byte("single-file yt-dlp"), 0o755)
+	if err := e.install(e.installer(), e.m); err != nil {
+		t.Fatalf("install: %v\n%s", err, e.out)
+	}
+	checkMacYtDlp(t, filepath.Join(e.layout.BinDir, "yt-dlp"), "2026.10.21")
+	entries, _ := os.ReadDir(e.layout.BinDir)
+	for _, en := range entries {
+		if strings.Contains(en.Name(), ".old") {
+			t.Errorf("old yt-dlp left behind: %s", en.Name())
+		}
+	}
+	noStaging(t, e.layout.BinDir)
+	// 每個工具在放進 bin/ 之前處理一次（yt-dlp 是整個資料夾），最後整個安裝資料夾再處理一次。
+	var ytDir, last bool
+	for _, p := range cleared {
+		if filepath.Base(p) == "yt-dlp" && strings.Contains(p, ".download-") {
+			ytDir = true
+		}
+		last = p == e.layout.InstallDir
+	}
+	if !ytDir || !last {
+		t.Errorf("quarantine cleared on %v", cleared)
+	}
+	// 再執行一次：未封裝版本已安裝，略過。
+	e.out.Reset()
+	if err := e.install(e.installer(), e.m); err != nil {
+		t.Fatal(err)
+	}
+	if e.srv.hit("/yt-dlp_macos.zip") != 1 {
+		t.Errorf("yt-dlp downloaded %d times", e.srv.hit("/yt-dlp_macos.zip"))
+	}
+}
+
+// TestInstallWindowsQuarantineUntouched：只有 macOS 處理隔離屬性。
+func TestInstallWindowsQuarantineUntouched(t *testing.T) {
+	called := false
+	removeQuarantine = func(string) { called = true }
+	t.Cleanup(func() { removeQuarantine = platform.ClearQuarantine })
+	clearQuarantine("windows", t.TempDir())
+	clearQuarantine("linux", t.TempDir())
+	if called {
+		t.Fatal("quarantine handled outside macOS")
 	}
 }
 
@@ -281,7 +422,7 @@ func TestInstallDownloadsToolsTogether(t *testing.T) {
 		switch p {
 		case "/deno.zip", "/ffmpeg.zip":
 			others <- p
-		case "/yt-dlp_macos":
+		case "/yt-dlp_macos.zip":
 			// yt-dlp 的下載等到 deno 與 ffmpeg 也開始下載才回應。
 			seen := map[string]bool{}
 			timeout := time.After(10 * time.Second)
@@ -301,7 +442,7 @@ func TestInstallDownloadsToolsTogether(t *testing.T) {
 	}
 	out := e.out.String()
 	pos := 0
-	for _, s := range []string{"[1/5]", e.url("/helper"), "[2/5]", e.url("/yt-dlp_macos"), "Installed 2026.10.21", "[3/5]", e.url("/deno.zip"), "Installed 2.9.8",
+	for _, s := range []string{"[1/5]", e.url("/helper"), "[2/5]", e.url("/yt-dlp_macos.zip"), "Installed 2026.10.21", "[3/5]", e.url("/deno.zip"), "Installed 2.9.8",
 		"[4/5]", e.url("/ffmpeg.zip"), e.url("/ffprobe.zip"), "Installed 9.0.2", "[5/5]", "Done!"} {
 		i := strings.Index(out[pos:], s)
 		if i < 0 {
@@ -367,8 +508,8 @@ func TestInstallResumesAfterFailure(t *testing.T) {
 	if err := e.install(e.installer(), e.m); err != nil {
 		t.Fatalf("second run: %v", err)
 	}
-	if e.srv.hit("/yt-dlp_macos") != 1 || e.srv.hit("/helper") != 1 {
-		t.Errorf("second run downloaded again: yt-dlp %d, helper %d", e.srv.hit("/yt-dlp_macos"), e.srv.hit("/helper"))
+	if e.srv.hit("/yt-dlp_macos.zip") != 1 || e.srv.hit("/helper") != 1 {
+		t.Errorf("second run downloaded again: yt-dlp %d, helper %d", e.srv.hit("/yt-dlp_macos.zip"), e.srv.hit("/helper"))
 	}
 	for _, n := range []string{"deno", "ffmpeg", "ffprobe"} {
 		if _, err := os.Stat(filepath.Join(e.layout.BinDir, n)); err != nil {

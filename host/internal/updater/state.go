@@ -77,6 +77,22 @@ func ShouldCheck(s *State, now time.Time) bool {
 	return d >= CheckEvery || d < -time.Hour
 }
 
+// MigrateRetry 是改裝未封裝版 yt-dlp 失敗後，status 再次自動啟動 --update 的最短間隔。
+const MigrateRetry = 10 * time.Minute
+
+// ShouldMigrate 回傳 status 發現 macOS 上還是舊版單一執行檔 yt-dlp 時是否該啟動 --update
+// （008 FR-15a）：自動更新開啟，且上一次更新不是在 MigrateRetry 之內失敗。
+func ShouldMigrate(s *State, now time.Time) bool {
+	if !s.AutoEnabled() {
+		return false
+	}
+	if s.LastResult != ResultFailed || s.LastCheck == nil {
+		return true
+	}
+	d := now.Sub(*s.LastCheck)
+	return d >= MigrateRetry || d < -time.Hour
+}
+
 // View 是 status 指令中的 update 欄位（plan 4.9）。
 type View struct {
 	Auto                bool    `json:"auto"`

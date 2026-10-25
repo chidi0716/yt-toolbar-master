@@ -34,7 +34,10 @@ type Installer struct {
 	ManifestBase string
 	// FindSystem 尋找安裝資料夾以外的工具（例如 Homebrew 的 ffmpeg）；找不到時回傳空字串。
 	FindSystem func(tool string) string
-	Out        io.Writer
+	// YtDlpBase 是 macOS 更新 yt-dlp 時取得 SHA2-256SUMS 與 yt-dlp_macos.zip 的位置
+	// （預設 release.YtDlpLatestBase）。測試可以替換成本機伺服器。
+	YtDlpBase string
+	Out       io.Writer
 }
 
 // totalSteps 是 008 FR-11 的步驟數（下載小幫手、yt-dlp、deno、ffmpeg、註冊）。
@@ -146,8 +149,15 @@ func (in *Installer) Install(ctx context.Context, manifest []byte) error {
 	if err := in.register(); err != nil {
 		return err
 	}
+	in.ClearQuarantine()
 	fmt.Fprintln(in.Out, "\n完成！回到瀏覽器即可下載 / Done! Go back to your browser to download.")
 	return nil
+}
+
+// ClearQuarantine 在 macOS 上遞迴移除整個安裝資料夾的隔離屬性（008 FR-15b），
+// 也處理舊版本或其他程序留下的檔案。
+func (in *Installer) ClearQuarantine() {
+	clearQuarantine(in.Layout.GOOS, in.Layout.InstallDir)
 }
 
 func (in *Installer) register() error {
@@ -204,6 +214,9 @@ func (in *Installer) InstallHelper(ctx context.Context, m *release.Manifest) (bo
 
 // bundledPaths 回傳工具在安裝資料夾中的執行檔路徑。
 func (in *Installer) bundledPaths(tool string) []string {
+	if exe := release.UnpackedExe(tool, in.Platform); exe != "" {
+		return []string{filepath.Join(in.Layout.BinDir, tool, exe)}
+	}
 	var out []string
 	for _, b := range release.Binaries(tool, in.Platform) {
 		out = append(out, filepath.Join(in.Layout.BinDir, b))
@@ -246,7 +259,8 @@ func (in *Installer) planTool(m *release.Manifest, tool string, state *State) *t
 	have := allExist(in.bundledPaths(tool))
 	switch {
 	case tool == release.ToolYtDlp && have:
-		// 已安裝的 yt-dlp 不覆蓋，之後由 yt-dlp -U 自己更新（plan 4.9）。
+		// 已安裝的 yt-dlp 不覆蓋，之後由自動更新處理（plan 4.9）。macOS 上舊版的單一執行檔
+		// bin/yt-dlp 不算已安裝，會改裝未封裝版本（008 FR-15a）。
 		j.skip = skipSelfUpdating
 	case have && state.Tools[tool] == j.version:
 		j.skip = skipCurrent
@@ -265,7 +279,7 @@ func (in *Installer) startTool(ctx context.Context, j *toolJob) {
 	j.fileReady, j.done = make(chan struct{}, len(j.files)), make(chan struct{})
 	go func() {
 		defer close(j.done)
-		j.staged, j.err = prepareFiles(ctx, in.Fetcher, j.files, in.Layout.BinDir, in.Layout.GOOS, func() { j.fileReady <- struct{}{} })
+		j.staged, j.err = prepareFiles(ctx, in.Fetcher, j.files, in.Layout.BinDir, in.Layout.GOOS, release.UnpackedExe(j.tool, in.Platform), func() { j.fileReady <- struct{}{} })
 	}()
 }
 
@@ -283,7 +297,7 @@ func (j *toolJob) close() {
 func (in *Installer) finishTool(j *toolJob, state *State) error {
 	switch j.skip {
 	case skipSelfUpdating:
-		in.say("已安裝，略過（之後由 yt-dlp 自己更新）", "Already installed, skipped (yt-dlp updates itself)")
+		in.say("已安裝，略過（之後自動更新）", "Already installed, skipped (updated automatically)")
 		return nil
 	case skipCurrent:
 		in.say("已是最新版本（"+j.version+"），略過", "Already up to date ("+j.version+"), skipped")
@@ -318,6 +332,9 @@ func (in *Installer) finishTool(j *toolJob, state *State) error {
 		return err
 	}
 	state.Tools[j.tool] = j.version
+	if j.staged.unpacked != "" {
+		state.Archives[j.tool] = j.files[0].SHA256
+	}
 	if err := state.Save(in.Layout.InstallDir); err != nil {
 		return classify(err)
 	}
@@ -357,6 +374,7 @@ func (in *Installer) InstallOffline() error {
 	if err := in.register(); err != nil {
 		return err
 	}
+	in.ClearQuarantine()
 	var missing []string
 	for _, tool := range []string{"yt-dlp", "ffmpeg", "ffprobe", "deno"} {
 		p := ""
@@ -364,7 +382,11 @@ func (in *Installer) InstallOffline() error {
 			p = in.FindSystem(tool)
 		}
 		if p == "" {
-			for _, b := range []string{tool, tool + ".exe"} {
+			names := []string{tool, tool + ".exe"}
+			if tool == release.ToolYtDlp && in.Layout.GOOS == "darwin" {
+				names = []string{filepath.Join(tool, release.MacYtDlpExe)}
+			}
+			for _, b := range names {
 				if platform.IsFile(filepath.Join(in.Layout.BinDir, b)) {
 					p = filepath.Join(in.Layout.BinDir, b)
 				}

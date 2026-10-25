@@ -116,6 +116,7 @@ func serve(client string) int {
 
 	a := app.New(version, m)
 	a.Log = log
+	a.UpdateMacYtDlp = updateMacYtDlp
 	d := &commands.Dispatcher{Backend: a, Log: log}
 	err := commands.Serve(ctx, os.Stdin, w, d)
 	w.Close()

@@ -48,6 +48,29 @@ func TestShouldCheck(t *testing.T) {
 	}
 }
 
+func TestShouldMigrate(t *testing.T) {
+	now := time.Date(2026, 10, 25, 12, 0, 0, 0, time.UTC)
+	at := func(d time.Duration) *time.Time { x := now.Add(-d); return &x }
+	off := false
+	cases := []struct {
+		s    State
+		want bool
+	}{
+		{State{}, true},
+		{State{LastCheck: at(time.Minute), LastResult: ResultUpdated}, true}, // 剛由 v0.1.0 更新成這個版本
+		{State{LastCheck: at(time.Minute), LastResult: ResultOK}, true},
+		{State{LastCheck: at(time.Minute), LastResult: ResultFailed}, false},
+		{State{LastCheck: at(10 * time.Minute), LastResult: ResultFailed}, true},
+		{State{LastCheck: at(-2 * time.Hour), LastResult: ResultFailed}, true}, // 時鐘被往回調
+		{State{Auto: &off}, false},
+	}
+	for i, c := range cases {
+		if got := ShouldMigrate(&c.s, now); got != c.want {
+			t.Errorf("case %d: got %v", i, got)
+		}
+	}
+}
+
 func TestStateAndView(t *testing.T) {
 	dir := t.TempDir()
 	v := ViewOf(dir)
@@ -126,7 +149,46 @@ type fixture struct {
 
 const plat = release.DarwinARM64
 
+// macYtDlpZip 模擬 yt-dlp_macos.zip（未封裝版本）。
+func macYtDlpZip(t *testing.T, version string) []byte {
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	for name, content := range map[string]string{"yt-dlp_macos": "yt " + version, "_internal/Python.framework/Versions/3.14/Python": "python"} {
+		h := &zip.FileHeader{Name: name, Method: zip.Deflate}
+		h.SetMode(0o755)
+		w, _ := zw.CreateHeader(h)
+		w.Write([]byte(content))
+	}
+	zw.Close()
+	return buf.Bytes()
+}
+
+// publishYtDlp 讓假伺服器的 yt-dlp latest 提供 version 的 yt-dlp_macos.zip 與 SHA2-256SUMS。
+func (f *fixture) publishYtDlp(version string) string {
+	z := macYtDlpZip(f.t, version)
+	sum := release.HashBytes(z)
+	f.set("/yt-dlp/latest/yt-dlp_macos.zip", z)
+	f.set("/yt-dlp/latest/SHA2-256SUMS", []byte(sum+"  yt-dlp_macos.zip\n"))
+	return sum
+}
+
+func (f *fixture) macYtDlp() string { return filepath.Join(f.layout.BinDir, "yt-dlp", "yt-dlp_macos") }
+
+// newFixture 是 macOS 的環境：yt-dlp 是 2026.10.21 的未封裝版本，latest 是 2026.11.01。
 func newFixture(t *testing.T) *fixture {
+	f := newFixtureFor(t, "darwin")
+	os.MkdirAll(filepath.Dir(f.macYtDlp()), 0o755)
+	os.WriteFile(f.macYtDlp(), []byte("yt 2026.10.21"), 0o755)
+	st := installer.LoadState(f.layout.InstallDir)
+	st.Archives["yt-dlp"] = release.HashBytes(macYtDlpZip(t, "2026.10.21"))
+	st.Save(f.layout.InstallDir)
+	f.publishYtDlp("2026.11.01")
+	return f
+}
+
+// newFixtureFor 建立 goos 的環境：小幫手 0.1.0、deno 2.9.7、ffmpeg 9.0.2（yt-dlp 由呼叫端放入），
+// 清單提供小幫手 0.2.0 與 deno 2.9.8。
+func newFixtureFor(t *testing.T, goos string) *fixture {
 	f := &fixture{t: t, files: map[string][]byte{}, hits: map[string]int{}}
 	f.srv = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		f.mu.Lock()
@@ -140,11 +202,10 @@ func newFixture(t *testing.T) *fixture {
 		w.Write(b)
 	}))
 	t.Cleanup(f.srv.Close)
-	f.layout = platform.LayoutFor("darwin", t.TempDir(), nil)
-	// 目前安裝的版本：小幫手 0.1.0、yt-dlp、deno 2.9.7、ffmpeg 9.0.2。
+	f.layout = platform.LayoutFor(goos, t.TempDir(), nil)
 	os.MkdirAll(f.layout.BinDir, 0o755)
 	os.WriteFile(f.layout.HelperPath, []byte("helper 0.1.0"), 0o755)
-	for name, content := range map[string]string{"yt-dlp": "yt", "deno": "deno 2.9.7", "ffmpeg": "ff 9.0.2", "ffprobe": "fp 9.0.2"} {
+	for name, content := range map[string]string{"deno": "deno 2.9.7", "ffmpeg": "ff 9.0.2", "ffprobe": "fp 9.0.2"} {
 		os.WriteFile(filepath.Join(f.layout.BinDir, name), []byte(content), 0o755)
 	}
 	st := installer.LoadState(f.layout.InstallDir)
@@ -153,6 +214,7 @@ func newFixture(t *testing.T) *fixture {
 
 	f.set("/helper", []byte("helper 0.2.0"))
 	f.set("/yt-dlp", []byte("yt new"))
+	f.set("/yt-dlp_macos.zip", macYtDlpZip(t, "2026.11.01"))
 	f.set("/deno.zip", makeZip(t, "deno", "deno 2.9.8"))
 	f.set("/ffmpeg.zip", makeZip(t, "ffmpeg", "ff new"))
 	f.set("/ffprobe.zip", makeZip(t, "ffprobe", "fp new"))
@@ -187,6 +249,9 @@ func (f *fixture) manifest(version string) *release.Manifest {
 	for _, p := range release.Platforms {
 		m.Helper[p] = release.Asset{URL: u("/helper"), SHA256: f.sum("/helper")}
 		yt.Platforms[p] = release.Platform{Files: []release.File{{URL: u("/yt-dlp"), SHA256: f.sum("/yt-dlp"), Name: release.ExeName("yt-dlp", p)}}}
+		if release.UnpackedExe(release.ToolYtDlp, p) != "" {
+			yt.Platforms[p] = release.Platform{Files: []release.File{{URL: u("/yt-dlp_macos.zip"), SHA256: f.sum("/yt-dlp_macos.zip"), Archive: "zip", Extract: []string{"yt-dlp"}}}}
+		}
 		dn.Platforms[p] = release.Platform{Files: []release.File{{URL: u("/deno.zip"), SHA256: f.sum("/deno.zip"), Archive: "zip", Extract: []string{release.ExeName("deno", p)}}}}
 		ff.Platforms[p] = release.Platform{Files: []release.File{
 			{URL: u("/ffmpeg.zip"), SHA256: f.sum("/ffmpeg.zip"), Archive: "zip", Extract: []string{release.ExeName("ffmpeg", p)}},
@@ -214,7 +279,16 @@ func (f *fixture) updater(active func() int, ytdlp func(context.Context, string)
 		Fetcher:       &release.Fetcher{Client: f.srv.Client(), Allow: func(x *url.URL) bool { return x.Host == su.Host }},
 		ActiveJobs:    active,
 		UpdateYtDlp:   ytdlp,
+		YtDlpBase:     f.srv.URL + "/yt-dlp/latest/",
 		PollEvery:     5 * time.Millisecond,
+	}
+}
+
+// noYtDlpU 是 macOS 上不該被呼叫的 yt-dlp -U。
+func noYtDlpU(t *testing.T) func(context.Context, string) (bool, error) {
+	return func(context.Context, string) (bool, error) {
+		t.Error("yt-dlp -U was used on macOS")
+		return false, nil
 	}
 }
 
@@ -232,27 +306,19 @@ func TestRunUpdatesEverythingAfterDownloadsFinish(t *testing.T) {
 	active := func() int {
 		if polls.Add(1) <= 3 {
 			// 前三次檢查時還有下載在進行：這段期間不能替換任何東西。
-			if read(t, filepath.Join(f.layout.BinDir, "deno")) != "deno 2.9.7" || read(t, f.layout.HelperPath) != "helper 0.1.0" {
+			if read(t, filepath.Join(f.layout.BinDir, "deno")) != "deno 2.9.7" || read(t, f.layout.HelperPath) != "helper 0.1.0" || read(t, f.macYtDlp()) != "yt 2026.10.21" {
 				t.Error("replaced while a download was running")
 			}
 			return 1
 		}
 		return 0
 	}
-	var ytCalls atomic.Int32
-	ytUpdate := func(ctx context.Context, p string) (bool, error) {
-		ytCalls.Add(1)
-		if p != filepath.Join(f.layout.BinDir, "yt-dlp") {
-			t.Errorf("yt-dlp -U on %s", p)
-		}
-		return true, nil
-	}
-	result, err := f.updater(active, ytUpdate).Run(context.Background())
+	result, err := f.updater(active, noYtDlpU(t)).Run(context.Background())
 	if err != nil || result != ResultUpdated {
 		t.Fatalf("result %q, err %v", result, err)
 	}
-	if polls.Load() < 4 || ytCalls.Load() != 1 {
-		t.Errorf("polls %d, yt-dlp updates %d", polls.Load(), ytCalls.Load())
+	if polls.Load() < 4 {
+		t.Errorf("polls %d", polls.Load())
 	}
 	if read(t, filepath.Join(f.layout.BinDir, "deno")) != "deno 2.9.8" {
 		t.Error("deno not updated")
@@ -260,8 +326,11 @@ func TestRunUpdatesEverythingAfterDownloadsFinish(t *testing.T) {
 	if read(t, f.layout.HelperPath) != "helper 0.2.0" {
 		t.Error("helper not updated")
 	}
-	// yt-dlp 由 yt-dlp -U 更新，不從清單下載；ffmpeg 版本相同不下載。
-	if f.hit("/yt-dlp") != 0 || f.hit("/ffmpeg.zip") != 0 || read(t, filepath.Join(f.layout.BinDir, "ffmpeg")) != "ff 9.0.2" {
+	// macOS 的 yt-dlp 從 yt-dlp 的 latest 更新（008 FR-20），不從清單下載；ffmpeg 版本相同不下載。
+	if read(t, f.macYtDlp()) != "yt 2026.11.01" || read(t, filepath.Join(f.layout.BinDir, "yt-dlp", "_internal", "Python.framework", "Versions", "3.14", "Python")) != "python" {
+		t.Error("yt-dlp not updated")
+	}
+	if f.hit("/yt-dlp_macos.zip") != 0 || f.hit("/ffmpeg.zip") != 0 || read(t, filepath.Join(f.layout.BinDir, "ffmpeg")) != "ff 9.0.2" {
 		t.Error("yt-dlp or ffmpeg was replaced from the manifest")
 	}
 	s := Load(f.layout.InstallDir)
@@ -275,10 +344,70 @@ func TestRunUpdatesEverythingAfterDownloadsFinish(t *testing.T) {
 		t.Error("lock left behind")
 	}
 
-	// 再執行一次：沒有需要更新的（yt-dlp 已是最新）。
-	result, err = f.updater(func() int { return 0 }, func(context.Context, string) (bool, error) { return false, nil }).Run(context.Background())
+	// 再執行一次：沒有需要更新的（yt-dlp 已是最新，只下載 SHA2-256SUMS）。
+	result, err = f.updater(func() int { return 0 }, noYtDlpU(t)).Run(context.Background())
 	if err != nil || result != ResultOK {
 		t.Fatalf("second run: %q %v", result, err)
+	}
+	if f.hit("/yt-dlp/latest/yt-dlp_macos.zip") != 1 || f.hit("/yt-dlp/latest/SHA2-256SUMS") != 2 {
+		t.Errorf("yt-dlp zip %d, sums %d", f.hit("/yt-dlp/latest/yt-dlp_macos.zip"), f.hit("/yt-dlp/latest/SHA2-256SUMS"))
+	}
+}
+
+// TestRunReplacesSingleFileYtDlp：v0.1.0 安裝的單一執行檔在自動更新時改成未封裝版本（008 FR-15a），
+// 並遞迴移除隔離屬性（FR-15b，以 macOS 的 Layout 測試，實際的屬性處理只在 macOS 上有作用）。
+func TestRunReplacesSingleFileYtDlp(t *testing.T) {
+	f := newFixtureFor(t, "darwin")
+	f.publishYtDlp("2026.11.01")
+	legacy := filepath.Join(f.layout.BinDir, "yt-dlp")
+	os.WriteFile(legacy, []byte("single-file yt-dlp"), 0o755)
+	result, err := f.updater(func() int { return 0 }, noYtDlpU(t)).Run(context.Background())
+	if err != nil || result != ResultUpdated {
+		t.Fatalf("%q %v", result, err)
+	}
+	if read(t, f.macYtDlp()) != "yt 2026.11.01" || installer.LegacyMacYtDlp(f.layout) {
+		t.Fatal("single-file yt-dlp not replaced")
+	}
+	entries, _ := os.ReadDir(f.layout.BinDir)
+	for _, en := range entries {
+		if strings.Contains(en.Name(), ".old") || strings.HasPrefix(en.Name(), ".download-") {
+			t.Errorf("left behind: %s", en.Name())
+		}
+	}
+	if s := Load(f.layout.InstallDir); !strings.Contains(strings.Join(s.Updated, ","), "yt-dlp") {
+		t.Errorf("state: %+v", s)
+	}
+	// yt-dlp 的下載失敗：其他元件照常，結果為失敗，舊檔保留。
+	g := newFixtureFor(t, "darwin")
+	os.WriteFile(filepath.Join(g.layout.BinDir, "yt-dlp"), []byte("single-file yt-dlp"), 0o755)
+	result, err = g.updater(func() int { return 0 }, noYtDlpU(t)).Run(context.Background())
+	if result != ResultFailed || errs.From(err).Code != errs.Network {
+		t.Fatalf("missing latest: %q %v", result, err)
+	}
+	if read(t, filepath.Join(g.layout.BinDir, "yt-dlp")) != "single-file yt-dlp" || read(t, g.layout.HelperPath) != "helper 0.2.0" {
+		t.Error("wrong files after a failed yt-dlp update")
+	}
+}
+
+// TestRunUsesYtDlpUpdateOutsideMacOS：Windows（以 Linux 的 Layout 代替）使用 yt-dlp -U，不連到 yt-dlp 的 latest。
+func TestRunUsesYtDlpUpdateOutsideMacOS(t *testing.T) {
+	f := newFixtureFor(t, "linux")
+	f.publishYtDlp("2026.11.01")
+	yt := filepath.Join(f.layout.BinDir, "yt-dlp")
+	os.WriteFile(yt, []byte("yt"), 0o755)
+	var calls atomic.Int32
+	u := f.updater(func() int { return 0 }, func(_ context.Context, p string) (bool, error) {
+		calls.Add(1)
+		if p != yt {
+			t.Errorf("yt-dlp -U on %s", p)
+		}
+		return true, nil
+	})
+	if result, err := u.Run(context.Background()); err != nil || result != ResultUpdated {
+		t.Fatalf("%q %v", result, err)
+	}
+	if calls.Load() != 1 || f.hit("/yt-dlp/latest/SHA2-256SUMS") != 0 {
+		t.Errorf("yt-dlp -U %d, sums %d", calls.Load(), f.hit("/yt-dlp/latest/SHA2-256SUMS"))
 	}
 }
 
@@ -344,15 +473,15 @@ func TestRunWaitsAtMostMaxWait(t *testing.T) {
 func TestRunSkipsWhatIsNotOurs(t *testing.T) {
 	f := newFixture(t)
 	// yt-dlp、deno 不在安裝資料夾（例如手動安裝、使用 Homebrew 的版本）：不碰。
-	os.Remove(filepath.Join(f.layout.BinDir, "yt-dlp"))
+	os.RemoveAll(filepath.Join(f.layout.BinDir, "yt-dlp"))
 	os.Remove(filepath.Join(f.layout.BinDir, "deno"))
 	called := false
 	u := f.updater(func() int { return 0 }, func(context.Context, string) (bool, error) { called = true; return true, nil })
 	// 開發版：不更新小幫手。
 	u.Version = "dev"
 	result, err := u.Run(context.Background())
-	if err != nil || result != ResultOK || called || f.hit("/deno.zip") != 0 || f.hit("/helper") != 0 {
-		t.Fatalf("%q %v called=%v deno=%d helper=%d", result, err, called, f.hit("/deno.zip"), f.hit("/helper"))
+	if err != nil || result != ResultOK || called || f.hit("/deno.zip") != 0 || f.hit("/helper") != 0 || f.hit("/yt-dlp/latest/SHA2-256SUMS") != 0 {
+		t.Fatalf("%q %v called=%v deno=%d helper=%d yt-dlp=%d", result, err, called, f.hit("/deno.zip"), f.hit("/helper"), f.hit("/yt-dlp/latest/SHA2-256SUMS"))
 	}
 	// 不是從安裝資料夾執行的小幫手：不更新小幫手。
 	u.Version = "0.1.0"

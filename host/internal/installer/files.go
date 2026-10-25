@@ -8,18 +8,25 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/release"
 )
 
 // maxExtracted 是從壓縮檔取出的單一檔案大小上限（Windows 的 ffmpeg.exe 約 190 MB）。
 const maxExtracted = 1 << 30
+
+// 整個解壓（ExtractTree）的上限：yt-dlp_macos.zip 有 162 個項目，解壓後約 129 MB。
+const (
+	maxTreeEntries = 5000
+	maxTreeBytes   = 1 << 30
+	maxLinkTarget  = 1024
+)
 
 func randomSuffix() string {
 	var b [6]byte
@@ -98,7 +105,7 @@ func ExtractZip(zipPath, outDir string, names []string) error {
 			if zf.UncompressedSize64 > maxExtracted {
 				return errs.New(errs.Unknown, "%s in the archive is too large", want)
 			}
-			if err := extractOne(zf, filepath.Join(outDir, want)); err != nil {
+			if _, err := extractFile(zf, filepath.Join(outDir, want), 0o755, maxExtracted); err != nil {
 				return err
 			}
 			found[want] = true
@@ -112,25 +119,132 @@ func ExtractZip(zipPath, outDir string, names []string) error {
 	return nil
 }
 
-func extractOne(zf *zip.File, dest string) error {
+// extractFile 把 zf 寫到 dest（建立新檔案），最多 limit 位元組，回傳寫入的大小。
+func extractFile(zf *zip.File, dest string, perm os.FileMode, limit int64) (int64, error) {
 	rc, err := zf.Open()
 	if err != nil {
-		return errs.New(errs.ChecksumMismatch, "could not read %s from the archive: %v", zf.Name, err)
+		return 0, errs.New(errs.ChecksumMismatch, "could not read %s from the archive: %v", zf.Name, err)
 	}
 	defer rc.Close()
-	out, err := os.OpenFile(dest, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o755)
+	out, err := os.OpenFile(dest, os.O_CREATE|os.O_EXCL|os.O_WRONLY, perm)
 	if err != nil {
-		return classify(err)
+		return 0, classify(err)
 	}
-	n, err := io.Copy(out, io.LimitReader(rc, maxExtracted+1))
+	n, err := io.Copy(out, io.LimitReader(rc, limit+1))
 	if cerr := out.Close(); err == nil {
 		err = cerr
 	}
-	if err == nil && n > maxExtracted {
+	if err == nil && n > limit {
 		err = errs.New(errs.Unknown, "%s in the archive is too large", zf.Name)
 	}
 	if err != nil {
 		os.Remove(dest)
+		return n, classify(err)
+	}
+	return n, nil
+}
+
+// unsafeChars 不得出現在 ExtractTree 的路徑與符號連結目標中。
+const unsafeChars = "\\:\x00"
+
+// treePath 回傳壓縮檔中的項目在解壓資料夾中的相對路徑（以 / 分隔，去掉資料夾結尾的 /）。
+// 絕對路徑、..、多餘的 . 或 /、反斜線與磁碟代號一律視為不安全。
+func treePath(name string) (string, bool) {
+	n := strings.TrimSuffix(name, "/")
+	if n == "" || strings.ContainsAny(n, unsafeChars) || strings.HasPrefix(n, "/") || path.Clean(n) != n ||
+		n == "." || n == ".." || strings.HasPrefix(n, "../") {
+		return "", false
+	}
+	return n, true
+}
+
+// ExtractTree 把 zipPath 整個解壓到 dest（必須還不存在），保留資料夾結構、執行權限與符號連結
+// （008 FR-15a：yt-dlp_macos.zip 的 _internal/ 與其中的 Python.framework）。
+// 有任何不安全的項目（路徑穿越、指向 dest 以外或位於另一個符號連結之下的符號連結、不支援的檔案類型）
+// 時整個解壓失敗，由呼叫端刪除 dest。
+func ExtractTree(zipPath, dest string) error {
+	zr, err := zip.OpenReader(zipPath)
+	if err != nil {
+		return errs.New(errs.ChecksumMismatch, "not a valid zip file: %v", err)
+	}
+	defer zr.Close()
+	if len(zr.File) > maxTreeEntries {
+		return errs.New(errs.Unknown, "the archive has too many entries")
+	}
+	if err := os.Mkdir(dest, 0o755); err != nil {
+		return classify(err)
+	}
+	// 先建立資料夾與檔案，最後才建立符號連結，寫入檔案時路徑中不會有符號連結。
+	var links []*zip.File
+	remaining := int64(maxTreeBytes)
+	for _, zf := range zr.File {
+		rel, ok := treePath(zf.Name)
+		if !ok {
+			return errs.New(errs.Unknown, "unsafe path in the archive: %q", zf.Name)
+		}
+		target := filepath.Join(dest, filepath.FromSlash(rel))
+		mode := zf.Mode()
+		switch {
+		case mode&os.ModeSymlink != 0:
+			links = append(links, zf)
+		case mode.IsDir():
+			if err := os.MkdirAll(target, 0o755); err != nil {
+				return classify(err)
+			}
+		case mode.IsRegular():
+			if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+				return classify(err)
+			}
+			perm := os.FileMode(0o644)
+			if mode&0o111 != 0 {
+				perm = 0o755
+			}
+			n, err := extractFile(zf, target, perm, min(remaining, maxExtracted))
+			if err != nil {
+				return err
+			}
+			remaining -= n
+		default:
+			return errs.New(errs.Unknown, "unsupported entry in the archive: %q", zf.Name)
+		}
+	}
+	for _, zf := range links {
+		if err := extractLink(zf, dest); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// extractLink 建立符號連結。目標必須是相對路徑且解析後仍在 dest 之中；
+// 連結所在的每一層都必須是實際的資料夾（不能經過另一個符號連結）。
+func extractLink(zf *zip.File, dest string) error {
+	rel, _ := treePath(zf.Name)
+	rc, err := zf.Open()
+	if err != nil {
+		return errs.New(errs.ChecksumMismatch, "could not read %s from the archive: %v", zf.Name, err)
+	}
+	b, err := io.ReadAll(io.LimitReader(rc, maxLinkTarget+1))
+	rc.Close()
+	if err != nil {
+		return errs.New(errs.ChecksumMismatch, "could not read %s from the archive: %v", zf.Name, err)
+	}
+	link := string(b)
+	resolved := path.Join(path.Dir(rel), link)
+	if len(b) > maxLinkTarget || link == "" || strings.HasPrefix(link, "/") || strings.ContainsAny(link, unsafeChars) ||
+		resolved == ".." || strings.HasPrefix(resolved, "../") {
+		return errs.New(errs.Unknown, "symbolic link %q points outside the folder", zf.Name)
+	}
+	dir := dest
+	if parent := path.Dir(rel); parent != "." {
+		for _, part := range strings.Split(parent, "/") {
+			dir = filepath.Join(dir, part)
+			if st, err := os.Lstat(dir); err != nil || !st.IsDir() {
+				return errs.New(errs.Unknown, "symbolic link %q is not inside a real folder", zf.Name)
+			}
+		}
+	}
+	if err := os.Symlink(link, filepath.Join(dest, filepath.FromSlash(rel))); err != nil {
 		return classify(err)
 	}
 	return nil
@@ -139,7 +253,7 @@ func extractOne(zf *zip.File, dest string) error {
 // InstallFiles 下載 files、核對 SHA256、解壓，全部成功後才把執行檔放進 binDir
 // （先放在暫存資料夾，最後逐一改名）。回傳安裝的執行檔路徑。任何一步失敗時 binDir 不變。
 func InstallFiles(ctx context.Context, f *release.Fetcher, files []release.File, binDir, goos string) ([]string, error) {
-	p, err := prepareFiles(ctx, f, files, binDir, goos, nil)
+	p, err := prepareFiles(ctx, f, files, binDir, goos, "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -153,16 +267,19 @@ type stagedFiles struct {
 	out          string
 	names        []string
 	binDir, goos string
+	// unpacked 不為空字串時，壓縮檔整個解壓成資料夾 names[0]，其中的執行檔為 unpacked
+	// （release.UnpackedExe：macOS 的 yt-dlp）。
+	unpacked string
 }
 
 // prepareFiles 是 InstallFiles 放進 binDir 之前的步驟；binDir 不變。每個檔案下載、核對、解壓後
 // 呼叫 fileReady（可為 nil）。用完後必須呼叫 close。
-func prepareFiles(ctx context.Context, f *release.Fetcher, files []release.File, binDir, goos string, fileReady func()) (*stagedFiles, error) {
+func prepareFiles(ctx context.Context, f *release.Fetcher, files []release.File, binDir, goos, unpacked string, fileReady func()) (*stagedFiles, error) {
 	st, err := NewStaging(binDir)
 	if err != nil {
 		return nil, classify(err)
 	}
-	p := &stagedFiles{st: st, out: filepath.Join(st.Dir, "out"), binDir: binDir, goos: goos}
+	p := &stagedFiles{st: st, out: filepath.Join(st.Dir, "out"), binDir: binDir, goos: goos, unpacked: unpacked}
 	if err := p.prepare(ctx, f, files, fileReady); err != nil {
 		st.Close()
 		return nil, err
@@ -179,12 +296,17 @@ func (p *stagedFiles) prepare(ctx context.Context, f *release.Fetcher, files []r
 		if err != nil {
 			return err
 		}
-		switch file.Archive {
-		case "":
+		switch {
+		case file.Archive == "":
 			if err := os.Rename(dl, filepath.Join(p.out, file.Name)); err != nil {
 				return classify(err)
 			}
-		case "zip":
+		case file.Archive == "zip" && p.unpacked != "":
+			if err := ExtractTree(dl, filepath.Join(p.out, file.Extract[0])); err != nil {
+				return err
+			}
+			os.Remove(dl)
+		case file.Archive == "zip":
 			if err := ExtractZip(dl, p.out, file.Extract); err != nil {
 				return err
 			}
@@ -199,7 +321,14 @@ func (p *stagedFiles) prepare(ctx context.Context, f *release.Fetcher, files []r
 	}
 	for _, name := range p.names {
 		src := filepath.Join(p.out, name)
-		if err := os.Chmod(src, 0o755); err != nil {
+		exe := src
+		if p.unpacked != "" {
+			exe = filepath.Join(src, p.unpacked)
+			if st, err := os.Lstat(exe); err != nil || !st.Mode().IsRegular() {
+				return errs.New(errs.Unknown, "the archive does not contain %s", p.unpacked)
+			}
+		}
+		if err := os.Chmod(exe, 0o755); err != nil {
 			return classify(err)
 		}
 		clearQuarantine(p.goos, src)
@@ -207,12 +336,18 @@ func (p *stagedFiles) prepare(ctx context.Context, f *release.Fetcher, files []r
 	return nil
 }
 
-// commit 把執行檔逐一改名放進 binDir，回傳安裝的路徑。
+// commit 把執行檔（或整個資料夾）逐一改名放進 binDir，回傳安裝的路徑。
 func (p *stagedFiles) commit() ([]string, error) {
 	var installed []string
 	for _, name := range p.names {
-		dest := filepath.Join(p.binDir, name)
-		if err := ReplaceFile(filepath.Join(p.out, name), dest, p.goos); err != nil {
+		src, dest := filepath.Join(p.out, name), filepath.Join(p.binDir, name)
+		var err error
+		if p.unpacked != "" {
+			err = ReplaceDir(src, dest)
+		} else {
+			err = ReplaceFile(src, dest, p.goos)
+		}
+		if err != nil {
 			return nil, classify(err)
 		}
 		installed = append(installed, dest)
@@ -250,7 +385,30 @@ func ReplaceFile(src, dest, goos string) error {
 	return nil
 }
 
-// CleanupOld 刪除 dir 中替換時留下的 *.old、*.old-* 與中斷的 .download-* 暫存資料夾。
+// ReplaceDir 以資料夾 src 取代 dest。dest 可以是舊的資料夾，或從舊版升級時的單一執行檔
+// （v0.1.0 的 bin/yt-dlp）：先把 dest 改名為 dest.old-<隨機>，放入 src 後刪除舊的；
+// 失敗時改回原本的名稱。刪除失敗時留給 CleanupOld。
+func ReplaceDir(src, dest string) error {
+	old := ""
+	if _, err := os.Lstat(dest); err == nil {
+		old = fmt.Sprintf("%s.old-%s", dest, randomSuffix())
+		if err := os.Rename(dest, old); err != nil {
+			return err
+		}
+	}
+	if err := os.Rename(src, dest); err != nil {
+		if old != "" {
+			os.Rename(old, dest)
+		}
+		return err
+	}
+	if old != "" {
+		os.RemoveAll(old)
+	}
+	return nil
+}
+
+// CleanupOld 刪除 dir 中替換時留下的 *.old、*.old-*（檔案或資料夾）與中斷的 .download-* 暫存資料夾。
 // 仍在執行中的檔案（Windows）會刪除失敗，留到下次。
 func CleanupOld(dirs ...string) {
 	for _, dir := range dirs {
@@ -262,7 +420,7 @@ func CleanupOld(dirs ...string) {
 			n := e.Name()
 			switch {
 			case strings.HasSuffix(n, ".old") || strings.Contains(n, ".old-"):
-				os.Remove(filepath.Join(dir, n))
+				os.RemoveAll(filepath.Join(dir, n))
 			case strings.HasPrefix(n, ".download-") && e.IsDir():
 				if info, err := e.Info(); err == nil && time.Since(info.ModTime()) > time.Hour {
 					os.RemoveAll(filepath.Join(dir, n))
@@ -272,15 +430,15 @@ func CleanupOld(dirs ...string) {
 	}
 }
 
-// clearQuarantine 移除 macOS 的隔離屬性（plan 4.9）。失敗不影響安裝（小幫手以 Go 下載的檔案沒有這個屬性）。
+// removeQuarantine 遞迴移除隔離屬性；測試可以替換成記錄呼叫的函式。
+var removeQuarantine = platform.ClearQuarantine
+
+// clearQuarantine 在 macOS 上遞迴移除 p（檔案或資料夾）的隔離屬性（008 FR-15b）：
+// 由瀏覽器啟動的小幫手（自動更新）寫入的檔案會帶有這個屬性。失敗不影響安裝。
 func clearQuarantine(goos, p string) {
-	if goos != "darwin" {
-		return
+	if goos == "darwin" {
+		removeQuarantine(p)
 	}
-	if _, err := os.Stat("/usr/bin/xattr"); err != nil {
-		return
-	}
-	exec.Command("/usr/bin/xattr", "-d", "com.apple.quarantine", p).Run()
 }
 
 // copyFile 把 src 複製到 dest（建立新檔案）。

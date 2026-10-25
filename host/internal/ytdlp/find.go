@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/release"
 )
 
 // Env 是尋找執行檔時用到的環境，方便在測試中替換。
@@ -78,6 +79,19 @@ func (e Env) packagePatterns(tool string) []string {
 	return nil
 }
 
+// bundledPath 回傳 tool 在安裝資料夾 bin/ 中的位置。macOS 的 yt-dlp 是未封裝版本的資料夾
+// bin/yt-dlp/ 中的 yt-dlp_macos（008 FR-15a）；舊版的單一執行檔 bin/yt-dlp 不使用：
+// 由瀏覽器啟動時 Gatekeeper 會拒絕它解壓出的 Python.framework。
+func (e Env) bundledPath(tool string) string {
+	switch {
+	case e.GOOS == "darwin" && tool == "yt-dlp":
+		return e.join(e.BundledDir, "yt-dlp", release.MacYtDlpExe)
+	case e.GOOS == "windows":
+		return e.join(e.BundledDir, tool+".exe")
+	}
+	return e.join(e.BundledDir, tool)
+}
+
 // Find 依序在安裝資料夾的 bin/、PATH、ExtraDirs、winget 套件資料夾尋找 tool
 // （"yt-dlp"、"ffmpeg"、"ffprobe" 或 "deno"）。找不到時回傳空字串。
 func (e Env) Find(tool string) string {
@@ -86,7 +100,7 @@ func (e Env) Find(tool string) string {
 		exe += ".exe"
 	}
 	if e.BundledDir != "" {
-		if p := e.join(e.BundledDir, exe); e.IsFile(p) {
+		if p := e.bundledPath(tool); e.IsFile(p) {
 			return p
 		}
 	}
@@ -148,7 +162,7 @@ func (e Env) ChildPath(tools ...string) string {
 	return strings.Join(parts, sep)
 }
 
-// IsBundled 回傳 path 是否位於安裝資料夾的 bin/ 中。
+// IsBundled 回傳 path 是否位於安裝資料夾的 bin/ 中（含 macOS 的 bin/yt-dlp/yt-dlp_macos）。
 func (e Env) IsBundled(path string) bool {
 	if e.BundledDir == "" || path == "" {
 		return false
@@ -157,7 +171,7 @@ func (e Env) IsBundled(path string) bool {
 	if e.GOOS == "windows" {
 		return strings.EqualFold(dir, e.BundledDir)
 	}
-	return dir == e.BundledDir
+	return dir == e.BundledDir || (e.GOOS == "darwin" && path == e.bundledPath("yt-dlp"))
 }
 
 // Source 回傳工具的來源（008 FR-24、plan 4.9 的 status）：

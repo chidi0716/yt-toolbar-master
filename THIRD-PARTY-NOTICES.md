@@ -10,7 +10,7 @@ The one-line installer downloads these programs from their official sources and 
 
 | Program | Used for | Source | License |
 |---|---|---|---|
-| [yt-dlp](https://github.com/yt-dlp/yt-dlp) | Downloading videos and audio | [yt-dlp releases](https://github.com/yt-dlp/yt-dlp/releases) | yt-dlp itself is released under [The Unlicense](https://github.com/yt-dlp/yt-dlp/blob/master/LICENSE). The installer uses the official standalone executables (`yt-dlp_macos`, `yt-dlp.exe`), which bundle Python and other libraries; according to yt-dlp, these bundles include GPLv3+ code, so the combined executables are GPLv3+. Details: [THIRD_PARTY_LICENSES.txt](https://github.com/yt-dlp/yt-dlp/blob/master/THIRD_PARTY_LICENSES.txt). |
+| [yt-dlp](https://github.com/yt-dlp/yt-dlp) | Downloading videos and audio | [yt-dlp releases](https://github.com/yt-dlp/yt-dlp/releases) | yt-dlp itself is released under [The Unlicense](https://github.com/yt-dlp/yt-dlp/blob/master/LICENSE). The installer uses the official builds (macOS: the unpacked `yt-dlp_macos.zip`; Windows: `yt-dlp.exe`), which bundle Python and other libraries; according to yt-dlp, these bundles include GPLv3+ code, so the combined builds are GPLv3+. Details: [THIRD_PARTY_LICENSES.txt](https://github.com/yt-dlp/yt-dlp/blob/master/THIRD_PARTY_LICENSES.txt). |
 | [deno](https://deno.com) | JavaScript runtime that yt-dlp needs for YouTube | [deno releases](https://github.com/denoland/deno/releases) | [MIT](https://github.com/denoland/deno/blob/main/LICENSE.md) |
 | [FFmpeg](https://ffmpeg.org) (`ffmpeg`, `ffprobe`) | Merging video and audio, converting to MP3, embedding covers and chapters | macOS: [Martin Riedl's FFmpeg Build Server](https://ffmpeg.martin-riedl.de); Windows: [yt-dlp/FFmpeg-Builds](https://github.com/yt-dlp/FFmpeg-Builds) | GNU GPL: both are GPL builds of FFmpeg (they include GPL-licensed libraries such as x264). See [FFmpeg legal](https://ffmpeg.org/legal.html) and the build sites for the exact license and the corresponding source code. |
 
@@ -45,7 +45,7 @@ Build and test tools (TypeScript, Vite, Vitest, web-ext) are used only during de
 
 | 程式 | 用途 | 來源 | 授權 |
 |---|---|---|---|
-| [yt-dlp](https://github.com/yt-dlp/yt-dlp) | 下載影片與音訊 | [yt-dlp 正式版本](https://github.com/yt-dlp/yt-dlp/releases) | yt-dlp 本身採用 [The Unlicense](https://github.com/yt-dlp/yt-dlp/blob/master/LICENSE)。安裝程式使用官方的單一執行檔（`yt-dlp_macos`、`yt-dlp.exe`），其中打包了 Python 等程式庫；依 yt-dlp 的說明，這些執行檔包含 GPLv3+ 的程式碼，因此整體為 GPLv3+。詳見 [THIRD_PARTY_LICENSES.txt](https://github.com/yt-dlp/yt-dlp/blob/master/THIRD_PARTY_LICENSES.txt)。 |
+| [yt-dlp](https://github.com/yt-dlp/yt-dlp) | 下載影片與音訊 | [yt-dlp 正式版本](https://github.com/yt-dlp/yt-dlp/releases) | yt-dlp 本身採用 [The Unlicense](https://github.com/yt-dlp/yt-dlp/blob/master/LICENSE)。安裝程式使用官方的建置版本（macOS：未封裝版本 `yt-dlp_macos.zip`；Windows：`yt-dlp.exe`），其中打包了 Python 等程式庫；依 yt-dlp 的說明，這些版本包含 GPLv3+ 的程式碼，因此整體為 GPLv3+。詳見 [THIRD_PARTY_LICENSES.txt](https://github.com/yt-dlp/yt-dlp/blob/master/THIRD_PARTY_LICENSES.txt)。 |
 | [deno](https://deno.com) | yt-dlp 讀取 YouTube 需要的 JavaScript 執行環境 | [deno 正式版本](https://github.com/denoland/deno/releases) | [MIT](https://github.com/denoland/deno/blob/main/LICENSE.md) |
 | [FFmpeg](https://ffmpeg.org)（`ffmpeg`、`ffprobe`） | 合併影音、轉 MP3、嵌入封面與章節 | macOS：[Martin Riedl 的 FFmpeg Build Server](https://ffmpeg.martin-riedl.de)；Windows：[yt-dlp/FFmpeg-Builds](https://github.com/yt-dlp/FFmpeg-Builds) | GNU GPL：兩者都是 FFmpeg 的 GPL 版本（包含 x264 等 GPL 授權的程式庫）。確切的授權與對應的原始碼見 [FFmpeg 授權說明](https://ffmpeg.org/legal.html) 與各建置網站。 |
 

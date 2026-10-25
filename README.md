@@ -78,6 +78,8 @@ Settings page → **Downloads** → **Remove downloads…**. Downloaded files ar
 
 **“Please update yt-dlp.”** The helper updates yt-dlp and retries by itself. If it still fails, click **Update yt-dlp** in the panel.
 
+**macOS says “Python.framework is damaged”.** This happens with the helper from version 0.1.0. Run the install command again.
+
 **Which videos can't be downloaded?** Members-only, private and sign-in-required videos.
 
 ## Privacy

@@ -47,7 +47,7 @@ The log file only contains command names and error messages (never cookies, pass
 |---|---|---|
 | The install command | This project's GitHub releases; the yt-dlp, deno and ffmpeg sources above (GitHub release files are served from `objects.githubusercontent.com` / `release-assets.githubusercontent.com`) | Only while you run it |
 | The helper | The same places, to check for and download updates | When you start a download, at most once a day (you can turn this off) |
-| yt-dlp | YouTube, to download the video you asked for; GitHub, when it updates itself | When you download |
+| yt-dlp | YouTube, to download the video you asked for; GitHub, when it updates itself (Windows; on macOS the helper updates it) | When you download |
 | The extension | YouTube only. When it was loaded unpacked (Chrome) or as a temporary add-on, it also asks this project's GitHub for the latest version number, at most once a day, without any identifying information | When you open a YouTube video |
 
 No other servers are contacted. There is no analytics, tracking or telemetry. Videos are processed on your computer and never uploaded anywhere.
@@ -56,6 +56,7 @@ No other servers are contacted. There is no analytics, tracking or telemetry. Vi
 
 - yt-dlp, deno and the helper update themselves in the background, at most once a day, only when you start a download. The download is not delayed; files are replaced after downloads finish, and the old version is kept if anything goes wrong.
 - When YouTube changes and a download fails because yt-dlp is out of date, the helper updates yt-dlp immediately and retries once.
+- macOS: if the helper finds the single-file yt-dlp installed by version 0.1.0, it replaces it with the unpacked build right away (the single-file build triggers a "Python.framework is damaged" warning when started from the browser).
 - ffmpeg is not updated automatically; a new helper release can include a newer ffmpeg.
 - The settings page (**Downloads**) shows the version and source of each program, the last update check, and lets you turn automatic updates off or check now.
 

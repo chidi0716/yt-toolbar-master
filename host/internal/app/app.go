@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/chidi0716/yt-toolbar-master/host/internal/errs"
+	"github.com/chidi0716/yt-toolbar-master/host/internal/installer"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/jobs"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/platform"
 	"github.com/chidi0716/yt-toolbar-master/host/internal/protocol"
@@ -30,6 +31,8 @@ type App struct {
 	SelfPath string
 	// SpawnSelf 以脫離的方式啟動小幫手自己（--update、--uninstall），回傳 PID。
 	SpawnSelf func(args ...string) (int, error)
+	// UpdateMacYtDlp 更新安裝資料夾中的未封裝版 yt-dlp（macOS 不支援 yt-dlp -U），回傳是否安裝了新版本。
+	UpdateMacYtDlp func(ctx context.Context) (bool, error)
 	// Now 可在測試中替換。
 	Now func() time.Time
 	Log Logger
@@ -168,7 +171,28 @@ func (a *App) Status(ctx context.Context) (any, error) {
 	ytDlp, deno, ffmpeg := res.Components[1], res.Components[2], res.Components[3]
 	res.Ready = ytDlp.usable() && ffmpeg.usable()
 	res.Complete = res.Ready && deno.usable()
+	a.maybeStartMigration()
 	return res, nil
+}
+
+// maybeStartMigration：安裝資料夾中還是 v0.1.0 的單一執行檔 yt-dlp 時（macOS），Find 不使用它，
+// status 回報找不到 yt-dlp，也就不會開始下載、觸發自動更新。因此自動更新開啟時，status 立即啟動
+// --update 改裝未封裝版本（008 FR-15a）；上一次在 10 分鐘內失敗時先不再試。
+func (a *App) maybeStartMigration() {
+	l := a.layout()
+	if a.Env.GOOS != "darwin" || !installer.LegacyMacYtDlp(l) {
+		return
+	}
+	if _, ok := release.ParseVersion(a.Version); !ok || a.SpawnSelf == nil {
+		return
+	}
+	if !updater.ShouldMigrate(updater.Load(l.InstallDir), a.now()) || updater.Running(l.InstallDir) {
+		return
+	}
+	a.logf("starting the update to replace the single-file yt-dlp")
+	if _, err := a.SpawnSelf(UpdateFlag); err != nil {
+		a.logf("could not start the update: %v", err)
+	}
 }
 
 // maxInfoResult 是 getInfo 結果的大小上限，比 1MB 的訊息上限略小，保留外層欄位的空間。
@@ -343,5 +367,18 @@ func (a *App) UpdateYtDlp(ctx context.Context) (any, error) {
 	}
 	defer a.updateMu.Unlock()
 	defer a.versions.clear()
-	return a.tools().Update(ctx)
+	t := a.tools()
+	if t.Env.GOOS == "darwin" && t.Env.IsBundled(t.YtDlp) && a.UpdateMacYtDlp != nil {
+		// 未封裝版本不支援 yt-dlp -U（008 FR-20）。時限比擴充功能等待的 6 分鐘短。
+		ctx, cancel := context.WithTimeout(ctx, ytdlp.UpdateTimeout)
+		defer cancel()
+		updated, err := a.UpdateMacYtDlp(ctx)
+		if err != nil {
+			return nil, err
+		}
+		r := &ytdlp.UpdateResult{Ran: true, Updated: updated, UpToDate: !updated}
+		r.Version, _ = a.tools().YtDlpVersion(ctx)
+		return r, nil
+	}
+	return t.Update(ctx)
 }

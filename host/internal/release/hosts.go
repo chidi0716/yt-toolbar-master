@@ -24,6 +24,23 @@ const LatestBase = "https://github.com/" + Repo + "/releases/latest/download/"
 // ManifestName 是發佈清單在 Release 中的檔名。
 const ManifestName = "components.json"
 
+// YtDlpLatestBase 是 yt-dlp 最新正式版本的下載位置。macOS 的未封裝版本不支援 yt-dlp -U，
+// 由小幫手從這裡取得 SHA2-256SUMS 與 yt-dlp_macos.zip 更新（008 FR-20）。
+const YtDlpLatestBase = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/"
+
+// yt-dlp 官方 Release 中的檔名。
+const (
+	YtDlpChecksumsName = "SHA2-256SUMS"
+	YtDlpMacZipName    = "yt-dlp_macos.zip"
+)
+
+// latestURLs 是唯一允許的「latest」網址（內容會隨新版本改變）；其他 /releases/latest/ 一律拒絕。
+var latestURLs = map[string]bool{
+	LatestBase + ManifestName:            true,
+	YtDlpLatestBase + YtDlpChecksumsName: true,
+	YtDlpLatestBase + YtDlpMacZipName:    true,
+}
+
 // projectPrefix 是本專案 Release 的網址前綴。
 const projectPrefix = "https://github.com/" + Repo + "/releases/"
 
@@ -61,7 +78,7 @@ func AllowedHosts() []string {
 }
 
 // AllowedURL 回傳 u 是否是允許下載的網址：必須是 https、沒有帳號密碼與非標準連接埠，
-// 且符合 allowedPrefixes 之一。路徑中的「..」一律拒絕。
+// 且符合 allowedPrefixes 之一。路徑中的「..」一律拒絕；/releases/latest/ 只允許 latestURLs。
 func AllowedURL(u *url.URL) bool {
 	if u == nil || u.Scheme != "https" || u.User != nil || u.Port() != "" || u.Opaque != "" {
 		return false
@@ -70,6 +87,9 @@ func AllowedURL(u *url.URL) bool {
 		return false
 	}
 	s := "https://" + strings.ToLower(u.Host) + u.EscapedPath()
+	if strings.Contains(s, "/releases/latest/") && !latestURLs[s] {
+		return false
+	}
 	for _, p := range allowedPrefixes {
 		if strings.HasPrefix(s, p) {
 			return true

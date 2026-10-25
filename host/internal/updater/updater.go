@@ -38,12 +38,14 @@ type Updater struct {
 	ManifestBase string
 	// ActiveJobs 回傳進行中的下載數量；替換工具前等到 0（008 FR-21）。
 	ActiveJobs func() int
-	// UpdateYtDlp 在安裝資料夾中的 yt-dlp 上執行 yt-dlp -U，回傳是否安裝了新版本。
+	// UpdateYtDlp 在安裝資料夾中的 yt-dlp 上執行 yt-dlp -U，回傳是否安裝了新版本（macOS 以外）。
 	UpdateYtDlp func(ctx context.Context, path string) (bool, error)
-	PollEvery   time.Duration
-	MaxWait     time.Duration
-	Now         func() time.Time
-	Log         Logger
+	// YtDlpBase 是 macOS 更新 yt-dlp 的下載位置（預設 release.YtDlpLatestBase，測試可以替換）。
+	YtDlpBase string
+	PollEvery time.Duration
+	MaxWait   time.Duration
+	Now       func() time.Time
+	Log       Logger
 }
 
 func (u *Updater) defaults() {
@@ -67,7 +69,7 @@ func (u *Updater) defaults() {
 func (u *Updater) installer() *installer.Installer {
 	return &installer.Installer{
 		Layout: u.Layout, Platform: u.Platform, Version: u.Version, SelfPath: u.SelfPath,
-		Fetcher: u.Fetcher, ManifestAllow: u.ManifestAllow, ManifestBase: u.ManifestBase, Out: io.Discard,
+		Fetcher: u.Fetcher, ManifestAllow: u.ManifestAllow, ManifestBase: u.ManifestBase, YtDlpBase: u.YtDlpBase, Out: io.Discard,
 	}
 }
 
@@ -146,15 +148,18 @@ func (u *Updater) run(ctx context.Context) ([]string, error) {
 		}
 	}
 
-	// 3. yt-dlp：只更新安裝資料夾中的（套件管理工具安裝的不動，008 FR-15）。
-	yt := filepath.Join(u.Layout.BinDir, release.ExeName("yt-dlp", u.Platform))
-	if platform.IsFile(yt) && u.UpdateYtDlp != nil {
-		ok, err := u.UpdateYtDlp(ctx, yt)
-		if err != nil {
-			fail(err)
-		} else if ok {
-			updated = append(updated, release.ToolYtDlp)
-		}
+	// 3. yt-dlp：只更新安裝資料夾中的（套件管理工具安裝的不動，008 FR-15）。macOS 的未封裝版本
+	// 不支援 yt-dlp -U，由小幫手下載替換，並把舊版的單一執行檔改成未封裝版本（008 FR-15a、FR-20）。
+	ytUpdated, ytErr := false, error(nil)
+	if u.Layout.GOOS == "darwin" {
+		ytUpdated, ytErr = in.UpdateMacYtDlp(ctx)
+	} else if yt := filepath.Join(u.Layout.BinDir, release.ExeName("yt-dlp", u.Platform)); platform.IsFile(yt) && u.UpdateYtDlp != nil {
+		ytUpdated, ytErr = u.UpdateYtDlp(ctx, yt)
+	}
+	if ytErr != nil {
+		fail(ytErr)
+	} else if ytUpdated {
+		updated = append(updated, release.ToolYtDlp)
 	}
 
 	// 4. deno、ffmpeg：只處理安裝資料夾中已有的，版本與清單不同時替換。
@@ -186,6 +191,7 @@ func (u *Updater) run(ctx context.Context) ([]string, error) {
 			updated = append(updated, "helper")
 		}
 	}
+	in.ClearQuarantine()
 	if firstErr != nil && errors.Is(firstErr, context.Canceled) {
 		return updated, errs.New(errs.Unknown, "cancelled")
 	}

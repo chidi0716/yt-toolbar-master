@@ -7,9 +7,10 @@
         "darwin-arm64": {
           "files": [
             {
-              "url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.10.21/yt-dlp_macos",
-              "sha256": "7a6fe71d7d680f1fb0ac18d4949873d77db2859e90017c0f44bd94b23be4ee40",
-              "name": "yt-dlp",
+              "url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.10.21/yt-dlp_macos.zip",
+              "sha256": "2b5251788b36fcbc476568b4eea8cb239f0a775759456f2ff9344a437c52f000",
+              "archive": "zip",
+              "extract": ["yt-dlp"],
               "checksums": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.10.21/SHA2-256SUMS"
             }
           ]
@@ -17,9 +18,10 @@
         "darwin-amd64": {
           "files": [
             {
-              "url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.10.21/yt-dlp_macos",
-              "sha256": "7a6fe71d7d680f1fb0ac18d4949873d77db2859e90017c0f44bd94b23be4ee40",
-              "name": "yt-dlp",
+              "url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.10.21/yt-dlp_macos.zip",
+              "sha256": "2b5251788b36fcbc476568b4eea8cb239f0a775759456f2ff9344a437c52f000",
+              "archive": "zip",
+              "extract": ["yt-dlp"],
               "checksums": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.10.21/SHA2-256SUMS"
             }
           ]
