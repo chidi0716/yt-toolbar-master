@@ -297,6 +297,10 @@
     "message": "時間範圍",
     "description": "Heading of the time range block in the video and MP3 panels."
   },
+  "clipReset": {
+    "message": "重設",
+    "description": "Button next to the time range heading: back to the whole video (010 FR-20)."
+  },
   "clipSync": {
     "message": "與播放器同步",
     "description": "Switch: moving a handle seeks the player, and set-to-current-time buttons appear."

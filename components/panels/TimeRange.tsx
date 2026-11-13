@@ -85,8 +85,10 @@ const seek = (seconds: number) => {
 };
 
 export function TimeRange({ id, hook }: { id: string; hook: ClipRangeHook }) {
-  const { state, setState, check, limit } = hook;
+  const { state, setState, check, limit, clip } = hook;
   const known = limit > 0;
+  // 010 FR-20：已經是整部影片時停用。
+  const isFull = clip.valid && clip.section === null;
   const setRange = (range: readonly [number, number]) =>
     setState((prev) => ({ ...prev, range, startText: formatTime(range[0], true), endText: formatTime(range[1], true) }));
   const setNow = (which: 0 | 1) => {
@@ -132,7 +134,21 @@ export function TimeRange({ id, hook }: { id: string; hook: ClipRangeHook }) {
 
   return (
     <div class="ytm-clip" id={id}>
-      <div class="ytm-clip-title">{t('clipTitle')}</div>
+      <div class="ytm-clip-head">
+        <span id={`${id}-title`} class="ytm-clip-title">
+          {t('clipTitle')}
+        </span>
+        <button
+          type="button"
+          class="ytm-button ytm-button-secondary ytm-clip-reset"
+          aria-describedby={`${id}-title`}
+          disabled={!known || isFull}
+          onClick={() => setState((prev) => fresh(prev.videoId, limit, prev.sync))}
+        >
+          <Icon name="restart_alt" size={16} />
+          <span>{t('clipReset')}</span>
+        </button>
+      </div>
       <RangeSlider
         min={0}
         max={Math.max(limit, 1)}

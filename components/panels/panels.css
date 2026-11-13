@@ -573,11 +573,27 @@ a.ytm-link {
   margin-bottom: 12px;
 }
 
-.ytm-clip-title {
+.ytm-clip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   margin-bottom: 4px;
+}
+
+.ytm-clip-title {
   color: var(--ytm-text-secondary);
   font-size: 12px;
   font-weight: 500;
+}
+
+/* 時間範圍的「重設」（010 FR-20）：與面板其他次要按鈕相同，尺寸較小。 */
+.ytm-clip-reset {
+  gap: 4px;
+  height: 28px;
+  padding: 0 10px 0 8px;
+  font-size: 12px;
+  line-height: 28px;
 }
 
 .ytm-clip-label {

@@ -291,9 +291,26 @@ await session('connected', async ({ page, context, home, downloads }) => {
   await setClip(page, 'ytm-video-clip', '2:00', '1:00');
   rows = await qualityRows(page);
   check('T19：開始晚於結束時無法下載（004 FR-25）', rows.every((r) => r.disabled), (await panelText(page)).split('\n').filter((l) => /must|after|before/i.test(l)).join(' / '));
+  // ---- T64 時間範圍的「重設」（010 FR-20）----
+  const resetState = () =>
+    inToolbar(page, "const b = root.querySelector('#ytm-video-clip .ytm-clip-reset'); return { text: b?.textContent, disabled: b?.disabled, start: root.querySelector('#ytm-video-clip-start').value, end: root.querySelector('#ytm-video-clip-end').value }");
+  const invalidReset = await resetState();
+  await page.locator('ytm-toolbar #ytm-video-clip .ytm-clip-reset').click();
+  await sleep(200);
+  const afterReset = await resetState();
+  rows = await qualityRows(page);
+  check(
+    'T64：範圍不合法時「重設」可以使用；按下後回到整部影片（開始 0、結束為影片長度），畫質清單恢復可用',
+    invalidReset.text === 'Reset' && invalidReset.disabled === false && afterReset.start === '00:00:00' && afterReset.end === '00:04:05' && rows.every((r) => !r.disabled),
+    JSON.stringify({ invalidReset, afterReset }),
+  );
+  check('T64：整部影片時「重設」停用', afterReset.disabled === true, JSON.stringify(afterReset));
+  await setClip(page, 'ytm-video-clip', '0:30', '4:05');
+  check('T64：調整範圍後「重設」再次可用', (await resetState()).disabled === false);
   await setClip(page, 'ytm-video-clip', '0:00', '4:05');
   rows = await qualityRows(page);
   check('T19：回到整部影片時大小不再是估計值', rows.find((r) => r.format === '137+140')?.size === '138.8 MB' && rows.every((r) => !r.disabled));
+  check('T64：輸入整部影片的範圍時「重設」停用', (await resetState()).disabled === true);
   await closePanel(page);
 
   // ---- T20 MP3 ----
