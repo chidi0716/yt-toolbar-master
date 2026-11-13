@@ -17,6 +17,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const DEFAULT_LEFT = 'video mp3 thumbnail subtitles screenshot link';
 const DEFAULT_RIGHT = 'darkMode cinema pip floating loop help more close';
+/** 編輯模式下方「更多」區中的開關（010 FR-1、FR-3：預設在「更多」）。 */
+const MORE = '-smartPause -autoplay -audioOnly -wheelVolume -hideComments';
 
 async function section(name, fn, { lang = 'en-US', viewport = { width: 1280, height: 1100 } } = {}) {
   if (!want(name)) return;
@@ -107,7 +109,7 @@ await section('edit', async (page, context) => {
   );
   check('點「編輯工具列」進入編輯模式，「更多」面板收起（FR-1）', !state.panel, JSON.stringify(state));
   check('右側為「重設為預設」「取消」「完成」，不顯示「更多」「關閉」（FR-3）', state.actions.join('|') === 'Reset to default|Cancel|Done' && !state.fixed, state.actions.join('|'));
-  check('所有工具都顯示，每個工具有眼睛切換按鈕，分隔點一個（FR-10、FR-11、FR-12）', (await editItems(page)) === `${DEFAULT_LEFT} separator darkMode cinema pip floating loop help` && state.eyes === 12 && state.sep === 1, await editItems(page));
+  check('所有工具都顯示，每個工具有眼睛切換按鈕，分隔點一個（FR-10、FR-11、FR-12）', (await editItems(page)) === `${DEFAULT_LEFT} separator darkMode cinema pip floating loop help ${MORE}` && state.eyes === 17 && state.sep === 1, await editItems(page));
   check(
     '底部說明文字（FR-14）',
     state.help === 'Drag to reorder. Click the eye icon to show or hide a tool. Hidden tools are available from the “More” menu.',
@@ -257,11 +259,11 @@ await section('drag', async (page, context) => {
   await dragTo(page, 'screenshot', 'darkMode', 'before');
   const items = await editItems(page);
   check('拖曳時顯示插入位置的指示線（FR-12）', ind);
-  check('把 MP3 拖到最左邊、截圖拖到分隔點右邊（FR-12）', items === 'mp3 video thumbnail subtitles link separator screenshot darkMode cinema pip floating loop help', items);
+  check('把 MP3 拖到最左邊、截圖拖到分隔點右邊（FR-12）', items === `mp3 video thumbnail subtitles link separator screenshot darkMode cinema pip floating loop help ${MORE}`, items);
   // 拖曳分隔點
   await dragTo(page, 'separator', 'link', 'before');
   const sepItems = await editItems(page);
-  check('分隔點可以拖到任何兩個工具之間（FR-12）', sepItems === 'mp3 video thumbnail subtitles separator link screenshot darkMode cinema pip floating loop help', sepItems);
+  check('分隔點可以拖到任何兩個工具之間（FR-12）', sepItems === `mp3 video thumbnail subtitles separator link screenshot darkMode cinema pip floating loop help ${MORE}`, sepItems);
   await dragTo(page, 'separator', 'screenshot', 'before');
   await editButton(page, 'Done').click();
   await sleep(500);
@@ -299,7 +301,7 @@ await section('drag', async (page, context) => {
   await enterEdit(page);
   await editButton(page, 'Reset to default').click();
   const resetItems = await editItems(page);
-  check('「重設為預設」後仍停留在編輯模式，顯示預設狀態（FR-4）', (await editing(page)) && resetItems === `${DEFAULT_LEFT} separator darkMode cinema pip floating loop help`, resetItems);
+  check('「重設為預設」後仍停留在編輯模式，顯示預設狀態（FR-4）', (await editing(page)) && resetItems === `${DEFAULT_LEFT} separator darkMode cinema pip floating loop help ${MORE}`, resetItems);
   await editButton(page, 'Done').click();
   await sleep(400);
   const back = await order(page);

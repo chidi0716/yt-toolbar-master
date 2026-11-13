@@ -14,6 +14,7 @@ describe('工具註冊表（006、plan 3.7.3）', () => {
     expect(TOOLS.video.kind).toBe('panel');
     expect(TOOLS.floating.kind).toBe('toggle');
     expect(TOOLS.screenshot.kind).toBe('action');
+    for (const id of ['smartPause', 'autoplay', 'audioOnly', 'wheelVolume', 'hideComments'] as const) expect(TOOLS[id].kind).toBe('toggle');
   });
 });
 
@@ -32,5 +33,9 @@ describe('isToolOngoing（006 FR-17：隱藏的工具進行中時「更多」顯
     expect(isToolOngoing('cinema', { active: true })).toBe(true);
     expect(isToolOngoing('pip', { active: false })).toBe(false);
     expect(isToolOngoing('darkMode', { active: true })).toBe(false);
+  });
+  it('「更多」中的開關是長期的設定，不算進行中（010）', () => {
+    expect(isToolOngoing('audioOnly', { active: true })).toBe(false);
+    expect(isToolOngoing('smartPause', { active: true })).toBe(false);
   });
 });

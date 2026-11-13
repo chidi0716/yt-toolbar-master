@@ -1,12 +1,27 @@
-// 工具列的編輯模式（006 FR-3 至 FR-5、FR-10 至 FR-14、外觀，tasks T33）。
+// 工具列的編輯模式（006 FR-3 至 FR-5、FR-10 至 FR-14、外觀，010 第一節，tasks T33、T62）。
 // - 顯示所有工具（隱藏的半透明並有「隱藏」標記）與分隔點；每個工具上方有「眼睛」切換按鈕。
+// - 工具列下方是「更多」區：還在「更多」面板中的開關（010 FR-1）。拖到工具列上即顯示在該位置；
+//   把工具列上的這類工具拖回「更多」區、或按眼睛隱藏，就回到「更多」面板。其他工具不能放進「更多」區。
 // - 拖曳（Pointer Events 自行實作）：拖曳中只更新插入位置的指示線，放開時才改變暫存的順序。
 // - 鍵盤：Tab 聚焦工具或分隔點，←／→ 移動，空白鍵切換顯示／隱藏，Enter 等同「完成」；Esc 由 Toolbar 處理。
 // - 右側為「重設為預設」「取消」「完成」；底部一行說明。
 // 暫存的設定由 Toolbar 保管，「完成」時才寫入 storage。
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { t } from '@/utils/i18n';
-import { dropIndex, moveItem, SEPARATOR, stepItem, toggleVisible, type LayoutItemId, type ToolbarLayout } from '@/utils/toolbar-layout';
+import {
+  dropIndex,
+  isInMore,
+  isMoreTool,
+  moveItem,
+  moveToMore,
+  placeInToolbar,
+  rowLength,
+  SEPARATOR,
+  stepItem,
+  toggleVisible,
+  type LayoutItemId,
+  type ToolbarLayout,
+} from '@/utils/toolbar-layout';
 import { Button } from '../controls/Button';
 import { Icon } from '../icons';
 import { TOOLS } from './buttons';
@@ -22,21 +37,26 @@ export interface ToolbarEditorProps {
 /** 移動超過這個距離（px）才開始拖曳，避免點擊時誤動。 */
 const DRAG_THRESHOLD = 4;
 
+/** 放開時的去處：工具列的第 to 個位置（moveItem 的 to），或「更多」區。 */
+type DropTarget = { zone: 'row'; to: number } | { zone: 'more' };
+
 interface DragState {
   id: LayoutItemId;
   pointerId: number;
   startX: number;
+  startY: number;
   dragging: boolean;
-  /** moveItem 的插入位置。 */
-  to: number | null;
+  target: DropTarget | null;
 }
 
 export function ToolbarEditor({ draft, onChange, onDone, onCancel, onReset }: ToolbarEditorProps) {
   const rowRef = useRef<HTMLDivElement>(null);
+  const moreRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef(new Map<LayoutItemId, HTMLElement>());
   const handleRefs = useRef(new Map<LayoutItemId, HTMLButtonElement>());
   const drag = useRef<DragState | null>(null);
   const [indicator, setIndicator] = useState<number | null>(null);
+  const [overMore, setOverMore] = useState(false);
   const [draggingId, setDraggingId] = useState<LayoutItemId | null>(null);
   const focusAfter = useRef<LayoutItemId | null>(null);
   const [announce, setAnnounce] = useState('');
@@ -55,7 +75,12 @@ export function ToolbarEditor({ draft, onChange, onDone, onCancel, onReset }: To
     handleRefs.current.get(id)?.focus();
   });
 
+  const rowCount = rowLength(draft);
   const nameOf = (id: LayoutItemId) => (id === SEPARATOR ? t('editSeparator') : t(TOOLS[id].label));
+  const stateOf = (layout: ToolbarLayout, id: LayoutItemId) => {
+    const item = layout.items.find((i) => i.id === id)!;
+    return isInMore(item) ? t('editInMore') : item.visible ? t('editShown') : t('editHidden');
+  };
 
   const moveBy = (id: LayoutItemId, delta: -1 | 1) => {
     const next = stepItem(draft, id, delta);
@@ -63,14 +88,14 @@ export function ToolbarEditor({ draft, onChange, onDone, onCancel, onReset }: To
     focusAfter.current = id;
     onChange(next);
     const index = next.items.findIndex((i) => i.id === id);
-    setAnnounce(t('editMoved', [nameOf(id), String(index + 1), String(next.items.length)]));
+    setAnnounce(t('editMoved', [nameOf(id), String(index + 1), String(rowLength(next))]));
   };
   const toggle = (id: LayoutItemId) => {
     if (id === SEPARATOR) return;
     const next = toggleVisible(draft, id);
+    focusAfter.current = id;
     onChange(next);
-    const visible = next.items.find((i) => i.id === id)!.visible;
-    setAnnounce(`${nameOf(id)}: ${visible ? t('editShown') : t('editHidden')}`);
+    setAnnounce(`${nameOf(id)}: ${stateOf(next, id)}`);
   };
 
   const onKeyDown = (event: KeyboardEvent, id: LayoutItemId) => {
@@ -87,35 +112,46 @@ export function ToolbarEditor({ draft, onChange, onDone, onCancel, onReset }: To
   };
 
   // ---- 拖曳 ----
-  /** 其他項目（不含被拖曳的）的中心點與位置，依順序。 */
-  const others = (id: LayoutItemId) =>
+  /** 工具列上其他項目（不含被拖曳的）的位置，依順序。 */
+  const rowRects = (id: LayoutItemId) =>
     draft.items
+      .slice(0, rowCount)
       .filter((i) => i.id !== id)
       .map((i) => itemRefs.current.get(i.id)?.getBoundingClientRect())
       .filter((r): r is DOMRect => !!r);
 
   const onPointerDown = (event: PointerEvent, id: LayoutItemId) => {
     if (event.button !== 0 || drag.current) return;
-    drag.current = { id, pointerId: event.pointerId, startX: event.clientX, dragging: false, to: null };
+    drag.current = { id, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, dragging: false, target: null };
     (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
   };
   const onPointerMove = (event: PointerEvent) => {
     const d = drag.current;
     if (!d || d.pointerId !== event.pointerId) return;
     const dx = event.clientX - d.startX;
+    const dy = event.clientY - d.startY;
     if (!d.dragging) {
-      if (Math.abs(dx) < DRAG_THRESHOLD) return;
+      if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
       d.dragging = true;
       setDraggingId(d.id);
     }
     const el = itemRefs.current.get(d.id);
-    if (el) el.style.transform = `translateX(${dx}px)`;
-    const rects = others(d.id);
+    if (el) el.style.transform = `translate(${dx}px, ${dy}px)`;
+    const more = moreRef.current?.getBoundingClientRect();
+    if (more && event.clientY >= more.top) {
+      // 「更多」區只收「更多」中的開關（010 FR-1）。
+      d.target = isMoreTool(d.id) ? { zone: 'more' } : null;
+      setOverMore(d.target !== null);
+      setIndicator(null);
+      return;
+    }
+    setOverMore(false);
+    const rects = rowRects(d.id);
     const to = dropIndex(
       rects.map((r) => r.left + r.width / 2),
       event.clientX,
     );
-    d.to = to;
+    d.target = { zone: 'row', to };
     const row = rowRef.current?.getBoundingClientRect();
     if (!row) return;
     // 指示線：插在第 to 個項目之前（最後面時在最後一個項目之後）。
@@ -129,18 +165,28 @@ export function ToolbarEditor({ draft, onChange, onDone, onCancel, onReset }: To
     const el = itemRefs.current.get(d.id);
     if (el) el.style.transform = '';
     setIndicator(null);
+    setOverMore(false);
     setDraggingId(null);
-    if (!commit || !d.dragging || d.to === null) return;
-    const from = draft.items.findIndex((i) => i.id === d.id);
-    const next = moveItem(draft, from, d.to);
-    if (next.items.some((item, i) => item.id !== draft.items[i]!.id)) onChange(next);
+    if (!commit || !d.dragging || !d.target) return;
+    const index = draft.items.findIndex((i) => i.id === d.id);
+    const next =
+      d.target.zone === 'more'
+        ? moveToMore(draft, d.id)
+        : index >= rowCount
+          ? placeInToolbar(draft, d.id, d.target.to)
+          : moveItem(draft, index, d.target.to);
     focusAfter.current = d.id;
+    if (next.items.some((item, i) => item.id !== draft.items[i]!.id || item.visible !== draft.items[i]!.visible)) {
+      onChange(next);
+      setAnnounce(`${nameOf(d.id)}: ${stateOf(next, d.id)}`);
+    }
   };
 
   const sepIndex = draft.items.findIndex((i) => i.id === SEPARATOR);
 
   const renderItem = (id: LayoutItemId, index: number) => {
-    const visible = draft.items[index]!.visible;
+    const item = draft.items[index]!;
+    const visible = item.visible;
     const handlers = {
       onPointerDown: (e: PointerEvent) => onPointerDown(e, id),
       onPointerMove,
@@ -196,7 +242,7 @@ export function ToolbarEditor({ draft, onChange, onDone, onCancel, onReset }: To
         <button
           type="button"
           class="ytm-edit-tool"
-          aria-label={`${name}, ${visible ? t('editShown') : t('editHidden')}`}
+          aria-label={`${name}, ${stateOf(draft, id)}`}
           aria-describedby="ytm-edit-keys"
           title={name}
           {...handlers}
@@ -217,7 +263,7 @@ export function ToolbarEditor({ draft, onChange, onDone, onCancel, onReset }: To
       <div ref={rowRef} class="ytm-edit-row">
         {draft.items.slice(0, sepIndex + 1).map((item, i) => renderItem(item.id, i))}
         <span class="ytm-edit-spacer" aria-hidden="true" />
-        {draft.items.slice(sepIndex + 1).map((item, i) => renderItem(item.id, sepIndex + 1 + i))}
+        {draft.items.slice(sepIndex + 1, rowCount).map((item, i) => renderItem(item.id, sepIndex + 1 + i))}
         {indicator !== null && <span class="ytm-edit-indicator" style={{ left: `${indicator}px` }} aria-hidden="true" />}
       </div>
       <div class="ytm-edit-actions">
@@ -232,6 +278,14 @@ export function ToolbarEditor({ draft, onChange, onDone, onCancel, onReset }: To
           <Icon name="check" size={18} />
           <span>{t('editDone')}</span>
         </Button>
+      </div>
+      <div ref={moreRef} class="ytm-edit-more" role="group" aria-labelledby="ytm-edit-more-title" data-drop={overMore ? '' : undefined}>
+        <span id="ytm-edit-more-title" class="ytm-edit-more-title">
+          <Icon name="more_vert" size={18} />
+          <span>{t('editMoreArea')}</span>
+        </span>
+        {draft.items.slice(rowCount).map((item, i) => renderItem(item.id, rowCount + i))}
+        {rowCount === draft.items.length && <span class="ytm-edit-more-empty">{t('editMoreEmpty')}</span>}
       </div>
       <p class="ytm-edit-help">{t('editHelp')}</p>
       <span id="ytm-edit-keys" class="ytm-visually-hidden">

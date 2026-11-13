@@ -2,7 +2,7 @@
 //   npm install --no-save playwright-core@1.56.1 && npm run build
 //   node spikes/stage1-smoke/viewing-test.mjs            # 全部
 //   ONLY=T06 node spikes/stage1-smoke/viewing-test.mjs   # 只跑某個任務
-import { WATCH, button, launch, openWatch, pressed, reporter, shot, spaNavigate } from './lib.mjs';
+import { WATCH, button, extensionWorker, launch, openWatch, pressed, reporter, shot, spaNavigate } from './lib.mjs';
 
 const { check, skip, summary } = reporter();
 const only = process.env.ONLY;
@@ -11,7 +11,7 @@ const want = (task) => !only || only.split(',').includes(task);
 async function section(task, fn, options = {}) {
   if (!want(task)) return;
   console.log(`\n== ${task}`);
-  const context = await launch({ name: task, colorScheme: options.colorScheme });
+  const context = await launch({ name: task, colorScheme: options.colorScheme, viewport: options.viewport });
   if (options.pref) {
     await context.addCookies([{ name: 'PREF', value: options.pref, domain: '.youtube.com', path: '/', secure: true, sameSite: 'Lax' }]);
   }
@@ -21,7 +21,7 @@ async function section(task, fn, options = {}) {
     await openWatch(page, options.url ?? WATCH);
     await fn(page, context);
   } catch (err) {
-    check(`${task} script`, false, String(err).split('\n').slice(0, 3).join(' | '));
+    check(`${task} script`, false, String(err).split('\n').slice(0, 12).join(' | '));
     await page.screenshot({ path: `${(await import('./lib.mjs')).root}/spikes/stage1-smoke/.cache/error-${task}.png` }).catch(() => {});
   } finally {
     await context.close();
@@ -841,6 +841,216 @@ for (const [theme, pref] of [
     { pref },
   );
 }
+
+// ---------------------------------------------------------------------------
+// T62 「更多」中的開關加到工具列（010 第一節）
+// ---------------------------------------------------------------------------
+await section(
+  'T62',
+  async (page, context) => {
+    const { EXT_ID } = await import('./lib.mjs');
+    const inToolbar = (src) => page.evaluate((s) => new Function('root', s)(document.querySelector('ytm-toolbar').shadowRoot), src);
+    const MORE_IDS = ['smartPause', 'autoplay', 'audioOnly', 'wheelVolume', 'hideComments'];
+    const toolbarIds = () => inToolbar(`return [...root.querySelectorAll('.ytm-group .ytm-btn')].map((b) => b.dataset.button).join(' ')`);
+    const moreSwitches = () => inToolbar(`return [...root.querySelectorAll('.ytm-more-item:has([role="switch"])')].map((li) => li.dataset.item).join(' ')`);
+    const editRow = () => inToolbar(`return [...root.querySelectorAll('.ytm-edit-row .ytm-edit-item')].map((i) => (i.hasAttribute('data-hidden') ? '-' : '') + i.dataset.item).join(' ')`);
+    const editMore = () => inToolbar(`return [...root.querySelectorAll('.ytm-edit-more .ytm-edit-item')].map((i) => i.dataset.item).join(' ')`);
+    const worker = await extensionWorker(context);
+    const stored = () => worker.evaluate(() => chrome.storage.sync.get(null));
+    const openMore = async () => {
+      if ((await page.locator('ytm-toolbar .ytm-more').count()) === 0) await button(page, 'more').click();
+      await page.waitForSelector('ytm-toolbar .ytm-more-edit');
+    };
+    const closePanel = async () => {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(150);
+    };
+    const enterEdit = async () => {
+      await openMore();
+      await page.locator('ytm-toolbar .ytm-more-edit').click();
+      await page.waitForSelector('ytm-toolbar .ytm-toolbar[data-editing]');
+    };
+    const editAction = (label) => page.locator(`ytm-toolbar .ytm-edit-actions button:has-text("${label}")`);
+    const tile = (id) => page.locator(`ytm-toolbar .ytm-edit-item[data-item="${id}"] .ytm-edit-tool`);
+    /** 拖曳 id 到 target 工具的左側；target 為 'more' 時拖到「更多」區。回傳拖曳中的提示（指示線或「更多」區的標示）。 */
+    const drag = async (id, target) => {
+      const a = await tile(id).boundingBox();
+      const b = target === 'more' ? await page.locator('ytm-toolbar .ytm-edit-more').boundingBox() : await tile(target).boundingBox();
+      const x = target === 'more' ? b.x + b.width - 40 : b.x + 2;
+      const y = b.y + b.height / 2;
+      await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(a.x + a.width / 2 + 6, a.y + a.height / 2 - 6, { steps: 2 });
+      await page.mouse.move(x, y, { steps: 10 });
+      const hint = await inToolbar(`return { line: !!root.querySelector('.ytm-edit-indicator'), more: root.querySelector('.ytm-edit-more').hasAttribute('data-drop') }`);
+      await page.mouse.up();
+      await page.waitForTimeout(150);
+      return hint;
+    };
+
+    // ---- 預設：這些開關在「更多」面板中，不在工具列上（FR-3）----
+    const initialIds = await toolbarIds();
+    await openMore();
+    const initialSwitches = await moreSwitches();
+    const otherTools = await page.locator('ytm-toolbar .ytm-other-tools').count();
+    check(
+      '預設版面不變：工具列沒有「更多」中的開關，「更多」面板照舊列出 5 個開關，沒有「其他工具」區塊（FR-3）',
+      initialIds === 'video mp3 thumbnail subtitles screenshot link darkMode cinema pip floating loop help more close' && initialSwitches === MORE_IDS.join(' ') && otherTools === 0,
+      `${initialIds} / ${initialSwitches}`,
+    );
+    await closePanel();
+
+    // ---- 編輯模式：「更多」區 ----
+    await enterEdit();
+    const area = { row: await editRow(), more: await editMore() };
+    check(
+      '編輯模式中，工具列下方的「更多」區列出 5 個開關（隱藏標記、眼睛按鈕）；工具列那一列與之前相同（FR-1）',
+      area.row === 'video mp3 thumbnail subtitles screenshot link separator darkMode cinema pip floating loop help' && area.more === MORE_IDS.join(' ') &&
+        (await page.locator('ytm-toolbar .ytm-edit-more .ytm-edit-item[data-hidden] .ytm-edit-eye').count()) === 5,
+      JSON.stringify(area),
+    );
+    await shot(page, 'T62-edit-more-area.png');
+
+    // 從「更多」拖到工具列
+    const hintIn = await drag('audioOnly', 'darkMode');
+    const afterDrag = { row: await editRow(), more: await editMore() };
+    check(
+      '把「只播聲音」從「更多」區拖到工具列（深色模式之前）：拖曳時有插入位置的指示線，放開後顯示在該位置（FR-1、驗收 1）',
+      hintIn.line && afterDrag.row.includes('separator audioOnly darkMode') && !afterDrag.row.includes('-audioOnly') && afterDrag.more === 'smartPause autoplay wheelVolume hideComments',
+      JSON.stringify({ hintIn, afterDrag }),
+    );
+    // 眼睛按鈕：「更多」區的開關顯示後加在工具列最後面
+    await page.locator('ytm-toolbar .ytm-edit-item[data-item="hideComments"] .ytm-edit-eye').click();
+    await page.waitForTimeout(100);
+    const afterEye = { row: await editRow(), more: await editMore() };
+    check('點「更多」區開關的眼睛按鈕：加到工具列最後面（FR-1）', afterEye.row.endsWith('help hideComments') && afterEye.more === 'smartPause autoplay wheelVolume', JSON.stringify(afterEye));
+    // 鍵盤：空白鍵顯示，←／→ 移動
+    await tile('smartPause').focus();
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(100);
+    await page.keyboard.press('ArrowLeft');
+    await page.waitForTimeout(100);
+    const afterKeys = { row: await editRow(), more: await editMore(), focus: await inToolbar(`return root.activeElement?.closest('.ytm-edit-item')?.dataset.item ?? null`) };
+    check(
+      '只用鍵盤：在「更多」區的開關上按空白鍵加到工具列、按 ← 移動，焦點留在同一個工具（FR-1、006 FR-13）',
+      afterKeys.row.endsWith('help smartPause hideComments') && afterKeys.more === 'autoplay wheelVolume' && afterKeys.focus === 'smartPause',
+      JSON.stringify(afterKeys),
+    );
+    // 拖回「更多」區
+    const hintOut = await drag('smartPause', 'more');
+    const afterOut = { row: await editRow(), more: await editMore() };
+    check('把工具列上的開關拖回「更多」區：拖曳時「更多」區有標示，放開後回到「更多」（FR-1）', hintOut.more && !afterOut.row.includes('smartPause') && afterOut.more === 'smartPause autoplay wheelVolume', JSON.stringify({ hintOut, afterOut }));
+    // 其他工具不能放進「更多」區
+    const hintVideo = await drag('video', 'more');
+    check('其他工具（例如「影片」）不能放進「更多」區', !hintVideo.more && (await editRow()).startsWith('video mp3'), JSON.stringify(hintVideo));
+    await shot(page, 'T62-edit-dragged.png');
+    await editAction('Done').click();
+    await page.waitForTimeout(300);
+
+    // ---- 完成後：工具列上的按鈕 ----
+    const ids = await toolbarIds();
+    await openMore();
+    const switchesAfter = await moreSwitches();
+    await closePanel();
+    const layout = (await stored())?.toolbarLayout;
+    check(
+      '按「完成」後工具列出現「只播聲音」「隱藏留言」按鈕；「更多」面板不再列出這兩個開關（FR-1、FR-3）',
+      ids === 'video mp3 thumbnail subtitles screenshot link audioOnly darkMode cinema pip floating loop help hideComments more close' && switchesAfter === 'smartPause autoplay wheelVolume' && layout?.version === 2,
+      `${ids} / ${switchesAfter} / v${layout?.version}`,
+    );
+    await shot(page, 'T62-toolbar-with-more-tools.png');
+
+    // 按下切換，按鈕顯示目前狀態（FR-2）
+    const audioState = () => page.evaluate(() => document.documentElement.classList.contains('ytm-audio-only'));
+    const tip = await inToolbar(`return root.querySelector('.ytm-btn[data-button="audioOnly"]').closest('.ytm-btn-wrap').querySelector('.ytm-tooltip').textContent`);
+    await button(page, 'audioOnly').click();
+    await page.waitForTimeout(300);
+    const on = { button: await pressed(page, 'audioOnly'), page: await audioState(), stored: (await stored())?.audioOnly };
+    await button(page, 'audioOnly').click();
+    await page.waitForTimeout(300);
+    const off = { button: await pressed(page, 'audioOnly'), page: await audioState(), stored: (await stored())?.audioOnly };
+    check(
+      '工具列上的「只播聲音」按一下切換開關，按鈕顯示目前狀態（aria-pressed）、提示文字為名稱（FR-2、驗收 1）',
+      tip === 'Audio only' && on.button.pressed === 'true' && on.page && on.stored === true && off.button.pressed === 'false' && !off.page && off.stored === false,
+      JSON.stringify({ tip, on, off }),
+    );
+    await button(page, 'hideComments').click();
+    await page.waitForTimeout(300);
+    const comments = { button: await pressed(page, 'hideComments'), page: await page.evaluate(() => document.documentElement.classList.contains('ytm-hide-comments')) };
+    await button(page, 'hideComments').click();
+    check('工具列上的「隱藏留言」切換頁面上的留言（FR-2）', comments.button.pressed === 'true' && comments.page, JSON.stringify(comments));
+
+    // 說明面板列出工具列上的開關
+    await button(page, 'help').click();
+    await page.waitForSelector('ytm-toolbar .ytm-help');
+    const help = await inToolbar(`return { ids: [...root.querySelectorAll('.ytm-help-item')].map((li) => li.dataset.button).join(' '), hidden: !!root.querySelector('.ytm-help-hidden') }`);
+    check('說明面板列出工具列上的「只播聲音」「隱藏留言」；「更多」中的開關不算隱藏的工具（006 FR-25）', help.ids.includes('audioOnly') && help.ids.includes('hideComments') && !help.ids.includes('smartPause') && !help.hidden, JSON.stringify(help));
+    await closePanel();
+
+    // ---- 設定頁同步列出（FR-3）----
+    const options = await context.newPage();
+    await options.goto(`chrome-extension://${EXT_ID}/options.html`);
+    await options.waitForSelector('#toolbar-list:not([aria-busy])');
+    const optionRows = () =>
+      options.evaluate(() => ({
+        main: [...document.querySelectorAll('#toolbar-list .toolbar-row')].map((r) => (r.hasAttribute('data-hidden') ? '-' : '') + r.dataset.item).join(' '),
+        more: [...document.querySelectorAll('#toolbar-more-list .toolbar-row')].map((r) => r.dataset.item).join(' '),
+        title: document.querySelector('#toolbar-more-title')?.textContent,
+      }));
+    const opt1 = await optionRows();
+    check(
+      '設定頁「工具列」區：工具列上的開關在清單中，其餘列在「在「更多」選單中」（FR-3）',
+      opt1.main.includes('audioOnly darkMode') && opt1.main.endsWith('help hideComments') && opt1.more === 'smartPause autoplay wheelVolume' && opt1.title === 'In the “More” menu',
+      JSON.stringify(opt1),
+    );
+    await options.locator('#toolbar-more-list #toolbar-visible-wheelVolume').click();
+    await options.waitForTimeout(300);
+    const opt2 = await optionRows();
+    await options.screenshot({ path: `${(await import('./lib.mjs')).shots}/T62-options-toolbar.png`, fullPage: true });
+    await page.bringToFront();
+    await page.waitForTimeout(300);
+    const idsFromOptions = await toolbarIds();
+    check(
+      '在設定頁開啟「滑鼠滾輪調整音量」：加到清單最後，已開啟的 YouTube 分頁立即出現按鈕（FR-3、006 FR-22）',
+      opt2.main.endsWith('hideComments wheelVolume') && opt2.more === 'smartPause autoplay' && idsFromOptions.endsWith('hideComments wheelVolume more close'),
+      `${JSON.stringify(opt2)} / ${idsFromOptions}`,
+    );
+
+    // ---- 重設：回到「更多」（驗收 2）----
+    await enterEdit();
+    await editAction('Reset to default').click();
+    await page.waitForTimeout(100);
+    const reset = { row: await editRow(), more: await editMore() };
+    await editAction('Done').click();
+    await page.waitForTimeout(300);
+    const idsAfterReset = await toolbarIds();
+    await openMore();
+    const switchesAfterReset = await moreSwitches();
+    await closePanel();
+    check(
+      '「重設為預設」後按「完成」：這些開關回到「更多」，工具列與「更多」面板回到預設（驗收 2）',
+      reset.row === 'video mp3 thumbnail subtitles screenshot link separator darkMode cinema pip floating loop help' && reset.more === MORE_IDS.join(' ') &&
+        idsAfterReset === initialIds && switchesAfterReset === MORE_IDS.join(' '),
+      JSON.stringify({ reset, idsAfterReset, switchesAfterReset }),
+    );
+    await options.bringToFront();
+    await options.waitForTimeout(300);
+    const opt3 = await optionRows();
+    const resetDisabled = await options.locator('#toolbar-reset').isDisabled();
+    check('設定頁跟著回到預設，「重設為預設」停用', opt3.more === MORE_IDS.join(' ') && !opt3.main.includes('wheelVolume') && resetDisabled, JSON.stringify(opt3));
+
+    // 設定頁的「重設為預設」
+    await options.locator('#toolbar-more-list #toolbar-visible-autoplay').click();
+    await options.waitForTimeout(200);
+    await options.locator('#toolbar-reset').click();
+    await options.waitForTimeout(300);
+    await page.bringToFront();
+    await page.waitForTimeout(300);
+    check('設定頁的「重設為預設」也讓開關回到「更多」', (await toolbarIds()) === initialIds && (await optionRows()).more === MORE_IDS.join(' '));
+    await options.close();
+  },
+  { viewport: { width: 1280, height: 1100 } },
+);
 
 // ---------------------------------------------------------------------------
 // T10 更多選單

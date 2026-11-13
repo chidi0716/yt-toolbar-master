@@ -529,6 +529,41 @@
   padding: 2px 0;
 }
 
+/* 「更多」區：還在「更多」面板中的開關（010 FR-1）；拖到工具列上即顯示，拖回這裡即回到「更多」。 */
+.ytm-edit-more {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-height: 60px;
+  margin-top: 4px;
+  padding: 14px 8px 4px;
+  border: 1px dashed transparent;
+  border-radius: 8px;
+  background: var(--ytm-hover-background);
+}
+
+.ytm-edit-more[data-drop] {
+  border-color: var(--ytm-call-to-action);
+}
+
+.ytm-edit-more-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 8px;
+  color: var(--ytm-text-secondary);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.ytm-edit-more-empty {
+  color: var(--ytm-text-secondary);
+  font-size: 12px;
+  line-height: 16px;
+}
+
 .ytm-edit-help {
   flex-basis: 100%;
   margin: 0;

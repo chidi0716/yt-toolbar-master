@@ -15,7 +15,7 @@ import { SubtitlePanel } from '@/components/panels/SubtitlePanel';
 import { ThumbnailPanel } from '@/components/panels/ThumbnailPanel';
 import { Mp3Panel, VideoPanel } from '@/components/panels/VideoPanel';
 import panelsCss from '@/components/panels/panels.css?inline';
-import type { ButtonId } from '@/components/toolbar/buttons';
+import { TOOLS, type ButtonId } from '@/components/toolbar/buttons';
 import { Toolbar, type ToolSources } from '@/components/toolbar/Toolbar';
 import controlsCss from '@/components/controls/controls.css?inline';
 import toolbarCss from '@/components/toolbar/toolbar.css?inline';
@@ -30,7 +30,7 @@ import { derive } from '@/features/viewing/store';
 import { toolbarZIndexCss } from '@/utils/z-index';
 import { initI18n, onLocaleChange, t } from '@/utils/i18n';
 import { enabled, QUALITY_LOCK_VALUES, readSettings, toolbarLayout, uiLanguage, type QualityLock } from '@/utils/settings';
-import { normalizeLayout, type ToolbarLayout } from '@/utils/toolbar-layout';
+import { normalizeLayout, splitLayout, type ToolbarLayout } from '@/utils/toolbar-layout';
 import { WATCH_HOSTS, findPlayer, findToolbarAnchor } from '@/utils/youtube/dom';
 import { getVideoId, isWatchPage, onNavigate } from '@/utils/youtube/page';
 
@@ -39,6 +39,7 @@ const LOG_PREFIX = '[yt-toolbar-master]';
 const ANCHOR_WAIT_MS = 20_000;
 
 const pick = (f: { state: MoreSwitchItem['state']; toggle: () => void }) => ({ state: f.state, toggle: f.toggle });
+type MoreToolId = 'smartPause' | 'autoplay' | 'audioOnly' | 'wheelVolume' | 'hideComments';
 
 /** 鎖定畫質下拉選單的選項（004 FR-1）。 */
 const qualityOptions = () =>
@@ -107,12 +108,12 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
 
   const { more } = viewing;
   // 每次繪製時重新產生，下拉選單的文字跟著介面語言（007 FR-3）。
+  // 開關只列出還在「更多」中的（放到工具列的不重複列出，010 FR-3）；名稱、圖示與說明來自工具註冊表。
   const moreItems = (): MoreItem[] => [
-    { id: 'smartPause', icon: 'pause_presentation', label: 'moreSmartPause', description: 'moreSmartPauseDesc', ...pick(more.smartPause) },
-    { id: 'autoplay', icon: 'autoplay', label: 'moreAutoplay', description: 'moreAutoplayDesc', ...pick(more.autoplay) },
-    { id: 'audioOnly', icon: 'headphones', label: 'moreAudioOnly', description: 'moreAudioOnlyDesc', ...pick(more.audioOnly) },
-    { id: 'wheelVolume', icon: 'mouse', label: 'moreWheelVolume', description: 'moreWheelVolumeDesc', ...pick(more.wheelVolume) },
-    { id: 'hideComments', icon: 'comments_disabled', label: 'moreHideComments', description: 'moreHideCommentsDesc', ...pick(more.hideComments) },
+    ...splitLayout(layout).more.map((id): MoreItem => {
+      const def = TOOLS[id];
+      return { id, icon: def.icon, label: def.label, description: def.description, ...pick(more[id as MoreToolId]) };
+    }),
     {
       kind: 'select',
       id: 'qualityLock',
@@ -167,6 +168,8 @@ export async function startToolbar(ctx: ContentScriptContext): Promise<void> {
   /** 換頁、改變工具列設定或介面語言時重新繪製（按鈕的狀態另外由各自的 store 更新）。 */
   function renderInto(container: HTMLElement, host: HTMLElement) {
     if (!videoId) return;
+    // YouTube 的自動播放開關常比工具列晚出現；工具列上的「自動播放」按鈕（010）在繪製時重新尋找。
+    more.autoplay.refresh();
     render(
       <Toolbar
         host={host}

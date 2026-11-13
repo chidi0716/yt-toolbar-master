@@ -63,8 +63,24 @@ export function createViewingController(): ViewingController {
       cinema: cinema.state,
       floating: floating.state,
       loop: derive([loop.status], (s) => ({ active: s.running })),
+      // 010 第一節：「更多」中的開關放到工具列時使用同一個狀態與動作。
+      smartPause: more.smartPause.state,
+      autoplay: more.autoplay.state,
+      audioOnly: more.audioOnly.state,
+      wheelVolume: more.wheelVolume.state,
+      hideComments: more.hideComments.state,
     },
-    actions: { darkMode: dark.toggle, pip: pip.toggle, cinema: cinema.toggle, floating: floating.toggle },
+    actions: {
+      darkMode: dark.toggle,
+      pip: pip.toggle,
+      cinema: cinema.toggle,
+      floating: floating.toggle,
+      smartPause: more.smartPause.toggle,
+      autoplay: more.autoplay.toggle,
+      audioOnly: more.audioOnly.toggle,
+      wheelVolume: more.wheelVolume.toggle,
+      hideComments: more.hideComments.toggle,
+    },
     setActive(next) {
       if (next === active) return;
       active = next;

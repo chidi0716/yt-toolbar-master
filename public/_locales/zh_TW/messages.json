@@ -649,6 +649,18 @@
     "message": "左右兩組的分隔點",
     "description": "Toolbar edit mode: the draggable divider."
   },
+  "editInMore": {
+    "message": "在「更多」中",
+    "description": "Edit mode: screen reader state of a switch that is still in the More panel (010 FR-1)."
+  },
+  "editMoreArea": {
+    "message": "在「更多」中",
+    "description": "Edit mode: label of the area below the toolbar that holds the switches still in the More panel (010 FR-1)."
+  },
+  "editMoreEmpty": {
+    "message": "把開關拖到這裡，放回「更多」。",
+    "description": "Edit mode: shown in the More area when every More switch is on the toolbar (010 FR-1)."
+  },
   "editShown": {
     "message": "顯示中",
     "description": "Toolbar edit mode: state of a tool."
@@ -738,6 +750,14 @@
   "optionsToolbarDrag": {
     "message": "拖曳調整順序",
     "description": "Settings page: drag handle."
+  },
+  "optionsToolbarMore": {
+    "message": "在「更多」選單中",
+    "description": "Settings page: heading of the list of More panel switches that are not on the toolbar (010 FR-3)."
+  },
+  "optionsToolbarMoreDesc": {
+    "message": "開啟後顯示在工具列上。",
+    "description": "Settings page: one line under the More list heading (010 FR-3)."
   },
   "optionsToolbarReset": {
     "message": "重設為預設",

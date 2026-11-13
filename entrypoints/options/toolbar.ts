@@ -1,5 +1,6 @@
 // 設定頁的「工具列」區（006 FR-2、FR-22，tasks T34）：以清單顯示所有工具與分隔點，每列有拖曳把手、圖示、名稱、
 // 顯示／隱藏開關、「上移」「下移」；另有「重設為預設」。與編輯模式共用設定模型（utils/toolbar-layout.ts）。
+// 還在「更多」面板中的開關（010 FR-3）另列在下方，開啟後加到工具列清單的最後面。
 // 變更立即寫入 sync:toolbarLayout；已開啟的 YouTube 分頁監聽設定變更而立即套用（FR-21、FR-22）。
 import { createIconElement } from '@/components/icon-data';
 import { group } from './dom';
@@ -12,6 +13,7 @@ import {
   isDefaultLayout,
   moveItem,
   normalizeLayout,
+  rowLength,
   SEPARATOR,
   stepItem,
   toggleVisible,
@@ -31,6 +33,16 @@ export function renderToolbarSettings(root: HTMLElement): () => void {
   const list = document.createElement('ol');
   list.className = 'toolbar-list';
   list.id = 'toolbar-list';
+  const moreTitle = document.createElement('h3');
+  moreTitle.className = 'toolbar-more-title';
+  moreTitle.id = 'toolbar-more-title';
+  const moreDesc = document.createElement('p');
+  moreDesc.className = 'toolbar-more-desc';
+  moreDesc.id = 'toolbar-more-desc';
+  const moreList = document.createElement('ol');
+  moreList.className = 'toolbar-list';
+  moreList.id = 'toolbar-more-list';
+  moreList.setAttribute('aria-labelledby', moreTitle.id);
   const indicator = document.createElement('div');
   indicator.className = 'toolbar-indicator';
   indicator.hidden = true;
@@ -42,7 +54,7 @@ export function renderToolbarSettings(root: HTMLElement): () => void {
   reset.id = 'toolbar-reset';
   reset.textContent = t('optionsToolbarReset');
   actions.append(reset);
-  fieldset.append(list, indicator, actions);
+  fieldset.append(list, moreTitle, moreDesc, moreList, indicator, actions);
   root.append(fieldset);
 
   const nameOf = (id: LayoutItemId) => (id === SEPARATOR ? t('optionsToolbarDivider') : t(TOOLS[id].label));
@@ -99,11 +111,12 @@ export function renderToolbarSettings(root: HTMLElement): () => void {
       save(stepItem(layout, id, -1));
       refocus(index - 1 === 0 ? `${id}:down` : `${id}:up`);
     });
+    const last = rowLength(layout) - 1;
     const down = iconButton('arrow_downward', t('optionsToolbarMoveDown', nameOf(id)), `${id}:down`);
-    down.disabled = index === layout.items.length - 1;
+    down.disabled = index === last;
     down.addEventListener('click', () => {
       save(stepItem(layout, id, 1));
-      refocus(index + 1 === layout.items.length - 1 ? `${id}:up` : `${id}:down`);
+      refocus(index + 1 === last ? `${id}:up` : `${id}:down`);
     });
 
     li.append(handle, text);
@@ -128,14 +141,46 @@ export function renderToolbarSettings(root: HTMLElement): () => void {
     return li;
   }
 
+  /** 還在「更多」中的開關：圖示、名稱與開關（010 FR-3）。 */
+  function moreRow(id: LayoutItemId): HTMLLIElement {
+    const li = document.createElement('li');
+    li.className = 'toolbar-row';
+    li.dataset.item = id;
+    li.dataset.hidden = '';
+    const text = document.createElement('label');
+    text.className = 'toolbar-name';
+    text.append(createIconElement(TOOLS[id as Exclude<LayoutItemId, typeof SEPARATOR>].icon, 22), document.createTextNode(nameOf(id)));
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.className = 'switch';
+    input.setAttribute('role', 'switch');
+    input.id = `toolbar-visible-${id}`;
+    input.checked = false;
+    input.dataset.focusKey = `${id}:visible`;
+    input.setAttribute('aria-describedby', moreDesc.id);
+    text.htmlFor = input.id;
+    input.addEventListener('change', () => {
+      save(toggleVisible(layout, id));
+      refocus(`${id}:visible`);
+    });
+    li.append(document.createElement('span'), text, input, document.createElement('span'), document.createElement('span'));
+    return li;
+  }
+
   function render() {
-    list.replaceChildren(...layout.items.map((item, i) => row(item.id, i)));
+    const count = rowLength(layout);
+    list.replaceChildren(...layout.items.slice(0, count).map((item, i) => row(item.id, i)));
+    moreTitle.textContent = t('optionsToolbarMore');
+    moreDesc.textContent = t('optionsToolbarMoreDesc');
+    const more = layout.items.slice(count);
+    moreList.replaceChildren(...more.map((item) => moreRow(item.id)));
+    moreTitle.hidden = moreDesc.hidden = moreList.hidden = more.length === 0;
     reset.disabled = !loaded || isDefaultLayout(layout);
     list.toggleAttribute('aria-busy', !loaded);
   }
 
   function refocus(key: string) {
-    list.querySelector<HTMLElement>(`[data-focus-key="${CSS.escape(key)}"]`)?.focus();
+    fieldset.querySelector<HTMLElement>(`[data-focus-key="${CSS.escape(key)}"]`)?.focus();
   }
 
   // ---- 拖曳（Pointer Events，上下方向） ----

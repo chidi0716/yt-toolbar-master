@@ -47,6 +47,12 @@ export const TOOLS: Readonly<Record<ToolId, ButtonDef>> = {
   floating: { id: 'floating', kind: 'toggle', icon: 'branding_watermark', label: 'btnFloating', description: 'helpFloating', ongoing: true },
   loop: { id: 'loop', kind: 'panel', icon: 'repeat', label: 'btnLoop', description: 'helpLoop' },
   help: { id: 'help', kind: 'panel', icon: 'help', label: 'btnHelp', description: 'helpHelp' },
+  // 010 第一節：「更多」面板中的開關，預設在「更多」。長期的設定，不算進行中。
+  smartPause: { id: 'smartPause', kind: 'toggle', icon: 'pause_presentation', label: 'moreSmartPause', description: 'moreSmartPauseDesc' },
+  autoplay: { id: 'autoplay', kind: 'toggle', icon: 'autoplay', label: 'moreAutoplay', description: 'moreAutoplayDesc' },
+  audioOnly: { id: 'audioOnly', kind: 'toggle', icon: 'headphones', label: 'moreAudioOnly', description: 'moreAudioOnlyDesc' },
+  wheelVolume: { id: 'wheelVolume', kind: 'toggle', icon: 'mouse', label: 'moreWheelVolume', description: 'moreWheelVolumeDesc' },
+  hideComments: { id: 'hideComments', kind: 'toggle', icon: 'comments_disabled', label: 'moreHideComments', description: 'moreHideCommentsDesc' },
 };
 
 export const FIXED: Readonly<Record<FixedId, ButtonDef>> = {

@@ -327,6 +327,19 @@ h2 {
   cursor: grabbing;
 }
 
+/* 還在「更多」中的開關（010 FR-3） */
+.toolbar-more-title {
+  margin: 16px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.toolbar-more-desc {
+  margin: 2px 0 4px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
 .toolbar-indicator {
   position: absolute;
   right: 16px;
