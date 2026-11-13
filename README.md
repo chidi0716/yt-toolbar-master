@@ -9,7 +9,7 @@ A toolbar under the YouTube player for Chrome and Firefox: one-click downloads a
 ## Features
 
 **Downloads**
-- **One-click video and MP3:** click **Video** or **MP3** and the download starts in your default quality (1080p MP4, 192 kbps MP3; changeable in settings).
+- **One-click video and MP3** (turn on in settings): click **Video** or **MP3** and the download starts in your default quality (1080p MP4, 192 kbps MP3). When off, you pick the quality in the panel.
 - **Right-click download** on any video link on YouTube.
 - Full quality list (up to 8K), time range, embedded cover and chapters.
 - **Thumbnails, subtitles (SRT / VTT / TXT) and screenshots** — no helper needed.

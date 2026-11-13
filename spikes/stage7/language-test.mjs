@@ -31,6 +31,8 @@ try {
   const opt = await context.newPage();
   await opt.goto(`chrome-extension://${EXT_ID}/options.html`);
   await opt.waitForSelector('#ui-language:not([disabled])');
+  // 一鍵下載預設關閉（010 FR-10）；開啟後檢查「影片」的提示文字（009 FR-7）也跟著換語言。
+  await opt.evaluate(() => chrome.storage.sync.set({ quickDownload: true }));
   const optEn = await opt.evaluate(() => ({
     first: document.querySelector('#app .section').id,
     h1: document.querySelector('h1').textContent,

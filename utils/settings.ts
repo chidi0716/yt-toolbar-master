@@ -94,8 +94,11 @@ export const mp3Bitrate = storage.defineItem<number>('sync:mp3Bitrate', { fallba
 
 // 一鍵下載與右鍵下載（009，plan 3.11）。
 
-/** 一鍵下載（009 FR-1：預設開啟）：點「影片」「MP3」直接以預設值開始下載。 */
-export const quickDownload = storage.defineItem<boolean>('sync:quickDownload', { fallback: true });
+/**
+ * 一鍵下載（009 FR-1、010 FR-10、FR-11：預設關閉）：點「影片」「MP3」直接以預設值開始下載。
+ * 沒有儲存過的使用者採用新的預設值（關閉）；儲存過的值（開或關）維持不變。
+ */
+export const quickDownload = storage.defineItem<boolean>('sync:quickDownload', { fallback: false });
 
 /** 預設影片畫質（009 FR-2）：最高畫質或畫面高度（短邊）。 */
 export const DEFAULT_VIDEO_HEIGHTS = ['best', 2160, 1440, 1080, 720, 480] as const;

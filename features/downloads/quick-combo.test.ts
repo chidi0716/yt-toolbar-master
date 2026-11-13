@@ -30,7 +30,7 @@ describe('鎖定畫質（004）', () => {
     await defaultVideoHeight.setValue('best');
     await defaultVideoContainer.setValue('any');
     expect(await qualityLock.getValue()).toBe('480');
-    expect(await quickDownload.getValue()).toBe(true);
+    expect(await quickDownload.getValue()).toBe(false);
   });
 
   it('同一組可用畫質下，兩者以同一個規則選擇', () => {
@@ -38,6 +38,22 @@ describe('鎖定畫質（004）', () => {
     const heights = codes.map((c) => QUALITY_HEIGHTS[c]);
     expect(pickHeight(heights, 1440)).toBe(QUALITY_HEIGHTS[pickQuality('1440', codes)!]);
     expect(pickHeight(heights, 'best')).toBe(QUALITY_HEIGHTS[pickQuality('max', codes)!]);
+  });
+});
+
+describe('一鍵下載的預設值（010 FR-10、FR-11）', () => {
+  beforeEach(() => fakeBrowser.reset());
+
+  it('沒有儲存過：關閉；面板顯示完整選項', async () => {
+    expect(await quickDownload.getValue()).toBe(false);
+    expect(initialDownloadMode({ quickEnabled: await quickDownload.getValue(), clickedForThisVideo: true, helperJustInstalled: false })).toBe('full');
+  });
+
+  it('儲存過的值維持原本的選擇', async () => {
+    await fakeBrowser.storage.sync.set({ quickDownload: true });
+    expect(await quickDownload.getValue()).toBe(true);
+    await fakeBrowser.storage.sync.set({ quickDownload: false });
+    expect(await quickDownload.getValue()).toBe(false);
   });
 });
 

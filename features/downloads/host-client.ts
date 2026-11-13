@@ -91,7 +91,7 @@ export function quickSettings(): Store<QuickSettings | null> {
   const store = createStore<QuickSettings | null>(null);
   quickStore = store;
   watchSettings([quickDownload, defaultVideoHeight, defaultVideoContainer, mp3Bitrate] as const, ([enabled, height, container, bitrate]) =>
-    store.set({ enabled: enabled !== false, defaults: toQuickDefaults(height, container, bitrate) }),
+    store.set({ enabled: enabled === true, defaults: toQuickDefaults(height, container, bitrate) }),
   );
   return store;
 }
