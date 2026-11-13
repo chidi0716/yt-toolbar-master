@@ -5,6 +5,7 @@ import type { LoopController } from '@/features/viewing/loop';
 import { t } from '@/utils/i18n';
 import { formatTime, validateRange, type TimeError } from '@/utils/time';
 import { Button } from '../controls/Button';
+import { NumberStepper } from '../controls/NumberStepper';
 import { RangeSlider } from '../controls/RangeSlider';
 import { TimeInput } from '../controls/TimeInput';
 import { useStore } from './useStore';
@@ -70,18 +71,15 @@ export function LoopPanel({ loop }: { loop: LoopController }) {
           <span>{t('loopModeRepeat')}</span>
         </label>
         <div class="ytm-loop-option" data-disabled={mode !== 'repeat' ? '' : undefined}>
-          <input
+          <NumberStepper
             id="ytm-loop-times"
-            class="ytm-input ytm-number-input"
-            type="number"
-            inputMode="numeric"
             min={MIN_TIMES}
             max={MAX_TIMES}
-            aria-label={t('loopTimesLabel')}
-            aria-invalid={mode === 'repeat' && !infinite && times === null ? 'true' : undefined}
+            label={t('loopTimesLabel')}
+            invalid={mode === 'repeat' && !infinite && times === null}
             disabled={mode !== 'repeat' || infinite}
             value={timesText}
-            onInput={(e) => setTimesText((e.currentTarget as HTMLInputElement).value)}
+            onChange={setTimesText}
           />
           <span>{t('loopTimesUnit')}</span>
           <label class="ytm-checkbox">

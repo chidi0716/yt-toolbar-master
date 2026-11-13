@@ -47,6 +47,8 @@ import arrowUpward from '@material-symbols/svg-400/outlined/arrow_upward.svg?raw
 import arrowDownward from '@material-symbols/svg-400/outlined/arrow_downward.svg?raw';
 import restartAlt from '@material-symbols/svg-400/outlined/restart_alt.svg?raw';
 import tune from '@material-symbols/svg-400/outlined/tune.svg?raw';
+import add from '@material-symbols/svg-400/outlined/add.svg?raw';
+import remove from '@material-symbols/svg-400/outlined/remove.svg?raw';
 import upgrade from '@material-symbols/svg-400/outlined/upgrade.svg?raw';
 import deleteIcon from '@material-symbols/svg-400/outlined/delete.svg?raw';
 
@@ -58,6 +60,7 @@ const SOURCES = {
   pause_presentation: pausePresentation,
   volume_off: volumeOff,
   volume_up: volumeUp,
+  add,
   arrow_drop_down: arrowDropDown,
   arrow_downward: arrowDownward,
   arrow_upward: arrowUpward,
@@ -91,6 +94,7 @@ const SOURCES = {
   picture_in_picture_alt: pictureInPictureAlt,
   progress_activity: progressActivity,
   refresh,
+  remove,
   repeat,
   restart_alt: restartAlt,
   settings,

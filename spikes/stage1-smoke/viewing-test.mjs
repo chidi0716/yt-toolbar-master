@@ -722,6 +722,127 @@ await section('T09', async (page) => {
 });
 
 // ---------------------------------------------------------------------------
+// T65 數字輸入框的「−」「＋」（010 FR-30 至 FR-32）：淺色與深色各跑一次
+// ---------------------------------------------------------------------------
+const stepperLook = [];
+for (const [theme, pref] of [
+  ['light', 'f6=80000'],
+  ['dark', 'f6=400'],
+]) {
+  await section(
+    'T65',
+    async (page) => {
+      const panel = (sel) => page.locator(`ytm-toolbar .ytm-panel ${sel}`);
+      const times = () => panel('#ytm-loop-times').inputValue();
+      const state = () =>
+        page.evaluate(() => {
+          const root = document.querySelector('ytm-toolbar').shadowRoot;
+          const input = root.querySelector('#ytm-loop-times');
+          const [down, up] = [...root.querySelectorAll('.ytm-stepper-btn')];
+          return { value: input.value, down: down.disabled, up: up.disabled };
+        });
+      await button(page, 'loop').click();
+      await page.waitForSelector('ytm-toolbar .ytm-panel .ytm-stepper');
+      const look = await page.evaluate(() => {
+        const root = document.querySelector('ytm-toolbar').shadowRoot;
+        const input = root.querySelector('#ytm-loop-times');
+        const btn = root.querySelector('.ytm-stepper-btn[data-step="up"]');
+        const s = getComputedStyle(btn);
+        const r = btn.getBoundingClientRect();
+        return {
+          dark: document.documentElement.hasAttribute('dark'),
+          appearance: getComputedStyle(input).appearance,
+          type: input.type,
+          order: [...input.parentElement.children].map((el) => el.dataset.step ?? el.tagName.toLowerCase()).join(','),
+          color: s.color,
+          border: s.borderTopColor,
+          radius: s.borderTopLeftRadius,
+          size: `${Math.round(r.width)}x${Math.round(r.height)}`,
+          inputColor: getComputedStyle(input).color,
+        };
+      });
+      stepperLook.push(look);
+      check(
+        `（${theme}）循環次數輸入框不顯示瀏覽器內建的上下箭頭，兩側為「−」「＋」圓形按鈕（FR-30）`,
+        look.dark === (theme === 'dark') && look.appearance === 'textfield' && look.type === 'number' && look.order === 'down,input,up' && look.radius === '50%' && look.color === look.inputColor,
+        JSON.stringify(look),
+      );
+      await shot(page, `T65-loop-stepper-${theme}.png`);
+      if (theme === 'dark') {
+        const [light, dark] = stepperLook;
+        check('按鈕的文字與邊框顏色跟隨 YouTube 的深淺色（FR-30）', !!light && light.color !== dark.color && light.border !== dark.border, JSON.stringify({ light, dark }));
+        return;
+      }
+
+      // 點一下加減一
+      await panel('.ytm-stepper-btn[data-step="up"]').click();
+      const plus = await times();
+      await panel('.ytm-stepper-btn[data-step="down"]').click();
+      await panel('.ytm-stepper-btn[data-step="down"]').click();
+      check('點「＋」「−」各加減一（FR-30）', plus === '4' && (await times()) === '2', `${plus} → ${await times()}`);
+
+      // 最小值與最大值時停用
+      await panel('.ytm-stepper-btn[data-step="down"]').click();
+      const atMin = await state();
+      await panel('#ytm-loop-times').fill('99');
+      const atMax = await state();
+      check(
+        '到達最小值（1）時「−」停用、最大值（99）時「＋」停用（FR-31）',
+        atMin.value === '1' && atMin.down && !atMin.up && atMax.value === '99' && atMax.up && !atMax.down,
+        JSON.stringify({ atMin, atMax }),
+      );
+
+      // 按住連續增減
+      await panel('#ytm-loop-times').fill('10');
+      const box = await panel('.ytm-stepper-btn[data-step="up"]').boundingBox();
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.mouse.down();
+      await page.waitForTimeout(1200);
+      await page.mouse.up();
+      const held = Number(await times());
+      await page.waitForTimeout(400);
+      const afterRelease = Number(await times());
+      check('按住「＋」時連續增加，放開後停止（FR-31）', held >= 15 && held < 99 && afterRelease === held, `10 → ${held}（放開後 ${afterRelease}）`);
+      await panel('#ytm-loop-times').fill('97');
+      const boxUp = await panel('.ytm-stepper-btn[data-step="up"]').boundingBox();
+      await page.mouse.move(boxUp.x + boxUp.width / 2, boxUp.y + boxUp.height / 2);
+      await page.mouse.down();
+      await page.waitForTimeout(1200);
+      await page.mouse.up();
+      const capped = await state();
+      check('按住到最大值時停止並停用「＋」（FR-31）', capped.value === '99' && capped.up, JSON.stringify(capped));
+
+      // 直接輸入與鍵盤上下鍵
+      await panel('#ytm-loop-times').fill('5');
+      await panel('#ytm-loop-times').press('ArrowUp');
+      await panel('#ytm-loop-times').press('ArrowUp');
+      await panel('#ytm-loop-times').press('ArrowDown');
+      check('仍可直接輸入數字與使用鍵盤上下鍵（FR-31）', (await times()) === '6', await times());
+
+      // 不合法的輸入：兩個按鈕都可以使用，按「＋」從最小值開始
+      await panel('#ytm-loop-times').fill('');
+      const empty = await state();
+      await panel('.ytm-stepper-btn[data-step="up"]').click();
+      check('清空後兩個按鈕都可以使用，按「＋」從 1 開始', !empty.down && !empty.up && (await times()) === '1', JSON.stringify(empty));
+
+      // 「無限」時整組停用
+      await panel('.ytm-loop-option .ytm-checkbox input').check();
+      const infinite = await state();
+      await panel('.ytm-loop-option .ytm-checkbox input').uncheck();
+      check('勾選「無限」時輸入框與按鈕停用', infinite.down && infinite.up, JSON.stringify(infinite));
+
+      // 其他數字輸入框（FR-32）：時間範圍類的輸入框是文字輸入框，沒有上下箭頭
+      const others = await page.evaluate(() => {
+        const root = document.querySelector('ytm-toolbar').shadowRoot;
+        return [...root.querySelectorAll('input')].filter((i) => i.type === 'number').map((i) => i.id);
+      });
+      check('面板中的數字輸入框只有循環次數（時間輸入框為文字輸入框，FR-32）', others.join() === 'ytm-loop-times', others.join());
+    },
+    { pref },
+  );
+}
+
+// ---------------------------------------------------------------------------
 // T10 更多選單
 // ---------------------------------------------------------------------------
 await section('T10', async (page, context) => {

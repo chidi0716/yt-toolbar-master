@@ -69,11 +69,6 @@
   cursor: pointer;
 }
 
-.ytm-number-input {
-  width: 72px;
-  font-variant-numeric: tabular-nums;
-}
-
 .ytm-field {
   display: flex;
   flex-direction: column;

@@ -301,6 +301,14 @@
     "message": "重設",
     "description": "Button next to the time range heading: back to the whole video (010 FR-20)."
   },
+  "stepperDecrease": {
+    "message": "減少",
+    "description": "Round − button beside a number field (010 FR-30)."
+  },
+  "stepperIncrease": {
+    "message": "增加",
+    "description": "Round + button beside a number field (010 FR-30)."
+  },
   "clipSync": {
     "message": "與播放器同步",
     "description": "Switch: moving a handle seeks the player, and set-to-current-time buttons appear."

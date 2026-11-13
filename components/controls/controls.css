@@ -187,6 +187,68 @@
   opacity: 0.4;
 }
 
+/* ---------- 數字輸入框與「−」「＋」（010 FR-30 至 FR-32） ---------- */
+
+/* 不顯示瀏覽器內建的上下箭頭（Chrome 與 Firefox）。 */
+.ytm-root input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.ytm-root input[type='number']::-webkit-inner-spin-button,
+.ytm-root input[type='number']::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.ytm-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ytm-number-input {
+  width: 52px;
+  padding: 0 8px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.ytm-stepper-btn {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--ytm-outline);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ytm-text-primary);
+  cursor: pointer;
+  outline: none;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.ytm-stepper-btn:hover:not(:disabled) {
+  background: var(--ytm-hover-background);
+}
+
+.ytm-stepper-btn:active:not(:disabled) {
+  background: var(--ytm-active-background);
+}
+
+.ytm-stepper-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--ytm-menu-background), 0 0 0 4px var(--ytm-text-primary);
+}
+
+.ytm-stepper-btn:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
 .ytm-field-error {
   margin: 4px 0 0;
   color: var(--ytm-error);
