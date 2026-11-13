@@ -1132,7 +1132,7 @@
     "description": "About section button (008 FR-29)."
   },
   "installIntro": {
-    "message": "Downloading videos and MP3 needs this project's helper plus yt-dlp (downloads videos), ffmpeg (joins video and audio, converts to MP3) and deno (a runtime yt-dlp needs). About 150 MB on macOS and 300 MB on Windows, installed only for your user account. You can remove it at any time.",
+    "message": "Downloading videos and MP3 needs this project's helper plus yt-dlp (downloads videos), ffmpeg (joins video and audio, converts to MP3) and deno (a runtime yt-dlp needs). Download: about 160 MB on macOS (about 350 MB once installed), about 270 MB on Windows. Installed only for your user account; you can remove it at any time.",
     "description": "Install guide introduction (008 FR-1)."
   },
   "hostStatusNotInstalled": {

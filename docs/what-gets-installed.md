@@ -6,7 +6,7 @@ What the one-line install command puts on your computer, where, what it connects
 
 ## In short
 
-- Four programs: about 150 MB on macOS, about 300 MB on Windows (the Windows ffmpeg package is larger).
+- Four programs. Download: about 160 MB on Apple silicon Macs (about 350 MB once installed), about 170 MB on Intel Macs, about 270 MB on Windows (the Windows ffmpeg package is larger).
 - Everything goes into **one folder in your user account**. No administrator password, no system settings, no changes to `PATH`.
 - Programs you installed yourself (for example with Homebrew or winget) are never changed.
 - Nothing about you or your downloads is collected or sent anywhere.

@@ -6,7 +6,7 @@
 
 ## 重點
 
-- 四個程式：macOS 約 150 MB，Windows 約 300 MB（Windows 版的 ffmpeg 較大）。
+- 四個程式。下載量：Apple 晶片的 Mac 約 160 MB（安裝後約 350 MB），Intel Mac 約 170 MB，Windows 約 270 MB（Windows 版的 ffmpeg 較大）。
 - 全部放在**你帳號下的一個資料夾**。不需要系統管理員密碼，不修改系統設定，也不修改 `PATH`。
 - 你自己安裝的程式（例如以 Homebrew 或 winget 安裝的）不會被修改。
 - 不收集任何關於你或你下載內容的資料，也不會送到任何地方。

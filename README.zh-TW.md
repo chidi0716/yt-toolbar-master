@@ -43,7 +43,7 @@ Chrome 與 Firefox 的 YouTube 工具列：一鍵下載與觀看工具。
 <a id="install-the-helper"></a>
 ### 2. 設定影片與 MP3 下載
 
-只有下載影片與 MP3 需要。一行指令會在你的使用者資料夾安裝 [yt-dlp](https://github.com/yt-dlp/yt-dlp)、[ffmpeg](https://ffmpeg.org)、[deno](https://deno.com) 與小幫手（macOS 約 150 MB，Windows 約 300 MB），不需要系統管理員權限，之後會自動更新。詳見[會安裝什麼](./docs/what-gets-installed.zh-TW.md)。
+只有下載影片與 MP3 需要。一行指令會在你的使用者資料夾安裝 [yt-dlp](https://github.com/yt-dlp/yt-dlp)、[ffmpeg](https://ffmpeg.org)、[deno](https://deno.com) 與小幫手（下載量：macOS 約 160 MB，安裝後約 350 MB；Windows 約 270 MB），不需要系統管理員權限，之後會自動更新。詳見[會安裝什麼](./docs/what-gets-installed.zh-TW.md)。
 
 **macOS**
 1. 按 ⌘＋空白鍵，輸入「終端機」並按 Enter。

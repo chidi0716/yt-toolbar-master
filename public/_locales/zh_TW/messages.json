@@ -1132,7 +1132,7 @@
     "description": "About section button (008 FR-29)."
   },
   "installIntro": {
-    "message": "下載影片與 MP3 需要本專案的小幫手，以及 yt-dlp（下載影片）、ffmpeg（合併影音、轉 MP3）與 deno（yt-dlp 需要的執行環境）。macOS 約 150 MB、Windows 約 300 MB，只裝在你的帳號下，可以隨時移除。",
+    "message": "下載影片與 MP3 需要本專案的小幫手，以及 yt-dlp（下載影片）、ffmpeg（合併影音、轉 MP3）與 deno（yt-dlp 需要的執行環境）。下載量：macOS 約 160 MB（安裝後約 350 MB），Windows 約 270 MB。只裝在你的帳號下，可以隨時移除。",
     "description": "Install guide introduction (008 FR-1)."
   },
   "hostStatusNotInstalled": {

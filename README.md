@@ -43,7 +43,7 @@ In this beta, Firefox removes the add-on when it restarts.
 <a id="install-the-helper"></a>
 ### 2. Set up video and MP3 downloads
 
-Needed only for video and MP3. One command installs [yt-dlp](https://github.com/yt-dlp/yt-dlp), [ffmpeg](https://ffmpeg.org), [deno](https://deno.com) and a small helper into your user folder (about 150 MB on macOS, 300 MB on Windows). No administrator rights needed. They update themselves. Details: [what gets installed](./docs/what-gets-installed.md).
+Needed only for video and MP3. One command installs [yt-dlp](https://github.com/yt-dlp/yt-dlp), [ffmpeg](https://ffmpeg.org), [deno](https://deno.com) and a small helper into your user folder (download: about 160 MB on macOS, about 350 MB once installed; about 270 MB on Windows). No administrator rights needed. They update themselves. Details: [what gets installed](./docs/what-gets-installed.md).
 
 **macOS**
 1. Press ⌘ + Space, type **Terminal** and press Enter.
